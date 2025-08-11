@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Property } from '@/lib/supabase'
@@ -20,10 +20,7 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || ''
 export function PropertyMapView({
   properties,
   selectedRows,
-  onRowSelect,
-  onRefresh,
-  onDelete,
-  refreshingPropertyId
+  onRowSelect
 }: PropertyMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -51,12 +48,12 @@ export function PropertyMapView({
   }
 
   // Transform properties to GeoJSON format
-  const createGeoJSONData = () => {
+  const createGeoJSONData = useCallback(() => {
     const features = properties
       .filter(property => property.geometry && property.lat && property.lng)
       .map(property => ({
         type: 'Feature' as const,
-        geometry: property.geometry as GeoJSON.Geometry,
+        geometry: property.geometry as unknown as GeoJSON.Geometry,
         properties: {
           // Basic info
           id: property.id,
@@ -126,7 +123,7 @@ export function PropertyMapView({
       type: 'FeatureCollection' as const,
       features
     }
-  }
+  }, [properties, selectedRows])
 
   // Initialize map
   useEffect(() => {
@@ -206,7 +203,7 @@ export function PropertyMapView({
         map.current = null
       }
     }
-  }, []) // Empty dependency array for initialization only
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Add property layers to map
   const addPropertyLayers = () => {
@@ -472,14 +469,14 @@ export function PropertyMapView({
           existingPopups.forEach(popup => popup.remove())
 
           // Add popup with responsive sizing
-          if (e.lngLat) {
+          if (e.lngLat && map.current) {
             const isMobile = window.innerWidth < 768
             new mapboxgl.Popup({ 
               closeButton: true, 
               closeOnClick: false, // Don't auto-close on click to allow scrolling
               maxWidth: isMobile ? '280px' : '400px',
               className: 'property-popup',
-              anchor: isMobile ? 'bottom' : 'auto' // Bottom anchor on mobile for better positioning
+              anchor: isMobile ? 'bottom' : undefined // Bottom anchor on mobile for better positioning
             })
               .setLngLat(e.lngLat)
               .setHTML(popupContent)
@@ -517,7 +514,7 @@ export function PropertyMapView({
     const geoJsonData = createGeoJSONData()
     const source = map.current.getSource('properties') as mapboxgl.GeoJSONSource
     source.setData(geoJsonData)
-  }, [selectedRows, properties])
+  }, [selectedRows, properties, createGeoJSONData])
 
   if (properties.length === 0) {
     return (

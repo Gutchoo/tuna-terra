@@ -42,7 +42,7 @@ export interface RegridProperty {
     zoning?: string
     property_type?: string
     assessed_value?: number
-    [key: string]: any
+    [key: string]: string | number | undefined
   }
 }
 
@@ -54,7 +54,7 @@ export interface RegridSearchResult {
   state: string
   zip: string
   score: number
-  _fullFeature?: any // Include the full feature data from the API response
+  _fullFeature?: unknown // Include the full feature data from the API response
 }
 
 const addressSchema = z.object({
@@ -66,7 +66,7 @@ const addressSchema = z.object({
 export class RegridService {
   private static apiKey = process.env.REGRID_API_KEY
 
-  private static async makeRequest(endpoint: string, params: Record<string, any> = {}) {
+  private static async makeRequest(endpoint: string, params: Record<string, string | number> = {}) {
     if (!this.apiKey) {
       throw new Error('Regrid API key is not configured')
     }
@@ -111,14 +111,14 @@ export class RegridService {
             return this.normalizeProperty(features[0])
           }
         } catch (fileError) {
-          console.warn(`⚠️  Could not load test data for APN ${apn}, falling back to API:`, fileError.message)
+          console.warn(`⚠️  Could not load test data for APN ${apn}, falling back to API:`, fileError instanceof Error ? fileError.message : String(fileError))
           // Fall through to regular API call
         }
       }
 
-      const params: Record<string, any> = { 
+      const params: Record<string, string> = { 
         parcelnumb: apn,
-        token: this.apiKey 
+        token: this.apiKey! 
       }
 
       const data = await this.makeRequest('/parcels/apn', params)
@@ -145,9 +145,9 @@ export class RegridService {
   ): Promise<RegridSearchResult[]> {
     try {
       // Use the address directly as it already contains full formatted address
-      const params: Record<string, any> = { 
+      const params: Record<string, string> = { 
         query: address,
-        token: this.apiKey
+        token: this.apiKey!
       }
 
       // Use the correct endpoint for address search
@@ -155,7 +155,18 @@ export class RegridService {
       
       // Handle the v2 API response structure: parcels.features[]
       const features = data?.parcels?.features || []
-      return features.slice(0, limit).map((feature: any) => {
+      return features.slice(0, limit).map((feature: {
+        id?: string | number
+        properties?: {
+          fields?: {
+            parcelnumb?: string
+            address?: string
+            scity?: string
+            state2?: string
+            szip5?: string
+          }
+        }
+      }) => {
         const fields = feature.properties?.fields || {}
         return {
           id: String(feature.id || ''),
@@ -178,6 +189,9 @@ export class RegridService {
   // Get detailed property data by ID
   static async getPropertyById(id: string): Promise<RegridProperty | null> {
     try {
+      if (!this.apiKey) {
+        throw new Error('Regrid API key not configured')
+      }
       const params = { token: this.apiKey }
       const data = await this.makeRequest(`/parcels/${id}`, params)
       
@@ -199,78 +213,83 @@ export class RegridService {
   }
 
   // Normalize property data from different Regrid response formats
-  static normalizeProperty(rawProperty: any): RegridProperty {
+  static normalizeProperty(rawProperty: {
+    id?: string | number
+    properties?: { fields?: Record<string, unknown> }
+    fields?: Record<string, unknown>
+    geometry?: unknown
+  }): RegridProperty {
     // Handle v2 API format: data is in rawProperty.properties.fields
-    const fields = rawProperty.properties?.fields || rawProperty.fields || rawProperty.properties || rawProperty
+    const fields = rawProperty.properties?.fields || rawProperty.fields || rawProperty.properties || rawProperty as Record<string, unknown>
     const geometry = rawProperty.geometry
 
     return {
-      id: String(rawProperty.id || fields.id || ''),
-      apn: fields.parcelnumb || fields.apn || '',
+      id: String(rawProperty.id || (fields as Record<string, unknown>).id || ''),
+      apn: String((fields as Record<string, unknown>).parcelnumb || (fields as Record<string, unknown>).apn || ''),
       address: {
-        line1: fields.address || '',
+        line1: String((fields as Record<string, unknown>).address || ''),
         line2: '',
-        city: fields.scity || fields.city || '',
-        state: fields.state2 || fields.state || '',
-        zip: fields.szip5 || fields.zip || ''
+        city: String((fields as Record<string, unknown>).scity || (fields as Record<string, unknown>).city || ''),
+        state: String((fields as Record<string, unknown>).state2 || (fields as Record<string, unknown>).state || ''),
+        zip: String((fields as Record<string, unknown>).szip5 || (fields as Record<string, unknown>).zip || '')
       },
-      geometry: geometry || {
+      geometry: (geometry && Object.keys(geometry).length > 0 ? geometry : {
         type: 'Polygon',
-        coordinates: []
-      },
+        coordinates: [] as number[][][]
+      }) as { type: 'Polygon'; coordinates: number[][][] },
       centroid: {
-        lat: parseFloat(fields.lat) || 0,
-        lng: parseFloat(fields.lon) || 0
+        lat: parseFloat(String((fields as Record<string, unknown>).lat || 0)) || 0,
+        lng: parseFloat(String((fields as Record<string, unknown>).lon || 0)) || 0
       },
       properties: {
-        owner: fields.owner || '',
-        lot_size_sqft: parseInt(fields.ll_gissqft) || undefined,
-        lot_acres: parseFloat(fields.ll_gisacre) || undefined,
-        building_sqft: parseInt(fields.building_sqft) || undefined,
-        year_built: parseInt(fields.yearbuilt) || undefined,
-        zoning: fields.zoning || '',
-        zoning_description: fields.zoning_description || '',
-        property_type: fields.property_type || '',
+        owner: String((fields as Record<string, unknown>).owner || ''),
+        lot_size_sqft: parseInt(String((fields as Record<string, unknown>).ll_gissqft || '')) || undefined,
+        lot_acres: parseFloat(String((fields as Record<string, unknown>).ll_gisacre || '')) || undefined,
+        building_sqft: parseInt(String((fields as Record<string, unknown>).building_sqft || '')) || undefined,
+        year_built: parseInt(String((fields as Record<string, unknown>).yearbuilt || '')) || undefined,
+        zoning: String((fields as Record<string, unknown>).zoning || ''),
+        zoning_description: String((fields as Record<string, unknown>).zoning_description || ''),
+        property_type: String((fields as Record<string, unknown>).property_type || ''),
         
         // Enhanced fields for database storage
-        assessed_value: parseFloat(fields.parval) || undefined, // Total parcel value
-        improvement_value: parseFloat(fields.improvval) || undefined,
-        land_value: parseFloat(fields.landval) || undefined,
-        last_sale_price: parseFloat(fields.saleprice) || undefined,
-        sale_date: fields.saledate || '',
-        county: fields.county || '',
-        qoz_status: fields.qoz || '', // Qualified Opportunity Zone
+        assessed_value: parseFloat(String((fields as Record<string, unknown>).parval || '')) || undefined, // Total parcel value
+        improvement_value: parseFloat(String((fields as Record<string, unknown>).improvval || '')) || undefined,
+        land_value: parseFloat(String((fields as Record<string, unknown>).landval || '')) || undefined,
+        last_sale_price: parseFloat(String((fields as Record<string, unknown>).saleprice || '')) || undefined,
+        sale_date: String((fields as Record<string, unknown>).saledate || ''),
+        county: String((fields as Record<string, unknown>).county || ''),
+        qoz_status: String((fields as Record<string, unknown>).qoz || ''), // Qualified Opportunity Zone
         
         // Extended property details
-        use_code: fields.usecode || '',
-        use_description: fields.usedesc || '',
-        subdivision: fields.subdivision || '',
-        num_stories: parseInt(fields.numstories) || undefined,
-        num_units: parseInt(fields.numunits) || undefined,
-        num_rooms: parseInt(fields.numrooms) || undefined,
+        use_code: String((fields as Record<string, unknown>).usecode || ''),
+        use_description: String((fields as Record<string, unknown>).usedesc || ''),
+        subdivision: String((fields as Record<string, unknown>).subdivision || ''),
+        num_stories: parseInt(String((fields as Record<string, unknown>).numstories || '')) || undefined,
+        num_units: parseInt(String((fields as Record<string, unknown>).numunits || '')) || undefined,
+        num_rooms: parseInt(String((fields as Record<string, unknown>).numrooms || '')) || undefined,
         
         // Financial & tax data
-        tax_year: fields.taxyear || '',
-        parcel_value_type: fields.parvaltype || '',
+        tax_year: String((fields as Record<string, unknown>).taxyear || ''),
+        parcel_value_type: String((fields as Record<string, unknown>).parvaltype || ''),
         
         // Location data
-        census_tract: fields.census_tract || '',
-        census_block: fields.census_block || '',
-        qoz_tract: fields.qoz_tract || '',
+        census_tract: String((fields as Record<string, unknown>).census_tract || ''),
+        census_block: String((fields as Record<string, unknown>).census_block || ''),
+        qoz_tract: String((fields as Record<string, unknown>).qoz_tract || ''),
         
         // Data freshness tracking
-        last_refresh_date: fields.ll_last_refresh || '',
-        regrid_updated_at: fields.ll_updated_at || '',
+        last_refresh_date: String((fields as Record<string, unknown>).ll_last_refresh || ''),
+        regrid_updated_at: String((fields as Record<string, unknown>).ll_updated_at || ''),
         
         // Owner mailing address
-        owner_mailing_address: fields.mailadd || '',
-        owner_mail_city: fields.mail_city || '',
-        owner_mail_state: fields.mail_state2 || '',
-        owner_mail_zip: fields.mail_zip || '',
+        owner_mailing_address: String((fields as Record<string, unknown>).mailadd || ''),
+        owner_mail_city: String((fields as Record<string, unknown>).mail_city || ''),
+        owner_mail_state: String((fields as Record<string, unknown>).mail_state2 || ''),
+        owner_mail_zip: String((fields as Record<string, unknown>).mail_zip || ''),
         
-        qualified_opportunity_zone: fields.qoz || '',
+        qualified_opportunity_zone: String((fields as Record<string, unknown>).qoz || ''),
         // Store all raw fields for future use
-        ...fields
+        ...(fields as Record<string, string | number | undefined>)
       }
     }
   }

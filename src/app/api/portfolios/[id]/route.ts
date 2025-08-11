@@ -125,7 +125,19 @@ export async function GET(
         member_count: memberCount || 0,
         property_count: propertyCount || 0,
       },
-      members: members?.map((member: any) => ({
+      members: (members as unknown as {
+        id: string
+        role: string
+        invited_at: string
+        accepted_at: string
+        auth?: {
+          users?: {
+            id: string
+            email: string
+            user_metadata: Record<string, unknown>
+          }
+        }
+      }[])?.map((member) => ({
         id: member.id,
         role: member.role,
         invited_at: member.invited_at,
@@ -193,7 +205,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: (error as z.ZodError).issues },
         { status: 400 }
       )
     }

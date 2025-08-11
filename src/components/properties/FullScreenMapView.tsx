@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Property } from '@/lib/supabase'
@@ -114,12 +114,12 @@ export function FullScreenMapView({
   }
 
   // Transform properties to GeoJSON format
-  const createGeoJSONData = () => {
+  const createGeoJSONData = useCallback(() => {
     const features = properties
       .filter(property => property.geometry && property.lat && property.lng)
       .map(property => ({
         type: 'Feature' as const,
-        geometry: property.geometry as GeoJSON.Geometry,
+        geometry: property.geometry as unknown as GeoJSON.Geometry,
         properties: {
           // Basic info
           id: property.id,
@@ -189,10 +189,10 @@ export function FullScreenMapView({
       type: 'FeatureCollection' as const,
       features
     }
-  }
+  }, [properties, selectedPropertyId])
 
   // Center map on specific property
-  const centerOnProperty = (propertyId: string) => {
+  const centerOnProperty = useCallback((propertyId: string) => {
     const property = properties.find(p => p.id === propertyId)
     if (property && property.lat && property.lng && map.current) {
       map.current.flyTo({
@@ -201,7 +201,7 @@ export function FullScreenMapView({
         duration: 1500
       })
     }
-  }
+  }, [properties])
 
   // Set up property interaction event handlers (only once)
   const setupPropertyEventHandlers = () => {
@@ -250,7 +250,7 @@ export function FullScreenMapView({
           const existingPopups = document.querySelectorAll('.mapboxgl-popup')
           existingPopups.forEach(popup => popup.remove())
 
-          if (e.lngLat) {
+          if (e.lngLat && map.current) {
             // Format lot size values
             const lotSqft = props.lot_size_sqft ? props.lot_size_sqft.toLocaleString() : 'N/A'
             const lotAcres = props.lot_size_acres ? props.lot_size_acres.toFixed(2) : 'N/A'
@@ -365,7 +365,7 @@ export function FullScreenMapView({
         map.current = null
       }
     }
-  }, []) // Empty dependency array for initialization only
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Add property layers to map
   const addPropertyLayers = () => {
@@ -463,14 +463,14 @@ export function FullScreenMapView({
     const geoJsonData = createGeoJSONData()
     const source = map.current.getSource('properties') as mapboxgl.GeoJSONSource
     source.setData(geoJsonData)
-  }, [selectedPropertyId, properties])
+  }, [selectedPropertyId, properties, createGeoJSONData])
 
   // Center on property when selectedPropertyId changes from table
   useEffect(() => {
     if (selectedPropertyId) {
       centerOnProperty(selectedPropertyId)
     }
-  }, [selectedPropertyId])
+  }, [selectedPropertyId, centerOnProperty])
 
   // Handle property refresh
   const handleRefreshProperty = async (property: Property) => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { Share2Icon, UserIcon, MailIcon, TrashIcon, MoreVerticalIcon, CheckIcon, XIcon } from 'lucide-react'
+import { Share2Icon, UserIcon, MailIcon, MoreVerticalIcon } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { Portfolio, PortfolioMember, PortfolioInvitation } from '@/lib/supabase'
 
@@ -25,8 +25,8 @@ interface SharePortfolioDialogProps {
 
 const shareSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  role: z.enum(['editor', 'viewer'], {
-    errorMap: () => ({ message: 'Please select a role' })
+  role: z.enum(['editor', 'viewer'], { 
+    message: 'Please select a role' 
   }),
 })
 
@@ -52,14 +52,7 @@ export function SharePortfolioDialog({
     },
   })
 
-  // Load members and invitations when dialog opens
-  useEffect(() => {
-    if (open) {
-      loadMembers()
-    }
-  }, [open, portfolio.id])
-
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     try {
       setLoadingMembers(true)
       const response = await fetch(`/api/portfolios/${portfolio.id}/members`)
@@ -77,7 +70,14 @@ export function SharePortfolioDialog({
     } finally {
       setLoadingMembers(false)
     }
-  }
+  }, [portfolio.id])
+
+  // Load members when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadMembers()
+    }
+  }, [open, loadMembers])
 
   const onSubmit = async (data: ShareFormData) => {
     try {
@@ -178,7 +178,7 @@ export function SharePortfolioDialog({
         <DialogHeader>
           <DialogTitle>Share Portfolio</DialogTitle>
           <DialogDescription>
-            Share "{portfolio.name}" with others by inviting them via email.
+            Share &ldquo;{portfolio.name}&rdquo; with others by inviting them via email.
           </DialogDescription>
         </DialogHeader>
 
@@ -284,14 +284,14 @@ export function SharePortfolioDialog({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">
-                          {member.user?.name || member.user?.email}
+                          {member.user_metadata?.name || member.email}
                         </p>
                         <Badge className={`text-xs ${getRoleColor(member.role)}`}>
                           {member.role}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
-                        {member.user?.email}
+                        {member.email}
                       </p>
                     </div>
                     {member.role !== 'owner' && (

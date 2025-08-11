@@ -18,7 +18,7 @@ interface CSVRow {
   city?: string
   state?: string
   zip?: string
-  [key: string]: any
+  [key: string]: string | number | undefined
 }
 
 interface ValidationResult {
@@ -33,7 +33,13 @@ export function CSVUpload() {
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadResults, setUploadResults] = useState<any>(null)
+  const [uploadResults, setUploadResults] = useState<{
+    total: number
+    successful: number
+    failed: number
+    results: unknown[]
+    errors: { apn?: string; error: string; type?: string }[]
+  } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 

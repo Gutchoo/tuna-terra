@@ -63,8 +63,28 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid or expired invitation' }, { status: 404 })
     }
 
+    // Type the invitation properly
+    const typedInvitation = invitation as unknown as {
+      id: string
+      email: string
+      role: string
+      invited_at: string
+      expires_at: string
+      portfolio_id: string
+      invited_by: string
+      portfolios: { id: string; name: string; description: string; owner_id: string }[]
+      auth?: {
+        users?: {
+          email?: string
+          user_metadata?: {
+            name?: string
+          }
+        }
+      }
+    }
+
     // Check if invitation is expired
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (new Date(typedInvitation.expires_at) < new Date()) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 400 })
     }
 
@@ -75,7 +95,7 @@ export async function POST(
     }
 
     // Verify the invitation is for the current user's email
-    if (user.email !== invitation.email) {
+    if (user.email !== typedInvitation.email) {
       return NextResponse.json({ error: 'Invitation is not for your email address' }, { status: 403 })
     }
 
@@ -83,7 +103,7 @@ export async function POST(
     const { data: existingMembership } = await supabase
       .from('portfolio_memberships')
       .select('id')
-      .eq('portfolio_id', invitation.portfolio_id)
+      .eq('portfolio_id', typedInvitation.portfolio_id)
       .eq('user_id', userId)
       .single()
 
@@ -95,10 +115,10 @@ export async function POST(
     const { data: membership, error: membershipError } = await supabase
       .from('portfolio_memberships')
       .insert({
-        portfolio_id: invitation.portfolio_id,
+        portfolio_id: typedInvitation.portfolio_id,
         user_id: userId,
-        role: invitation.role,
-        invited_by: invitation.invited_by,
+        role: typedInvitation.role,
+        invited_by: typedInvitation.invited_by,
         accepted_at: new Date().toISOString(),
       })
       .select()
@@ -113,7 +133,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('portfolio_invitations')
       .update({ accepted_at: new Date().toISOString() })
-      .eq('id', invitation.id)
+      .eq('id', typedInvitation.id)
 
     if (updateError) {
       console.error('Error updating invitation:', updateError)
@@ -124,8 +144,8 @@ export async function POST(
       success: true,
       message: 'Invitation accepted successfully',
       portfolio: {
-        id: invitation.portfolios.id,
-        name: invitation.portfolios.name,
+        id: (typedInvitation.portfolios[0] as unknown as { id: string; name: string }[])[0]?.id,
+        name: (typedInvitation.portfolios[0] as unknown as { id: string; name: string }[])[0]?.name,
       },
       membership
     })
@@ -171,25 +191,45 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid or expired invitation' }, { status: 404 })
     }
 
+    // Type the invitation properly
+    const typedInvitation = invitation as unknown as {
+      id: string
+      email: string
+      role: string
+      invited_at: string
+      expires_at: string
+      portfolio_id: string
+      invited_by: string
+      portfolios: { id: string; name: string; description: string; owner_id: string }[]
+      auth?: {
+        users?: {
+          email?: string
+          user_metadata?: {
+            name?: string
+          }
+        }
+      }
+    }
+
     // Check if invitation is expired
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (new Date(typedInvitation.expires_at) < new Date()) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 400 })
     }
 
     return NextResponse.json({
       invitation: {
-        email: invitation.email,
-        role: invitation.role,
-        invited_at: invitation.invited_at,
-        expires_at: invitation.expires_at,
+        email: typedInvitation.email,
+        role: typedInvitation.role,
+        invited_at: typedInvitation.invited_at,
+        expires_at: typedInvitation.expires_at,
         portfolio: {
-          id: invitation.portfolios.id,
-          name: invitation.portfolios.name,
-          description: invitation.portfolios.description,
+          id: typedInvitation.portfolios[0].id,
+          name: typedInvitation.portfolios[0].name,
+          description: typedInvitation.portfolios[0].description,
         },
         invited_by: {
-          email: invitation.auth?.users?.email,
-          name: invitation.auth?.users?.user_metadata?.name,
+          email: typedInvitation.auth?.users?.email,
+          name: typedInvitation.auth?.users?.user_metadata?.name,
         }
       }
     })

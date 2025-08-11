@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -26,7 +26,7 @@ async function createServerSupabaseClient() {
 }
 
 // POST /api/portfolios/create-default - Manually create default portfolio
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const userId = await getUserId()
     if (!userId) {

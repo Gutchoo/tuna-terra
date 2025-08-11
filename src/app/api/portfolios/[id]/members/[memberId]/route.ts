@@ -27,8 +27,8 @@ async function createServerSupabaseClient() {
 }
 
 const updateMemberSchema = z.object({
-  role: z.enum(['editor', 'viewer'], {
-    errorMap: () => ({ message: 'Role must be either editor or viewer' })
+  role: z.enum(['editor', 'viewer'], { 
+    message: 'Role must be either editor or viewer' 
   }),
 })
 
@@ -101,7 +101,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: (error as z.ZodError).issues },
         { status: 400 }
       )
     }

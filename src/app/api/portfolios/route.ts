@@ -3,7 +3,7 @@ import { getUserId } from '@/lib/auth'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
-import type { Portfolio, PortfolioWithMembership } from '@/lib/supabase'
+import type { PortfolioWithMembership } from '@/lib/supabase'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -32,10 +32,6 @@ const createPortfolioSchema = z.object({
   description: z.string().max(500).optional(),
 })
 
-const updatePortfolioSchema = z.object({
-  name: z.string().min(1, 'Portfolio name is required').max(100).optional(),
-  description: z.string().max(500).nullable().optional(),
-})
 
 // GET /api/portfolios - List user's accessible portfolios
 export async function GET(request: NextRequest) {
@@ -99,7 +95,15 @@ export async function GET(request: NextRequest) {
     // For member portfolios, we need to manually fetch the portfolio details
     // using service role or admin bypass since RLS blocks cross-user portfolio access
     const memberPortfolioIds = memberships?.map(m => m.portfolio_id) || []
-    let memberPortfolios: any[] = []
+    let memberPortfolios: {
+      id: string
+      name: string
+      description: string | null
+      owner_id: string
+      is_default: boolean
+      created_at: string
+      updated_at: string
+    }[] = []
     
     if (memberPortfolioIds.length > 0) {
       // Use service role client to bypass RLS for portfolio details
@@ -144,7 +148,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    let portfoliosWithMembership: PortfolioWithMembership[] = Array.from(portfolioMap.values())
+    const portfoliosWithMembership: PortfolioWithMembership[] = Array.from(portfolioMap.values())
       .sort((a, b) => {
         // Sort by default first, then by creation date
         if (a.is_default !== b.is_default) {
@@ -215,7 +219,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: (error as z.ZodError).issues },
         { status: 400 }
       )
     }

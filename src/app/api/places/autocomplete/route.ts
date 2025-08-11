@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 
+interface GooglePlacesSuggestion {
+  placePrediction?: {
+    placeId?: string
+    text?: {
+      text?: string
+    }
+    structuredFormat?: {
+      mainText?: {
+        text?: string
+      }
+      secondaryText?: {
+        text?: string
+      }
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserId()
@@ -47,7 +64,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     
     // Transform the response to match our frontend expectations
-    const suggestions = (data.suggestions || []).map((suggestion: any) => ({
+    const suggestions = (data.suggestions || []).map((suggestion: GooglePlacesSuggestion) => ({
       placeId: suggestion.placePrediction?.placeId || '',
       description: suggestion.placePrediction?.text?.text || '',
       structuredFormat: {

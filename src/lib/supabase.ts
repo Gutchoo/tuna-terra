@@ -13,7 +13,8 @@ export const createServerSupabaseClient = () =>
   createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
-        return (globalThis as Record<string, unknown>).cookies?.get(name)?.value
+        const cookies = (globalThis as { cookies?: { get: (name: string) => { value: string } | undefined } }).cookies
+        return cookies?.get(name)?.value
       },
     },
   })

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { DatabaseService } from '@/lib/db'
 import { RegridService, type RegridProperty } from '@/lib/regrid'
+import type { Property } from '@/lib/supabase'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -83,8 +84,8 @@ export async function POST(
       // Enhanced property data from Regrid API
       year_built: regridData.properties?.year_built || existingProperty.year_built,
       owner: regridData.properties?.owner || existingProperty.owner,
-      last_sale_price: regridData.properties?.last_sale_price || existingProperty.last_sale_price,
-      sale_date: regridData.properties?.sale_date || existingProperty.sale_date,
+      last_sale_price: regridData.properties?.last_sale_price ? Number(regridData.properties.last_sale_price) : existingProperty.last_sale_price,
+      sale_date: regridData.properties?.sale_date ? String(regridData.properties.sale_date) : existingProperty.sale_date,
       county: regridData.properties?.county || existingProperty.county,
       qoz_status: regridData.properties?.qoz_status || existingProperty.qoz_status,
       improvement_value: regridData.properties?.improvement_value || existingProperty.improvement_value,
@@ -138,7 +139,7 @@ export async function POST(
     console.log(`💾 Updating property in database with fresh data`)
 
     // Update the property in database
-    const updatedProperty = await DatabaseService.updateProperty(id, userId, updatedPropertyData)
+    const updatedProperty = await DatabaseService.updateProperty(id, userId, updatedPropertyData as unknown as Partial<Property>)
 
     console.log(`✅ Property refreshed successfully: ${id}`)
 

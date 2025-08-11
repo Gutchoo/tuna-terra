@@ -43,8 +43,8 @@ function createServiceSupabaseClient() {
 
 const sharePortfolioSchema = z.object({
   email: z.string().email('Valid email is required'),
-  role: z.enum(['editor', 'viewer'], {
-    errorMap: () => ({ message: 'Role must be either editor or viewer' })
+  role: z.enum(['editor', 'viewer'], { 
+    message: 'Role must be either editor or viewer' 
   }),
 })
 
@@ -182,7 +182,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: (error as z.ZodError).issues },
         { status: 400 }
       )
     }

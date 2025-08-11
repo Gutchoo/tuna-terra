@@ -69,8 +69,7 @@ export function AddressForm() {
     },
   })
 
-  const searchPlaces = useCallback(
-    debounce(async (input: string) => {
+  const searchPlaces = useCallback(async (input: string) => {
       if (input.length < 3) {
         setSuggestions([])
         setShowSuggestions(false)
@@ -102,15 +101,15 @@ export function AddressForm() {
       } finally {
         setIsSearching(false)
       }
-    }, 500),
-    []
-  )
+  }, [])
+
+  const searchPlacesDebounced = useCallback(debounce(searchPlaces, 500), []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddressChange = (value: string) => {
     form.setValue('address', value)
     setSelectedProperty(null)
     setSelectedAddress('')
-    searchPlaces(value)
+    searchPlacesDebounced(value)
   }
 
   const handleSuggestionSelect = async (suggestion: AddressSuggestion) => {

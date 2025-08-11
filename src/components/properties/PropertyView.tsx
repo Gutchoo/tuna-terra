@@ -253,7 +253,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
       if (failed > 0) {
         onError(`Deleted ${successful} properties, ${failed} failed`)
       }
-    } catch (err) {
+    } catch {
       onError('Failed to delete properties')
     } finally {
       setBulkProcessing(false)

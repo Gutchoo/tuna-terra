@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { z } from 'zod'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()

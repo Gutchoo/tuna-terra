@@ -5,6 +5,7 @@ import { RegridService, type RegridProperty } from '@/lib/regrid'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
+import type { Property } from '@/lib/supabase'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -145,7 +146,7 @@ export async function GET(request: NextRequest) {
     console.log(`[DEBUG] Accessible portfolios: [${accessiblePortfolioIds.join(', ')}]`)
     console.log(`[DEBUG] Properties returned: ${properties?.length || 0}`)
     if (properties && properties.length > 0) {
-      const portfolioBreakdown = properties.reduce((acc: Record<string, number>, prop: any) => {
+      const portfolioBreakdown = properties.reduce((acc: Record<string, number>, prop: { portfolio_id: string }) => {
         acc[prop.portfolio_id] = (acc[prop.portfolio_id] || 0) + 1
         return acc
       }, {})
@@ -389,7 +390,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
     owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
     
     property_data: regridData || null,
-    portfolio_id: targetPortfolioId, // Assign property to portfolio
+    portfolio_id: targetPortfolioId || null, // Assign property to portfolio
     user_notes: validatedData.user_notes || null,
     tags: validatedData.tags || null,
     insurance_provider: validatedData.insurance_provider || null,
@@ -417,7 +418,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
     }
     
     console.log('handleSingleCreate - creating property in database')
-    const property = await DatabaseService.createProperty(propertyData)
+    const property = await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
     console.log('handleSingleCreate - property created successfully:', property.id)
     
     if (!property) {
@@ -546,11 +547,12 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
     owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
     
     property_data: regridData || null,
+    portfolio_id: null, // This function is used for bulk operations without specific portfolio
     user_notes: validatedInput.user_notes || null,
     tags: validatedInput.tags || null,
     insurance_provider: validatedInput.insurance_provider || null,
     maintenance_history: validatedInput.maintenance_history || null,
   }
 
-  return await DatabaseService.createProperty(propertyData)
+  return await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
 }

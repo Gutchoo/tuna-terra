@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { PlusIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { PropertyView } from '@/components/properties/PropertyView'
@@ -90,9 +90,9 @@ export default function DashboardPage() {
     
     // Fetch properties immediately after setting portfolio ID to avoid race condition
     fetchPropertiesWithPortfolioId(portfolioId, newAbortController.signal)
-  }, [searchParams])
+  }, [searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function fetchPropertiesWithPortfolioId(portfolioId: string | null, signal?: AbortSignal) {
+  const fetchPropertiesWithPortfolioId = useCallback(async (portfolioId: string | null, signal?: AbortSignal) => {
     try {
       setLoading(true)
       setError(null)
@@ -121,7 +121,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const handlePropertiesChange = (updatedProperties: Property[]) => {
     setProperties(updatedProperties)

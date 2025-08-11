@@ -106,7 +106,7 @@ export default function MapPage() {
     }
 
     fetchPropertiesWithPortfolioId(portfolioId)
-  }, [searchParams, isRedirecting])
+  }, [searchParams, isRedirecting, currentPortfolioId])
 
   const handlePropertySelect = (propertyId: string) => {
     setSelectedPropertyId(propertyId)
