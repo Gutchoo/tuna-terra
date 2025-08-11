@@ -153,13 +153,25 @@ export class DatabaseService {
       state?: string
       tags?: string[]
       search?: string
+      portfolio_id?: string
     }
   ) {
     const supabase = await createServerSupabaseClient()
     let query = supabase
       .from('properties')
-      .select('*')
-      .eq('user_id', userId)
+      .select(`
+        *,
+        portfolios (
+          id,
+          name,
+          owner_id
+        )
+      `)
+
+    // Portfolio filtering
+    if (filters.portfolio_id) {
+      query = query.eq('portfolio_id', filters.portfolio_id)
+    }
 
     if (filters.city) {
       query = query.eq('city', filters.city)

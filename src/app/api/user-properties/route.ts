@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { DatabaseService } from '@/lib/db'
 import { RegridService, type RegridProperty } from '@/lib/regrid'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 // Utility function to clean APN by removing all dashes
@@ -17,6 +19,7 @@ const createPropertySchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
+  portfolio_id: z.string().uuid().optional(), // Add portfolio_id support
   user_notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
   insurance_provider: z.string().optional(),
@@ -40,16 +43,116 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state')
     const tags = searchParams.get('tags')?.split(',').filter(Boolean)
     const search = searchParams.get('search')
+    const portfolioId = searchParams.get('portfolio_id') // Add portfolio filtering
 
     const filters = {
       city: city || undefined,
       state: state || undefined,
       tags: tags || undefined,
-      search: search || undefined
+      search: search || undefined,
+      portfolio_id: portfolioId || undefined
     }
 
-    const properties = await DatabaseService.getFilteredProperties(userId, filters)
-    return NextResponse.json({ properties })
+    // Get user's accessible portfolios first
+    const cookieStore = await cookies()
+    const supabase = await createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      }
+    )
+
+    // Get portfolios user owns (RLS works for portfolios)
+    const { data: ownedPortfolios } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('owner_id', userId)
+
+    // Get portfolios user is a member of using service role (portfolio_memberships has no RLS)
+    const serviceSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          get: () => undefined,
+          set: () => {},
+          remove: () => {},
+        },
+      }
+    )
+    
+    const { data: memberships } = await serviceSupabase
+      .from('portfolio_memberships')
+      .select('portfolio_id')
+      .eq('user_id', userId)
+      .not('accepted_at', 'is', null)
+
+    // Combine and deduplicate accessible portfolio IDs
+    const ownedIds = (ownedPortfolios || []).map(p => p.id)
+    const memberIds = (memberships || []).map(m => m.portfolio_id)
+    const accessiblePortfolioIds = [...new Set([...ownedIds, ...memberIds])]
+
+    // If user has no accessible portfolios, return empty result
+    if (accessiblePortfolioIds.length === 0) {
+      return NextResponse.json({ properties: [] })
+    }
+
+    // If portfolio filter is specified, verify user has access
+    if (portfolioId && !accessiblePortfolioIds.includes(portfolioId)) {
+      return NextResponse.json({ error: 'Portfolio not found or access denied' }, { status: 403 })
+    }
+
+    // Use service role to get properties from accessible portfolios
+    let query = serviceSupabase
+      .from('properties')
+      .select('*')
+      .in('portfolio_id', accessiblePortfolioIds)
+
+    // Apply filters
+    if (filters.city) {
+      query = query.ilike('city', `%${filters.city}%`)
+    }
+    if (filters.state) {
+      query = query.ilike('state', `%${filters.state}%`)
+    }
+    if (filters.search) {
+      query = query.or(`address.ilike.%${filters.search}%,owner.ilike.%${filters.search}%,apn.ilike.%${filters.search}%,city.ilike.%${filters.search}%`)
+    }
+    if (filters.portfolio_id) {
+      query = query.eq('portfolio_id', filters.portfolio_id)
+    }
+    if (filters.tags && filters.tags.length > 0) {
+      query = query.overlaps('tags', filters.tags)
+    }
+
+    query = query.order('created_at', { ascending: false })
+
+    const { data: properties, error } = await query
+
+    if (error) {
+      console.error('Error fetching properties:', error)
+      return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 })
+    }
+
+    // Debug logging to track what properties are returned
+    console.log(`[DEBUG] API Response for user ${userId}:`)
+    console.log(`[DEBUG] Requested portfolio: ${portfolioId || 'ALL'}`)
+    console.log(`[DEBUG] Accessible portfolios: [${accessiblePortfolioIds.join(', ')}]`)
+    console.log(`[DEBUG] Properties returned: ${properties?.length || 0}`)
+    if (properties && properties.length > 0) {
+      const portfolioBreakdown = properties.reduce((acc: Record<string, number>, prop: any) => {
+        acc[prop.portfolio_id] = (acc[prop.portfolio_id] || 0) + 1
+        return acc
+      }, {})
+      console.log(`[DEBUG] Properties by portfolio:`, portfolioBreakdown)
+    }
+
+    return NextResponse.json({ properties: properties || [] })
   } catch (error) {
     console.error('Get user properties error:', error)
     return NextResponse.json(
@@ -108,6 +211,106 @@ async function handleSingleCreate(userId: string, body: unknown) {
   const validatedData = createPropertySchema.parse(body)
   console.log('handleSingleCreate - validated data:', JSON.stringify(validatedData, null, 2))
 
+  // Determine the target portfolio
+  let targetPortfolioId = validatedData.portfolio_id
+  
+  if (!targetPortfolioId) {
+    // If no portfolio specified, get user's default portfolio
+    console.log('handleSingleCreate - no portfolio specified, finding default portfolio')
+    const cookieStore = await cookies()
+    const supabase = await createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      }
+    )
+    
+    const { data: defaultPortfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('owner_id', userId)
+      .eq('is_default', true)
+      .single()
+    
+    if (defaultPortfolio) {
+      targetPortfolioId = defaultPortfolio.id
+      console.log('handleSingleCreate - using default portfolio:', targetPortfolioId)
+    } else {
+      // Create default portfolio automatically
+      console.log('handleSingleCreate - no default portfolio found, creating one')
+      
+      // Get user email for portfolio name
+      const { data: { user } } = await supabase.auth.getUser()
+      const userEmail = user?.email || 'User'
+
+      const { data: newPortfolio, error: createError } = await supabase
+        .from('portfolios')
+        .insert({
+          name: `${userEmail}'s Portfolio`,
+          description: 'Default portfolio created automatically',
+          owner_id: userId,
+          is_default: true,
+        })
+        .select()
+        .single()
+
+      if (createError || !newPortfolio) {
+        console.error('handleSingleCreate - failed to create default portfolio:', createError)
+        throw new Error('Failed to create default portfolio. Please try again.')
+      }
+
+      targetPortfolioId = newPortfolio.id
+      console.log('handleSingleCreate - created default portfolio:', targetPortfolioId)
+    }
+  } else {
+    // Verify user has editor access to the specified portfolio
+    console.log('handleSingleCreate - verifying portfolio access:', targetPortfolioId)
+    const cookieStore = await cookies()
+    const supabase = await createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      }
+    )
+    
+    // Check if user owns the portfolio
+    const { data: ownedPortfolio } = await supabase
+      .from('portfolios')
+      .select('owner_id')
+      .eq('id', targetPortfolioId)
+      .eq('owner_id', userId)
+      .single()
+
+    // Check if user is a member of the portfolio  
+    const { data: membershipData } = await supabase
+      .from('portfolio_memberships')
+      .select('role, accepted_at')
+      .eq('portfolio_id', targetPortfolioId)
+      .eq('user_id', userId)
+      .not('accepted_at', 'is', null)
+      .single()
+    
+    if (!ownedPortfolio && !membershipData) {
+      throw new Error('Portfolio not found or access denied')
+    }
+    
+    const userRole = ownedPortfolio ? 'owner' : membershipData?.role
+    
+    if (!userRole || !['owner', 'editor'].includes(userRole)) {
+      throw new Error('Insufficient permissions to add properties to this portfolio')
+    }
+  }
+
   let regridData: RegridProperty | null = null
 
   // Always fetch Regrid data to get rich property information
@@ -123,9 +326,9 @@ async function handleSingleCreate(userId: string, body: unknown) {
       validatedData.state,
       1
     )
-    if (searchResults.length > 0) {
-      console.log('handleSingleCreate - found address results, fetching details')
-      regridData = await RegridService.getPropertyById(searchResults[0].id)
+    if (searchResults.length > 0 && searchResults[0]._fullFeature) {
+      console.log('handleSingleCreate - found address results, using full feature data')
+      regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
     }
   }
 
@@ -186,6 +389,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
     owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
     
     property_data: regridData || null,
+    portfolio_id: targetPortfolioId, // Assign property to portfolio
     user_notes: validatedData.user_notes || null,
     tags: validatedData.tags || null,
     insurance_provider: validatedData.insurance_provider || null,
@@ -279,8 +483,8 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
         validatedInput.state,
         1
       )
-      if (searchResults.length > 0) {
-        regridData = await RegridService.getPropertyById(searchResults[0].id)
+      if (searchResults.length > 0 && searchResults[0]._fullFeature) {
+        regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
       }
     }
   } catch (error) {

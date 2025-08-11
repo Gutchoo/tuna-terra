@@ -1,25 +1,21 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { debounce } from 'lodash'
 
 const formSchema = z.object({
   address: z.string().min(3, 'Address must be at least 3 characters'),
-  city: z.string().optional(),
-  state: z.string().optional(),
   user_notes: z.string().optional(),
   insurance_provider: z.string().optional(),
 })
@@ -27,13 +23,12 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 interface AddressSuggestion {
-  id: string
-  apn: string
-  address: string
-  city: string
-  state: string
-  zip: string
-  score: number
+  placeId: string
+  description: string
+  structuredFormat: {
+    mainText: string
+    secondaryText: string
+  }
 }
 
 interface PropertyDetails {
@@ -49,23 +44,19 @@ interface PropertyDetails {
   property_type?: string
 }
 
-const US_STATES = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-]
+
 
 export function AddressForm() {
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetails | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+  const [isLookingUp, setIsLookingUp] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<string>('')
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const suggestionRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -73,16 +64,14 @@ export function AddressForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       address: '',
-      city: '',
-      state: '',
       user_notes: '',
       insurance_provider: '',
     },
   })
 
-  const searchAddresses = useCallback(
-    debounce(async (query: string, city?: string, state?: string) => {
-      if (query.length < 3) {
+  const searchPlaces = useCallback(
+    debounce(async (input: string) => {
+      if (input.length < 3) {
         setSuggestions([])
         setShowSuggestions(false)
         return
@@ -92,26 +81,24 @@ export function AddressForm() {
       setSearchError(null)
 
       try {
-        const params = new URLSearchParams({
-          address: query,
-          limit: '10'
+        const response = await fetch('/api/places/autocomplete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input })
         })
-        if (city) params.append('city', city)
-        if (state) params.append('state', state)
-
-        const response = await fetch(`/api/properties/search?${params}`)
-        const data = await response.json()
 
         if (!response.ok) {
-          throw new Error(data.error || 'Search failed')
+          throw new Error('Failed to search addresses')
         }
 
-        setSuggestions(data.results || [])
+        const data = await response.json()
+        setSuggestions(data.suggestions || [])
         setShowSuggestions(true)
       } catch (error) {
-        console.error('Address search error:', error)
-        setSearchError(error instanceof Error ? error.message : 'Failed to search addresses')
+        console.error('Places search error:', error)
+        setSearchError('Failed to search addresses')
         setSuggestions([])
+        setShowSuggestions(false)
       } finally {
         setIsSearching(false)
       }
@@ -122,53 +109,106 @@ export function AddressForm() {
   const handleAddressChange = (value: string) => {
     form.setValue('address', value)
     setSelectedProperty(null)
-    const city = form.getValues('city')
-    const state = form.getValues('state')
-    searchAddresses(value, city, state)
+    setSelectedAddress('')
+    searchPlaces(value)
   }
 
   const handleSuggestionSelect = async (suggestion: AddressSuggestion) => {
     setShowSuggestions(false)
-    setIsLoadingDetails(true)
-    
-    // Update form with selected address
-    form.setValue('address', suggestion.address)
-    form.setValue('city', suggestion.city)
-    form.setValue('state', suggestion.state)
+    setIsLookingUp(true)
+    setSearchError(null)
+    setSelectedProperty(null)
 
     try {
-      // Get detailed property information
-      const response = await fetch(`/api/properties/${suggestion.id}`)
-      const data = await response.json()
+      // Get place details using our server-side API
+      const response = await fetch('/api/places/details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ placeId: suggestion.placeId })
+      })
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to get property details')
+        throw new Error('Failed to get place details')
       }
 
-      const property = data.property
-      setSelectedProperty({
-        id: property.id,
-        apn: property.apn,
-        address: `${property.address.line1}${property.address.line2 ? `, ${property.address.line2}` : ''}`,
-        city: property.address.city,
-        state: property.address.state,
-        zip: property.address.zip,
-        owner: property.properties?.owner || 'Owner not available',
-        lot_size_sqft: property.properties?.lot_size_sqft,
-        assessed_value: property.properties?.assessed_value,
-        property_type: property.properties?.property_type,
-      })
+      const data = await response.json()
+      const place = data.place
+
+      if (place) {
+        // Update form with selected address
+        const formattedAddress = place.formattedAddress || suggestion.description
+        form.setValue('address', formattedAddress)
+        setSelectedAddress(formattedAddress)
+
+        if (inputRef.current) {
+          inputRef.current.value = formattedAddress
+        }
+
+        // Look up property in Regrid
+        try {
+          const propertyResponse = await fetch('/api/properties/lookup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: formattedAddress
+            })
+          })
+
+          const propertyData = await propertyResponse.json()
+
+          if (!propertyResponse.ok) {
+            if (propertyResponse.status === 404) {
+              setSearchError('Property not found in tax records. This address may not exist in our database.')
+            } else {
+              throw new Error(propertyData.error || 'Failed to lookup property')
+            }
+            setIsLookingUp(false)
+            return
+          }
+
+          const property = propertyData.property
+          setSelectedProperty({
+            id: property.id,
+            apn: property.apn,
+            address: `${property.address.line1}${property.address.line2 ? `, ${property.address.line2}` : ''}`,
+            city: property.address.city,
+            state: property.address.state,
+            zip: property.address.zip,
+            owner: property.properties?.owner || 'Owner not available',
+            lot_size_sqft: property.properties?.lot_size_sqft,
+            assessed_value: property.properties?.assessed_value,
+            property_type: property.properties?.property_type,
+          })
+        } catch (error) {
+          console.error('Property lookup error:', error)
+          setSearchError(error instanceof Error ? error.message : 'Failed to lookup property')
+        }
+      } else {
+        setSearchError('Failed to get place details')
+      }
     } catch (error) {
-      console.error('Property details error:', error)
-      setSearchError(error instanceof Error ? error.message : 'Failed to get property details')
+      console.error('Place details error:', error)
+      setSearchError('Failed to get place details')
     } finally {
-      setIsLoadingDetails(false)
+      setIsLookingUp(false)
     }
   }
 
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const onSubmit = async (data: FormData) => {
     if (!selectedProperty) {
-      setSearchError('Please select a property from the suggestions')
+      setSearchError('Please select a valid address to continue')
       return
     }
 
@@ -181,8 +221,6 @@ export function AddressForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           address: data.address,
-          city: data.city,
-          state: data.state,
           regrid_id: selectedProperty.id,
           user_notes: data.user_notes,
           insurance_provider: data.insurance_provider,
@@ -204,17 +242,6 @@ export function AddressForm() {
     }
   }
 
-  // Click outside to close suggestions
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   if (submitSuccess) {
     return (
@@ -233,8 +260,13 @@ export function AddressForm() {
             onClick={() => {
               setSubmitSuccess(false)
               setSelectedProperty(null)
+              setSelectedAddress('')
               setSuggestions([])
+              setShowSuggestions(false)
               form.reset()
+              if (inputRef.current) {
+                inputRef.current.value = ''
+              }
             }}
           >
             Add Another Property
@@ -257,6 +289,7 @@ export function AddressForm() {
                 <FormControl>
                   <Input
                     {...field}
+                    ref={inputRef}
                     placeholder="Start typing an address..."
                     onChange={(e) => handleAddressChange(e.target.value)}
                     onFocus={() => {
@@ -283,26 +316,14 @@ export function AddressForm() {
               
               {suggestions.map((suggestion) => (
                 <button
-                  key={suggestion.id}
+                  key={suggestion.placeId}
                   type="button"
                   onClick={() => handleSuggestionSelect(suggestion)}
                   className="w-full text-left p-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-medium">{suggestion.address}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {suggestion.city}, {suggestion.state} {suggestion.zip}
-                      </div>
-                      {suggestion.apn && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          APN: {suggestion.apn}
-                        </div>
-                      )}
-                    </div>
-                    <Badge variant="outline" className="ml-2">
-                      {Math.round(suggestion.score * 100)}%
-                    </Badge>
+                  <div className="font-medium">{suggestion.structuredFormat.mainText}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {suggestion.structuredFormat.secondaryText}
                   </div>
                 </button>
               ))}
@@ -310,46 +331,6 @@ export function AddressForm() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="city"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>City (Optional)</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="e.g. Los Angeles" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>State (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select state" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {US_STATES.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
 
         {searchError && (
           <Alert variant="destructive">
@@ -359,11 +340,23 @@ export function AddressForm() {
           </Alert>
         )}
 
-        {isLoadingDetails && (
+        {isLookingUp && (
           <Alert>
             <LoaderIcon className="h-4 w-4 animate-spin" />
-            <AlertTitle>Loading Property Details</AlertTitle>
-            <AlertDescription>Getting detailed property information...</AlertDescription>
+            <AlertTitle>Looking Up Property</AlertTitle>
+            <AlertDescription>Searching for this property in tax records...</AlertDescription>
+          </Alert>
+        )}
+
+        {selectedAddress && !isLookingUp && !selectedProperty && !searchError && (
+          <Alert>
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertTitle>Address Selected</AlertTitle>
+            <AlertDescription>
+              Selected: {selectedAddress}
+              <br />
+              Property lookup in progress...
+            </AlertDescription>
           </Alert>
         )}
 

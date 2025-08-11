@@ -54,6 +54,7 @@ export interface RegridSearchResult {
   state: string
   zip: string
   score: number
+  _fullFeature?: any // Include the full feature data from the API response
 }
 
 const addressSchema = z.object({
@@ -143,24 +144,31 @@ export class RegridService {
     limit: number = 10
   ): Promise<RegridSearchResult[]> {
     try {
+      // Use the address directly as it already contains full formatted address
       const params: Record<string, any> = { 
         query: address,
-        limit: Math.min(limit, 25) // Regrid max limit
+        token: this.apiKey
       }
-      if (city) params.city = city
-      if (state) params.state = state
 
-      const data = await this.makeRequest('/search', params)
+      // Use the correct endpoint for address search
+      const data = await this.makeRequest('/parcels/address', params)
       
-      return (data.results || []).map((result: any) => ({
-        id: result.id,
-        apn: result.fields?.apn || '',
-        address: result.fields?.address?.line1 || '',
-        city: result.fields?.address?.city || '',
-        state: result.fields?.address?.state || '',
-        zip: result.fields?.address?.zip || '',
-        score: result.score || 0
-      }))
+      // Handle the v2 API response structure: parcels.features[]
+      const features = data?.parcels?.features || []
+      return features.slice(0, limit).map((feature: any) => {
+        const fields = feature.properties?.fields || {}
+        return {
+          id: String(feature.id || ''),
+          apn: fields.parcelnumb || '',
+          address: fields.address || '',
+          city: fields.scity || '',
+          state: fields.state2 || '',
+          zip: fields.szip5 || '',
+          score: 1.0, // Default score since address endpoint doesn't provide scores
+          // Include raw feature data for full property details
+          _fullFeature: feature
+        }
+      })
     } catch (error) {
       console.error('Error searching by address:', error)
       throw error
@@ -191,7 +199,7 @@ export class RegridService {
   }
 
   // Normalize property data from different Regrid response formats
-  private static normalizeProperty(rawProperty: any): RegridProperty {
+  static normalizeProperty(rawProperty: any): RegridProperty {
     // Handle v2 API format: data is in rawProperty.properties.fields
     const fields = rawProperty.properties?.fields || rawProperty.fields || rawProperty.properties || rawProperty
     const geometry = rawProperty.geometry

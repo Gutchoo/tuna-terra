@@ -79,8 +79,64 @@ export type Property = {
   tags: string[] | null
   insurance_provider: string | null
   maintenance_history: string | null
+  portfolio_id: string | null // Portfolio this property belongs to
   created_at: string
   updated_at: string
+}
+
+// Portfolio-related types
+export interface Portfolio {
+  id: string
+  name: string
+  description: string | null
+  owner_id: string
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface PortfolioMembership {
+  id: string
+  portfolio_id: string
+  user_id: string
+  role: 'owner' | 'editor' | 'viewer'
+  invited_by: string | null
+  invited_at: string
+  accepted_at: string | null
+  created_at: string
+}
+
+export interface PortfolioInvitation {
+  id: string
+  portfolio_id: string
+  email: string
+  role: 'editor' | 'viewer'
+  invited_by: string
+  invitation_token: string
+  expires_at: string
+  accepted_at: string | null
+  created_at: string
+}
+
+// Extended portfolio with membership info
+export interface PortfolioWithMembership extends Portfolio {
+  membership_role?: 'owner' | 'editor' | 'viewer'
+  member_count?: number
+  property_count?: number
+}
+
+// Portfolio member info for display
+export interface PortfolioMember {
+  id: string
+  email: string
+  role: 'owner' | 'editor' | 'viewer'
+  invited_by: string | null
+  invited_at: string
+  accepted_at: string | null
+  user_metadata?: {
+    name?: string
+    avatar_url?: string
+  }
 }
 
 export type Profile = {
