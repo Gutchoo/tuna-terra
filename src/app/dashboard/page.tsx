@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { PlusIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { PropertyView } from '@/components/properties/PropertyView'
 import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [properties, setProperties] = useState<Property[]>([])
@@ -211,5 +211,20 @@ export default function DashboardPage() {
       </Card>
 
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardPageContent />
+    </Suspense>
   )
 }

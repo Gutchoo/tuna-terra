@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { SettingsIcon } from 'lucide-react'
@@ -15,8 +16,23 @@ export default function DashboardLayout({
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <PortfolioAwareHomeButton className="flex items-center gap-2" />
-            <PortfolioAwareNavigation />
+            <Suspense fallback={
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-muted rounded-md animate-pulse" />
+                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              </div>
+            }>
+              <PortfolioAwareHomeButton className="flex items-center gap-2" />
+            </Suspense>
+            <Suspense fallback={
+              <div className="hidden md:flex items-center gap-1">
+                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              </div>
+            }>
+              <PortfolioAwareNavigation />
+            </Suspense>
           </div>
 
           <div className="flex items-center gap-4">

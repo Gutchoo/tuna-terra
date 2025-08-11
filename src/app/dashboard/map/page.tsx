@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { FullScreenMapView } from '@/components/properties/FullScreenMapView'
 import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
 
-export default function MapPage() {
+function MapPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [properties, setProperties] = useState<Property[]>([])
@@ -178,5 +178,20 @@ export default function MapPage() {
         />
       </div>
     </div>
+  )
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-[calc(100vh-6rem)] pt-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading map...</p>
+        </div>
+      </div>
+    }>
+      <MapPageContent />
+    </Suspense>
   )
 }
