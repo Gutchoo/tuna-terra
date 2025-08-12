@@ -28,8 +28,13 @@ function DashboardPageContent() {
     if (!portfolioId && !isRedirecting) {
       setIsRedirecting(true)
       
-      const redirectToDefaultPortfolio = async () => {
+      const redirectToDefaultPortfolio = async (retryCount = 0) => {
+        const maxRetries = 5
+        const baseDelay = 1000 // 1 second
+        
         try {
+          console.log(`[DASHBOARD] Attempting to fetch portfolios (attempt ${retryCount + 1}/${maxRetries + 1})`)
+          
           const response = await fetch('/api/portfolios?include_stats=true')
           if (!response.ok) {
             throw new Error('Failed to fetch portfolios')
@@ -54,17 +59,66 @@ function DashboardPageContent() {
             return
           }
           
-          // If no portfolios at all, continue without redirect
-          console.log('[DASHBOARD] No portfolios found, staying on current page')
+          // If no portfolios at all, try to create a default portfolio
+          if (retryCount === 0) {
+            console.log('[DASHBOARD] No portfolios found, attempting to create default portfolio')
+            try {
+              const createResponse = await fetch('/api/users/ensure-default-portfolio', {
+                method: 'POST'
+              })
+              
+              if (createResponse.ok) {
+                console.log('[DASHBOARD] Default portfolio created, retrying portfolio fetch')
+                setTimeout(() => redirectToDefaultPortfolio(retryCount + 1), 1000)
+                return
+              } else {
+                console.error('[DASHBOARD] Failed to create default portfolio:', createResponse.statusText)
+              }
+            } catch (createError) {
+              console.error('[DASHBOARD] Error creating default portfolio:', createError)
+            }
+          }
+          
+          // If portfolio creation failed or this is a retry, continue with exponential backoff
+          if (retryCount < maxRetries) {
+            const delay = baseDelay * Math.pow(2, retryCount)
+            console.log(`[DASHBOARD] No portfolios found, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`)
+            setTimeout(() => redirectToDefaultPortfolio(retryCount + 1), delay)
+            return
+          }
+          
+          // Max retries reached, continue without redirect
+          console.log('[DASHBOARD] Max retries reached, no portfolios found - continuing without redirect')
           setIsRedirecting(false)
           
         } catch (error) {
-          console.error('[DASHBOARD] Failed to redirect to default portfolio:', error)
+          console.error(`[DASHBOARD] Failed to fetch portfolios (attempt ${retryCount + 1}):`, error)
+          
+          // Retry with exponential backoff if under max retries
+          if (retryCount < maxRetries) {
+            const delay = baseDelay * Math.pow(2, retryCount)
+            console.log(`[DASHBOARD] Retrying in ${delay}ms due to error (attempt ${retryCount + 1}/${maxRetries + 1})`)
+            setTimeout(() => redirectToDefaultPortfolio(retryCount + 1), delay)
+            return
+          }
+          
+          // Max retries reached, stop trying
+          console.log('[DASHBOARD] Max retries reached due to errors - stopping redirect attempts')
           setIsRedirecting(false)
         }
       }
       
-      redirectToDefaultPortfolio()
+      // Add timeout protection to prevent infinite redirecting state
+      const timeoutId = setTimeout(() => {
+        console.log('[DASHBOARD] Timeout reached - stopping redirect attempts')
+        setIsRedirecting(false)
+      }, 30000) // 30 second timeout
+      
+      redirectToDefaultPortfolio().finally(() => {
+        clearTimeout(timeoutId)
+      })
+      
+      return () => clearTimeout(timeoutId)
     } else if (portfolioId) {
       setIsRedirecting(false)
     }
