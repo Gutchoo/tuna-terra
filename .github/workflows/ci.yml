@@ -17,7 +17,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
 
     - name: Install dependencies
@@ -28,6 +28,27 @@ jobs:
 
     - name: Run TypeScript check
       run: npx tsc --noEmit
+
+    - name: Debug secrets
+      run: |
+        echo "Testing if secrets are loaded..."
+        if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+          echo "❌ NEXT_PUBLIC_SUPABASE_URL is empty"
+        else
+          echo "✅ NEXT_PUBLIC_SUPABASE_URL has value (length: ${#NEXT_PUBLIC_SUPABASE_URL})"
+        fi
+        
+        if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+          echo "❌ NEXT_PUBLIC_SUPABASE_ANON_KEY is empty"
+        else
+          echo "✅ NEXT_PUBLIC_SUPABASE_ANON_KEY has value (length: ${#NEXT_PUBLIC_SUPABASE_ANON_KEY})"
+        fi
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        REGRID_API_TOKEN: ${{ secrets.REGRID_API_TOKEN }}
+        NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN }}
 
     - name: Build application
       run: npm run build
