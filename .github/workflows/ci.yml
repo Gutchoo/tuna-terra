@@ -61,7 +61,7 @@ jobs:
 
   vercel-deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: false  # Disabled until Vercel secrets are configured
     
     steps:
     - name: Checkout code
