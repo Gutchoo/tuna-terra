@@ -1,4 +1,4 @@
-import { createBrowserClient, createServerClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr'
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -8,16 +8,11 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const createClient = () =>
   createBrowserClient(supabaseUrl, supabaseAnonKey)
 
-// Server-side Supabase client (for use in server components and API routes)
-export const createServerSupabaseClient = () =>
-  createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      get(name: string) {
-        const cookies = (globalThis as { cookies?: { get: (name: string) => { value: string } | undefined } }).cookies
-        return cookies?.get(name)?.value
-      },
-    },
-  })
+// Note: createServerSupabaseClient is deprecated - use local implementations in API routes instead
+// This is kept for backwards compatibility but should not be used in new code
+export const createServerSupabaseClient = () => {
+  throw new Error('createServerSupabaseClient from lib/supabase is deprecated. Use local createServerClient implementations in API routes instead.')
+}
 
 // Database types
 export type Property = {

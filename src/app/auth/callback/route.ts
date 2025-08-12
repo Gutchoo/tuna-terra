@@ -27,8 +27,35 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && data.user) {
+      // Ensure user has a default portfolio after successful authentication
+      try {
+        // Check if user already has a default portfolio
+        const { data: existingDefault } = await supabase
+          .from('portfolios')
+          .select('id')
+          .eq('owner_id', data.user.id)
+          .eq('is_default', true)
+          .single()
+
+        if (!existingDefault) {
+          // Create default portfolio
+          const userEmail = data.user.email || `User ${data.user.id.substring(0, 8)}`
+          await supabase
+            .from('portfolios')
+            .insert({
+              name: `${userEmail}'s Portfolio`,
+              description: 'Default portfolio created automatically',
+              owner_id: data.user.id,
+              is_default: true,
+            })
+        }
+      } catch (portfolioError) {
+        // Log error but don't block the redirect
+        console.error('Error creating default portfolio:', portfolioError)
+      }
+
       return NextResponse.redirect(new URL(next, request.url))
     }
   }
