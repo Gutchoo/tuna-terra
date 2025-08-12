@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+
+// Force dynamic rendering to prevent build-time issues
+export const dynamic = 'force-dynamic'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
