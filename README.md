@@ -15,6 +15,7 @@ A full-stack web application for managing real estate properties with data enric
 - Enhanced property table with filtering and sorting
 - Interactive maps with Mapbox
 - Property editing capabilities
+- GitHub Actions CI/CD pipeline (testing now!)
 
 ## Tech Stack
 
