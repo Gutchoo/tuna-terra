@@ -130,14 +130,15 @@ export interface PortfolioWithMembership extends Portfolio {
 // Portfolio member info for display
 export interface PortfolioMember {
   id: string
-  email: string
   role: 'owner' | 'editor' | 'viewer'
   invited_by: string | null
   invited_at: string
   accepted_at: string | null
-  user_metadata?: {
-    name?: string
-    avatar_url?: string
+  user: {
+    id: string
+    email: string
+    name: string
+    avatar_url: string | null
   }
 }
 

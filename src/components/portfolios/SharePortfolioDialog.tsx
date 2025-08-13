@@ -284,14 +284,14 @@ export function SharePortfolioDialog({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">
-                          {member.user_metadata?.name || member.email}
+                          {member.user?.name || member.user?.email}
                         </p>
                         <Badge className={`text-xs ${getRoleColor(member.role)}`}>
                           {member.role}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
-                        {member.email}
+                        {member.user?.email}
                       </p>
                     </div>
                     {member.role !== 'owner' && (

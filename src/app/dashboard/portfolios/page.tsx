@@ -144,22 +144,19 @@ export default function PortfoliosPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {portfolios.map((portfolio) => (
           <Card key={portfolio.id} className="relative group">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 mb-2">
                     <BuildingIcon className="h-5 w-5" />
                     <span className="truncate">{portfolio.name}</span>
-                    {portfolio.is_default && (
-                      <Badge variant="secondary" className="text-xs">Default</Badge>
-                    )}
                   </CardTitle>
                   <CardDescription className="mt-1">
                     {portfolio.description || 'No description'}
                   </CardDescription>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
                     {portfolio.membership_role}
                   </Badge>
@@ -167,7 +164,7 @@ export default function PortfoliosPage() {
                   {portfolio.membership_role === 'owner' && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-1">
                           <SettingsIcon className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

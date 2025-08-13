@@ -49,9 +49,9 @@ export function PortfolioAwareHomeButton({ className }: PortfolioAwareHomeButton
   return (
     <Link href={navigation.home} className={className}>
       <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-        <span className="text-primary-foreground font-bold text-sm">RE</span>
+        <span className="text-primary-foreground font-bold text-sm">TT</span>
       </div>
-      <span className="font-semibold text-lg">Real Estate Portfolio</span>
+      <span className="font-semibold text-lg">Tuna Terra</span>
     </Link>
   )
 }

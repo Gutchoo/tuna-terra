@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# MCP configuration (contains tokens)
+.mcp.json
+
 # vercel
 .vercel
 
@@ -45,6 +48,7 @@ next-env.d.ts
 
 # Claude Code development files
 CLAUDE.md
+.claude/
 
 # Python virtual environment
 venv/
