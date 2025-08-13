@@ -48,6 +48,7 @@ next-env.d.ts
 
 # Claude Code development files
 CLAUDE.md
+.claude/
 
 # Python virtual environment
 venv/
