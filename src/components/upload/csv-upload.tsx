@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { UploadIcon, CheckCircleIcon, AlertCircleIcon, XCircleIcon } from 'lucide-react'
+import { UploadIcon, CheckCircleIcon, AlertCircleIcon, XCircleIcon, CrownIcon } from 'lucide-react'
 import Papa from 'papaparse'
 import { useRouter } from 'next/navigation'
 
@@ -28,7 +28,11 @@ interface ValidationResult {
   sampleData: CSVRow[]
 }
 
-export function CSVUpload() {
+interface CSVUploadProps {
+  portfolioId: string | null
+}
+
+export function CSVUpload({ portfolioId }: CSVUploadProps) {
   const [file, setFile] = useState<File | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -39,6 +43,13 @@ export function CSVUpload() {
     failed: number
     results: unknown[]
     errors: { apn?: string; error: string; type?: string }[]
+  } | null>(null)
+  const [limitExceeded, setLimitExceeded] = useState<{
+    message: string
+    tier: string
+    used: number
+    limit: number
+    resetDate: string
   } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -136,6 +147,10 @@ export function CSVUpload() {
 
   const handleUpload = async () => {
     if (!file || !validation?.isValid) return
+    if (!portfolioId) {
+      alert('Please select a portfolio before uploading properties.')
+      return
+    }
 
     setIsUploading(true)
     setUploadProgress(0)
@@ -174,7 +189,7 @@ export function CSVUpload() {
           const duplicateChecks = await Promise.all(
             properties.map(async (prop, index) => {
               try {
-                const response = await fetch(`/api/user-properties/check-apn?apn=${encodeURIComponent(prop.apn)}`)
+                const response = await fetch(`/api/user-properties/check-apn?apn=${encodeURIComponent(prop.apn)}&portfolio_id=${portfolioId}`)
                 const result = await response.json()
                 return {
                   index,
@@ -226,13 +241,27 @@ export function CSVUpload() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  properties: batch,
+                  properties: batch.map(property => ({
+                    ...property,
+                    portfolio_id: portfolioId
+                  })),
                   source: 'csv'
                 })
               })
 
               const result = await response.json()
               if (!response.ok) {
+                // Handle limit exceeded error
+                if (response.status === 429) {
+                  setLimitExceeded({
+                    message: result.message || 'Property lookup limit exceeded',
+                    tier: result.details?.tier || 'free',
+                    used: result.details?.used || 0,
+                    limit: result.details?.limit || 25,
+                    resetDate: result.details?.resetDate || new Date().toISOString()
+                  })
+                  return // Stop processing
+                }
                 throw new Error(result.error || 'Upload failed')
               }
 
@@ -279,9 +308,56 @@ export function CSVUpload() {
     setValidation(null)
     setUploadResults(null)
     setUploadProgress(0)
+    setLimitExceeded(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+  }
+
+  // Show limit exceeded error
+  if (limitExceeded) {
+    const resetDate = new Date(limitExceeded.resetDate).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
+
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <CrownIcon className="h-4 w-4" />
+          <AlertTitle>Property Lookup Limit Exceeded</AlertTitle>
+          <AlertDescription className="space-y-3">
+            <p>{limitExceeded.message}</p>
+            <div className="bg-muted/50 p-3 rounded-md space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Current Tier:</span>
+                <Badge variant={limitExceeded.tier === 'pro' ? 'default' : 'secondary'}>
+                  {limitExceeded.tier === 'pro' ? 'Pro Tier' : 'Free Tier'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Usage:</span>
+                <span>{limitExceeded.used} / {limitExceeded.limit} lookups</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Resets:</span>
+                <span>{resetDate}</span>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={resetUpload} className="flex-1">
+            Try Different File
+          </Button>
+          <Button onClick={() => router.push('/dashboard/account')} className="flex-1">
+            View Account Details
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (uploadResults) {
@@ -297,7 +373,7 @@ export function CSVUpload() {
         </Alert>
 
         <div className="flex gap-4">
-          <Button onClick={() => router.push('/dashboard')} className="flex-1">
+          <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)} className="flex-1">
             View Properties
           </Button>
           <Button variant="outline" onClick={resetUpload}>

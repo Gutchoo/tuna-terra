@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PlusIcon, BuildingIcon, UsersIcon, Share2Icon, SettingsIcon, TrashIcon } from 'lucide-react'
 import { SharePortfolioDialog } from '@/components/portfolios/SharePortfolioDialog'
+import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEditablePortfolioName'
+import { DeletePortfolioDialog } from '@/components/portfolios/DeletePortfolioDialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
@@ -16,6 +18,8 @@ export default function PortfoliosPage() {
   const [portfolios, setPortfolios] = useState<PortfolioWithMembership[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [portfolioToDelete, setPortfolioToDelete] = useState<PortfolioWithMembership | null>(null)
 
   useEffect(() => {
     fetchPortfolios()
@@ -52,27 +56,34 @@ export default function PortfoliosPage() {
     router.push(`/dashboard/portfolios/${portfolioId}/edit`)
   }
 
-  const handleDeletePortfolio = async (portfolioId: string, portfolioName: string) => {
-    if (!confirm(`Are you sure you want to delete "${portfolioName}"? This action cannot be undone.`)) {
-      return
-    }
+  const handleDeletePortfolio = (portfolio: PortfolioWithMembership) => {
+    setPortfolioToDelete(portfolio)
+    setDeleteDialogOpen(true)
+  }
 
-    try {
-      const response = await fetch(`/api/portfolios/${portfolioId}`, {
-        method: 'DELETE',
-      })
+  const handleDeleteSuccess = () => {
+    // Refresh portfolios list
+    fetchPortfolios()
+  }
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete portfolio')
-      }
+  const handleDeleteError = (errorMessage: string) => {
+    setError(errorMessage)
+    // Clear error after 5 seconds
+    setTimeout(() => setError(null), 5000)
+  }
 
-      // Refresh portfolios list
-      await fetchPortfolios()
-    } catch (error) {
-      console.error('Error deleting portfolio:', error)
-      setError(error instanceof Error ? error.message : 'Failed to delete portfolio')
-    }
+  const handlePortfolioNameUpdate = (portfolioId: string, newName: string) => {
+    setPortfolios(prev => prev.map(p => 
+      p.id === portfolioId 
+        ? { ...p, name: newName }
+        : p
+    ))
+  }
+
+  const handleNameUpdateError = (errorMessage: string) => {
+    setError(errorMessage)
+    // Clear error after 5 seconds
+    setTimeout(() => setError(null), 5000)
   }
 
   const getRoleColor = (role?: string) => {
@@ -149,7 +160,16 @@ export default function PortfoliosPage() {
                 <div className="flex-1 min-w-0">
                   <CardTitle className="flex items-center gap-2 mb-2">
                     <BuildingIcon className="h-5 w-5" />
-                    <span className="truncate">{portfolio.name}</span>
+                    <div className="truncate">
+                      <InlineEditablePortfolioName
+                        portfolioId={portfolio.id}
+                        initialName={portfolio.name}
+                        canEdit={portfolio.membership_role === 'owner'}
+                        onNameChange={(newName) => handlePortfolioNameUpdate(portfolio.id, newName)}
+                        onError={handleNameUpdateError}
+                        className="truncate"
+                      />
+                    </div>
                   </CardTitle>
                   <CardDescription className="mt-1">
                     {portfolio.description || 'No description'}
@@ -174,15 +194,13 @@ export default function PortfoliosPage() {
                           Edit Portfolio
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {!portfolio.is_default && (
-                          <DropdownMenuItem
-                            onClick={() => handleDeletePortfolio(portfolio.id, portfolio.name)}
-                            className="text-red-600"
-                          >
+                        <DropdownMenuItem
+                          onClick={() => handleDeletePortfolio(portfolio)}
+                          className="text-red-600"
+                        >
                             <TrashIcon className="h-4 w-4 mr-2" />
                             Delete Portfolio
                           </DropdownMenuItem>
-                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
@@ -255,6 +273,15 @@ export default function PortfoliosPage() {
           </Card>
         )}
       </div>
+
+      {/* Delete Portfolio Dialog */}
+      <DeletePortfolioDialog
+        portfolio={portfolioToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onDeleteSuccess={handleDeleteSuccess}
+        onError={handleDeleteError}
+      />
     </div>
   )
 }

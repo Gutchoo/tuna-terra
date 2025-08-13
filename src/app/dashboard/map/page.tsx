@@ -166,6 +166,7 @@ function MapPageContent() {
           setCurrentPortfolioId(portfolioId)
         }}
         compact={true}
+        enableInlineEdit={true}
       />
 
       <div className="h-[80vh] -mx-4">

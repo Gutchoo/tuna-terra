@@ -2,13 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlusIcon, SettingsIcon } from 'lucide-react'
+import { PlusIcon, SettingsIcon, BuildingIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { PropertyView } from '@/components/properties/PropertyView'
 import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
+import { UsageIndicator } from '@/components/usage/UsageIndicator'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -19,6 +20,7 @@ function DashboardPageContent() {
   const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(null)
   const [abortController, setAbortController] = useState<AbortController | null>(null)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
 
   // Handle default portfolio redirect when no portfolio_id is specified
   useEffect(() => {
@@ -87,8 +89,9 @@ function DashboardPageContent() {
             return
           }
           
-          // Max retries reached, continue without redirect
-          console.log('[DASHBOARD] Max retries reached, no portfolios found - continuing without redirect')
+          // Max retries reached, no portfolios found
+          console.log('[DASHBOARD] Max retries reached, no portfolios found - user needs to create a portfolio')
+          setHasNoPortfolios(true)
           setIsRedirecting(false)
           
         } catch (error) {
@@ -102,8 +105,9 @@ function DashboardPageContent() {
             return
           }
           
-          // Max retries reached, stop trying
-          console.log('[DASHBOARD] Max retries reached due to errors - stopping redirect attempts')
+          // Max retries reached due to errors
+          console.log('[DASHBOARD] Max retries reached due to errors - user may need to create a portfolio')
+          setHasNoPortfolios(true)
           setIsRedirecting(false)
         }
       }
@@ -208,6 +212,33 @@ function DashboardPageContent() {
       )
     }
 
+    if (hasNoPortfolios) {
+      return (
+        <div className="text-center py-12">
+          <BuildingIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Welcome to Your Property Dashboard</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Get started by creating your first portfolio to organize and manage your properties.
+          </p>
+          <Button 
+            onClick={() => router.push('/dashboard/portfolios/new')}
+            className="flex items-center gap-2"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Create Your First Portfolio
+          </Button>
+        </div>
+      )
+    }
+
+    if (!currentPortfolioId) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-4">Please select a portfolio to view your properties</p>
+        </div>
+      )
+    }
+
     return (
       <PropertyView
         properties={properties}
@@ -220,11 +251,16 @@ function DashboardPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
-          <p className="text-muted-foreground">
-            Manage your real estate portfolio ({properties.length} {properties.length === 1 ? 'property' : 'properties'})
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
+              <UsageIndicator compact={true} showTier={true} />
+            </div>
+            <p className="text-muted-foreground">
+              Manage your real estate portfolio ({properties.length} {properties.length === 1 ? 'property' : 'properties'})
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" asChild>
@@ -250,6 +286,7 @@ function DashboardPageContent() {
           setCurrentPortfolioId(portfolioId)
         }}
         compact={true}
+        enableInlineEdit={true}
       />
 
       <Card>

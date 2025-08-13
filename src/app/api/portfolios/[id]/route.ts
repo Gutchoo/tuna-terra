@@ -244,22 +244,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only portfolio owners can delete portfolios' }, { status: 403 })
     }
 
-    if (portfolio.is_default) {
-      return NextResponse.json({ error: 'Cannot delete default portfolio' }, { status: 400 })
-    }
-
-    // Check if portfolio has properties
-    const { count: propertyCount } = await supabase
-      .from('properties')
-      .select('*', { count: 'exact', head: true })
-      .eq('portfolio_id', portfolioId)
-
-    if (propertyCount && propertyCount > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete portfolio with properties. Please move or delete all properties first.' },
-        { status: 400 }
-      )
-    }
+    // Allow deletion of default portfolios and portfolios with properties
+    // The cascade delete will handle all related data (properties, memberships, invitations)
 
     // Delete portfolio (cascade will handle memberships and invitations)
     const { error } = await supabase

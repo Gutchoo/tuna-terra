@@ -142,6 +142,18 @@ export interface PortfolioMember {
   }
 }
 
+// User limits and tier types
+export interface UserLimits {
+  id: string
+  user_id: string
+  tier: 'free' | 'pro'
+  property_lookups_used: number
+  property_lookups_limit: number
+  reset_date: string
+  created_at: string
+  updated_at: string
+}
+
 export type Profile = {
   id: string
   email: string

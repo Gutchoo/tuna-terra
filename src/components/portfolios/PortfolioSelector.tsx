@@ -7,18 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { PlusIcon, UsersIcon, BuildingIcon } from 'lucide-react'
+import { InlineEditablePortfolioName } from './InlineEditablePortfolioName'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface PortfolioSelectorProps {
   onPortfolioChange?: (portfolioId: string | null) => void
   showCreateButton?: boolean
   compact?: boolean
+  enableInlineEdit?: boolean
 }
 
 export function PortfolioSelector({ 
   onPortfolioChange, 
   showCreateButton = true,
-  compact = false 
+  compact = false,
+  enableInlineEdit = false
 }: PortfolioSelectorProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -83,6 +86,20 @@ export function PortfolioSelector({
     router.push('/dashboard/portfolios/new')
   }
 
+  const handlePortfolioNameUpdate = (portfolioId: string, newName: string) => {
+    setPortfolios(prev => prev.map(p => 
+      p.id === portfolioId 
+        ? { ...p, name: newName }
+        : p
+    ))
+  }
+
+  const handleNameUpdateError = (errorMessage: string) => {
+    setError(errorMessage)
+    // Clear error after 5 seconds
+    setTimeout(() => setError(null), 5000)
+  }
+
   const getRoleColor = (role?: string) => {
     switch (role) {
       case 'owner': return 'bg-blue-100 text-blue-800'
@@ -126,7 +143,17 @@ export function PortfolioSelector({
               {selectedPortfolio && (
                 <div className="flex items-center gap-2">
                   <BuildingIcon className="h-4 w-4" />
-                  <span>{selectedPortfolio.name}</span>
+                  {enableInlineEdit ? (
+                    <InlineEditablePortfolioName
+                      portfolioId={selectedPortfolio.id}
+                      initialName={selectedPortfolio.name}
+                      canEdit={selectedPortfolio.membership_role === 'owner'}
+                      onNameChange={(newName) => handlePortfolioNameUpdate(selectedPortfolio.id, newName)}
+                      onError={handleNameUpdateError}
+                    />
+                  ) : (
+                    <span>{selectedPortfolio.name}</span>
+                  )}
                   {selectedPortfolio.is_default && (
                     <Badge variant="secondary" className="text-xs">Default</Badge>
                   )}
@@ -193,7 +220,18 @@ export function PortfolioSelector({
                   <BuildingIcon className="h-5 w-5" />
                   <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{selectedPortfolio.name}</span>
+                      {enableInlineEdit ? (
+                        <InlineEditablePortfolioName
+                          portfolioId={selectedPortfolio.id}
+                          initialName={selectedPortfolio.name}
+                          canEdit={selectedPortfolio.membership_role === 'owner'}
+                          onNameChange={(newName) => handlePortfolioNameUpdate(selectedPortfolio.id, newName)}
+                          onError={handleNameUpdateError}
+                          className="font-medium"
+                        />
+                      ) : (
+                        <span className="font-medium">{selectedPortfolio.name}</span>
+                      )}
                       {selectedPortfolio.is_default && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}

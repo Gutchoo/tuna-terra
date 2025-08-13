@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { SearchIcon, CheckCircleIcon, AlertCircleIcon, LoaderIcon } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { SearchIcon, CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const formSchema = z.object({
@@ -20,6 +21,10 @@ const formSchema = z.object({
 })
 
 type FormData = z.infer<typeof formSchema>
+
+interface APNFormProps {
+  portfolioId: string | null
+}
 
 interface PropertyPreview {
   id: string
@@ -43,7 +48,7 @@ interface DuplicateProperty {
 }
 
 
-export function APNForm() {
+export function APNForm({ portfolioId }: APNFormProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [propertyPreview, setPropertyPreview] = useState<PropertyPreview | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -52,6 +57,13 @@ export function APNForm() {
   const [isDuplicateChecking, setIsDuplicateChecking] = useState(false)
   const [duplicateProperty, setDuplicateProperty] = useState<DuplicateProperty | null>(null)
   const [isRecentlyChanged, setIsRecentlyChanged] = useState(false)
+  const [limitExceeded, setLimitExceeded] = useState<{
+    message: string
+    tier: string
+    used: number
+    limit: number
+    resetDate: string
+  } | null>(null)
   const router = useRouter()
 
   const form = useForm<FormData>({
@@ -82,7 +94,7 @@ export function APNForm() {
 
       setIsDuplicateChecking(true)
       try {
-        const response = await fetch(`/api/user-properties/check-apn?apn=${encodeURIComponent(apn)}`)
+        const response = await fetch(`/api/user-properties/check-apn?apn=${encodeURIComponent(apn)}&portfolio_id=${portfolioId}`)
         const data = await response.json()
 
         if (response.ok && data.exists) {
@@ -105,7 +117,7 @@ export function APNForm() {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timeoutId)
-  }, [apnValue])
+  }, [apnValue, portfolioId])
 
   const handleSearch = async () => {
     const apn = form.getValues('apn')
@@ -162,6 +174,10 @@ export function APNForm() {
       setSearchError('Please search for a property first')
       return
     }
+    if (!portfolioId) {
+      setSearchError('Please select a portfolio before adding properties.')
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -170,6 +186,7 @@ export function APNForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          portfolio_id: portfolioId,
           apn: data.apn,
           address: propertyPreview.address,
           city: propertyPreview.city,
@@ -198,6 +215,17 @@ export function APNForm() {
       }
 
       if (!response.ok) {
+        // Handle limit exceeded error
+        if (response.status === 429) {
+          setLimitExceeded({
+            message: result.message || 'Property lookup limit exceeded',
+            tier: result.details?.tier || 'free',
+            used: result.details?.used || 0,
+            limit: result.details?.limit || 25,
+            resetDate: result.details?.resetDate || new Date().toISOString()
+          })
+          return
+        }
         throw new Error(result?.error || `Server error (${response.status})`)
       }
 
@@ -219,6 +247,61 @@ export function APNForm() {
     }
   }
 
+  // Show limit exceeded error
+  if (limitExceeded) {
+    const resetDate = new Date(limitExceeded.resetDate).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
+
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <CrownIcon className="h-4 w-4" />
+          <AlertTitle>Property Lookup Limit Exceeded</AlertTitle>
+          <AlertDescription className="space-y-3">
+            <p>{limitExceeded.message}</p>
+            <div className="bg-muted/50 p-3 rounded-md space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Current Tier:</span>
+                <Badge variant={limitExceeded.tier === 'pro' ? 'default' : 'secondary'}>
+                  {limitExceeded.tier === 'pro' ? 'Pro Tier' : 'Free Tier'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Usage:</span>
+                <span>{limitExceeded.used} / {limitExceeded.limit} lookups</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Resets:</span>
+                <span>{resetDate}</span>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setLimitExceeded(null)
+              setPropertyPreview(null)
+              setSearchError(null)
+              form.reset()
+            }}
+            className="flex-1"
+          >
+            Try Again
+          </Button>
+          <Button onClick={() => router.push('/dashboard/account')} className="flex-1">
+            View Account Details
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (submitSuccess) {
     return (
       <Alert>
@@ -228,7 +311,7 @@ export function APNForm() {
           The property has been added to your portfolio.
         </AlertDescription>
         <div className="mt-4 flex gap-4">
-          <Button onClick={() => router.push('/dashboard')}>
+          <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}>
             View Properties
           </Button>
           <Button 
