@@ -6,6 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import type { Property } from '@/lib/supabase'
+import { checkUserLimitsServer, incrementUserUsageServer, createLimitExceededResponse } from '@/lib/limits'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -312,12 +313,20 @@ async function handleSingleCreate(userId: string, body: unknown) {
     }
   }
 
+  // Check user limits before making Regrid API calls
+  const limitCheck = await checkUserLimitsServer(userId, 1)
+  if (!limitCheck.canProceed) {
+    throw new Error(`Property lookup limit exceeded. You've used ${limitCheck.currentUsed}/${limitCheck.limit} lookups this month.`)
+  }
+
   let regridData: RegridProperty | null = null
+  let apiCallMade = false
 
   // Always fetch Regrid data to get rich property information
   if (validatedData.apn) {
     console.log('handleSingleCreate - fetching by APN:', validatedData.apn)
     regridData = await RegridService.searchByAPN(validatedData.apn, validatedData.state)
+    apiCallMade = true
   } else if (validatedData.address) {
     console.log('handleSingleCreate - searching by address')
     // Search by address
@@ -331,6 +340,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
       console.log('handleSingleCreate - found address results, using full feature data')
       regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
     }
+    apiCallMade = true
   }
 
   // Prepare property data for database
@@ -400,11 +410,12 @@ async function handleSingleCreate(userId: string, body: unknown) {
   console.log('handleSingleCreate - property data prepared:', JSON.stringify(propertyData, null, 2))
 
   try {
-    // Server-side duplicate check as additional safeguard
+    // Server-side duplicate check as additional safeguard - only check within the same portfolio
     if (propertyData.apn) {
-      console.log('handleSingleCreate - checking for duplicate APN:', propertyData.apn)
+      console.log('handleSingleCreate - checking for duplicate APN within portfolio:', propertyData.apn, 'in portfolio:', targetPortfolioId)
       const existingProperties = await DatabaseService.getFilteredProperties(userId, {
-        search: propertyData.apn
+        search: propertyData.apn,
+        portfolio_id: targetPortfolioId
       })
       
       const exactMatch = existingProperties.find(
@@ -412,8 +423,8 @@ async function handleSingleCreate(userId: string, body: unknown) {
       )
       
       if (exactMatch) {
-        console.log('handleSingleCreate - duplicate APN found, rejecting creation')
-        throw new Error('A property with this APN already exists in your portfolio')
+        console.log('handleSingleCreate - duplicate APN found within same portfolio, rejecting creation')
+        throw new Error('A property with this APN already exists in this portfolio')
       }
     }
     
@@ -423,6 +434,11 @@ async function handleSingleCreate(userId: string, body: unknown) {
     
     if (!property) {
       throw new Error('Property creation returned null - possible RLS policy issue')
+    }
+    
+    // Increment usage counter if we made an API call and property was created successfully
+    if (apiCallMade) {
+      await incrementUserUsageServer(userId, 1)
     }
     
     return NextResponse.json({ property })
@@ -439,13 +455,24 @@ async function handleBulkCreate(userId: string, body: unknown) {
   const validatedData = bulkCreateSchema.parse(body)
   const { properties, source } = validatedData
 
+  // Check user limits for the entire batch
+  const limitCheck = await checkUserLimitsServer(userId, properties.length)
+  if (!limitCheck.canProceed) {
+    return NextResponse.json(
+      createLimitExceededResponse(limitCheck),
+      { status: 429 }
+    )
+  }
+
   const results = []
   const errors = []
+  let apiCallsUsed = 0
 
   for (const [index, propertyInput] of properties.entries()) {
     try {
       const property = await createSinglePropertyFromInput(userId, propertyInput)
       results.push(property)
+      apiCallsUsed++ // Count each successful property creation
     } catch (error) {
       console.error(`Error creating property at index ${index}:`, error)
       errors.push({
@@ -456,6 +483,11 @@ async function handleBulkCreate(userId: string, body: unknown) {
     }
   }
 
+  // Increment usage by number of successful API calls
+  if (apiCallsUsed > 0) {
+    await incrementUserUsageServer(userId, apiCallsUsed)
+  }
+
   return NextResponse.json({
     created: results,
     errors,
@@ -464,12 +496,49 @@ async function handleBulkCreate(userId: string, body: unknown) {
       successful: results.length,
       failed: errors.length,
       source
+    },
+    usage: {
+      used: limitCheck.currentUsed + apiCallsUsed,
+      limit: limitCheck.limit,
+      remaining: limitCheck.remaining - apiCallsUsed
     }
   })
 }
 
 async function createSinglePropertyFromInput(userId: string, input: unknown) {
   const validatedInput = createPropertySchema.parse(input)
+
+  // Determine the target portfolio
+  let targetPortfolioId = validatedInput.portfolio_id
+  
+  if (!targetPortfolioId) {
+    // If no portfolio specified, get user's default portfolio
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      }
+    )
+    
+    const { data: defaultPortfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('owner_id', userId)
+      .eq('is_default', true)
+      .single()
+    
+    if (!defaultPortfolio) {
+      throw new Error('No default portfolio found. Please create a portfolio first.')
+    }
+    
+    targetPortfolioId = defaultPortfolio.id
+  }
 
   let regridData: RegridProperty | null = null
 
@@ -494,6 +563,7 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
   }
 
   const propertyData = {
+    portfolio_id: targetPortfolioId,
     regrid_id: regridData?.id || null,
     apn: cleanAPN(regridData?.apn || validatedInput.apn),
     address: regridData?.address?.line1 || validatedInput.address,
@@ -547,7 +617,6 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
     owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
     
     property_data: regridData || null,
-    portfolio_id: null, // This function is used for bulk operations without specific portfolio
     user_notes: validatedInput.user_notes || null,
     tags: validatedInput.tags || null,
     insurance_provider: validatedInput.insurance_provider || null,

@@ -22,6 +22,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+interface AddressFormProps {
+  portfolioId: string | null
+}
+
 interface AddressSuggestion {
   placeId: string
   description: string
@@ -46,7 +50,7 @@ interface PropertyDetails {
 
 
 
-export function AddressForm() {
+export function AddressForm({ portfolioId }: AddressFormProps) {
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetails | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -210,6 +214,10 @@ export function AddressForm() {
       setSearchError('Please select a valid address to continue')
       return
     }
+    if (!portfolioId) {
+      setSearchError('Please select a portfolio before adding properties.')
+      return
+    }
 
     setIsSubmitting(true)
     setSearchError(null)
@@ -219,6 +227,7 @@ export function AddressForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          portfolio_id: portfolioId,
           address: data.address,
           regrid_id: selectedProperty.id,
           user_notes: data.user_notes,
@@ -251,7 +260,7 @@ export function AddressForm() {
           The property has been added to your portfolio.
         </AlertDescription>
         <div className="mt-4 flex gap-4">
-          <Button onClick={() => router.push('/dashboard')}>
+          <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}>
             View Properties
           </Button>
           <Button 

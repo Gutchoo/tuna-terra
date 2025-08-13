@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const apn = searchParams.get('apn')
+    const portfolioId = searchParams.get('portfolio_id')
 
     if (!apn) {
       return NextResponse.json(
@@ -19,10 +20,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check if property with this APN already exists for the user
-    const existingProperties = await DatabaseService.getFilteredProperties(userId, {
+    // Check if property with this APN already exists for the user in the specified portfolio
+    const filters: { search: string; portfolio_id?: string } = {
       search: apn // This will search in APN field among others
-    })
+    }
+    
+    // If portfolio_id is provided, only check within that portfolio
+    if (portfolioId) {
+      filters.portfolio_id = portfolioId
+    }
+    
+    const existingProperties = await DatabaseService.getFilteredProperties(userId, filters)
 
     // Filter to exact APN match (since search is fuzzy)
     const exactMatch = existingProperties.find(

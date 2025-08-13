@@ -13,10 +13,13 @@ import {
   CalendarIcon, 
   ShieldIcon, 
   SaveIcon,
-  BuildingIcon
+  BuildingIcon,
+  CrownIcon,
+  SearchIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
+import type { UserLimits } from '@/lib/supabase'
 
 interface ProfileStats {
   portfolios_owned: number
@@ -30,6 +33,7 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false)
   const [fullName, setFullName] = useState('')
   const [stats, setStats] = useState<ProfileStats | null>(null)
+  const [userLimits, setUserLimits] = useState<UserLimits | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [nameError, setNameError] = useState('')
   const [initialName, setInitialName] = useState('')
@@ -66,6 +70,7 @@ export default function AccountPage() {
 
         // Load profile data from API
         await loadUserProfile()
+        await loadUserLimits()
 
       } catch (error) {
         console.error('Error loading user data:', error)
@@ -93,6 +98,20 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error('Error loading user profile:', error)
+    }
+  }
+
+  const loadUserLimits = async () => {
+    try {
+      const response = await fetch('/api/user/limits')
+      if (!response.ok) {
+        throw new Error('Failed to load user limits')
+      }
+      
+      const data = await response.json()
+      setUserLimits(data.limits)
+    } catch (error) {
+      console.error('Error loading user limits:', error)
     }
   }
 
@@ -219,6 +238,19 @@ export default function AccountPage() {
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  const formatResetDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
+  const getUsagePercentage = () => {
+    if (!userLimits) return 0
+    const percentage = (userLimits.property_lookups_used / userLimits.property_lookups_limit) * 100
+    return Math.min(percentage, 100)
   }
 
   if (loading) {
@@ -383,6 +415,97 @@ export default function AccountPage() {
                     {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Unknown'}
                   </span>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Tier & Usage */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CrownIcon className="h-5 w-5" />
+                Account Tier & Usage
+              </CardTitle>
+              <CardDescription>
+                Property lookup limits and usage tracking
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">CURRENT TIER</Label>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {userLimits?.tier === 'pro' ? (
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                        Pro Tier
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">
+                        Free Tier
+                      </Badge>
+                    )}
+                    {userLimits?.tier === 'free' && (
+                      <Badge variant="outline" className="text-xs">
+                        Coming Soon: Pro
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">PROPERTY LOOKUPS</Label>
+                  <div className="mt-1">
+                    <div className="text-sm font-medium">
+                      {userLimits ? (
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {userLimits.property_lookups_used} / {userLimits.tier === 'pro' ? '∞' : userLimits.property_lookups_limit} used
+                          </span>
+                          {userLimits.tier !== 'pro' && getUsagePercentage() >= 90 && (
+                            <Badge variant="destructive" className="text-xs">
+                              Low
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        'Loading...'
+                      )}
+                    </div>
+                    {userLimits && userLimits.tier !== 'pro' && (
+                      <div className="w-full bg-muted rounded-full h-2 mt-2 relative overflow-hidden">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            getUsagePercentage() >= 90 ? 'bg-red-500' :
+                            getUsagePercentage() >= 70 ? 'bg-yellow-500' : 
+                            'bg-green-500'
+                          }`}
+                          style={{ width: `${getUsagePercentage()}%` }}
+                          role="progressbar"
+                          aria-valuenow={getUsagePercentage()}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`Property lookup usage: ${userLimits.property_lookups_used} of ${userLimits.property_lookups_limit} used`}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SearchIcon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Resets {userLimits ? formatResetDate(userLimits.reset_date) : '...'}
+                  </span>
+                </div>
+                {userLimits?.tier === 'free' && (
+                  <Badge variant="outline" className="text-xs">
+                    Pro: Unlimited Lookups
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
