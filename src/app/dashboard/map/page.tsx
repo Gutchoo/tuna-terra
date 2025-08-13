@@ -150,7 +150,7 @@ function MapPageContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Map View</h1>
@@ -168,7 +168,7 @@ function MapPageContent() {
         compact={true}
       />
 
-      <div className="h-[calc(100vh-12rem)] -mx-4">
+      <div className="h-[80vh] -mx-4">
         <FullScreenMapView
           properties={properties}
           selectedPropertyId={selectedPropertyId}

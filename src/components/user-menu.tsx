@@ -10,9 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserIcon, LogOutIcon } from 'lucide-react'
+import { UserIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
 
 export function UserMenu() {
@@ -75,6 +76,12 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/account" className="flex items-center">
+            <SettingsIcon className="mr-2 h-4 w-4" />
+            <span>Account</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon className="mr-2 h-4 w-4" />
           <span>Sign out</span>
