@@ -41,7 +41,7 @@ interface MapOverlayTableProps {
 }
 
 // Default minimal columns for map overlay
-const DEFAULT_MAP_COLUMNS = ['apn', 'address', 'owner', 'county', 'zoning'] as (keyof Property)[]
+const DEFAULT_MAP_COLUMNS = ['address', 'apn', 'owner'] as (keyof Property)[]
 
 export function MapOverlayTable({
   properties,
@@ -139,7 +139,7 @@ export function MapOverlayTable({
     switch (columnKey) {
       case 'address':
         return (
-          <div className="max-w-[200px] truncate font-medium" title={String(value) || ''}>
+          <div className="max-w-[140px] truncate font-medium" title={String(value) || ''}>
             {String(value) || '-'}
           </div>
         )
@@ -149,7 +149,7 @@ export function MapOverlayTable({
         ) : '-'
       case 'owner':
         return (
-          <div className="max-w-[150px] truncate" title={String(value) || ''}>
+          <div className="max-w-[100px] truncate" title={String(value) || ''}>
             {String(value) || '-'}
           </div>
         )
@@ -204,10 +204,10 @@ export function MapOverlayTable({
   }
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-10">
+    <div className="absolute top-4 left-4 z-10 w-96 max-w-[25vw]">
       <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
         {/* Header */}
-        <div className="p-3 border-b space-y-3">
+        <div className="p-2.5 border-b space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-sm">
@@ -266,7 +266,7 @@ export function MapOverlayTable({
 
         {/* Table Content */}
         {!isMinimized && (
-          <div className="max-h-64 overflow-auto">
+          <div className="max-h-48 overflow-auto">
             {filteredProperties.length === 0 && searchQuery.trim().length > 0 ? (
               <div className="text-center py-8">
                 <SearchIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -294,10 +294,10 @@ export function MapOverlayTable({
                         <TableHead 
                           key={column.key}
                           className={`${
-                            isAddress ? 'min-w-[200px]' : ''
+                            isAddress ? 'min-w-[140px]' : 'min-w-[80px]'
                           } ${
                             isFinancial ? 'text-right' : ''
-                          } text-xs`}
+                          } text-xs font-medium`}
                         >
                           {column.label}
                         </TableHead>
@@ -323,14 +323,14 @@ export function MapOverlayTable({
                         return (
                           <TableCell 
                             key={column.key} 
-                            className={`${isFinancial ? 'text-right' : ''} text-xs py-2`}
+                            className={`${isFinancial ? 'text-right' : ''} text-xs py-1.5 px-2`}
                           >
                             {renderCellContent(property, column.key)}
                           </TableCell>
                         )
                       })}
                       
-                      <TableCell className="py-2">
+                      <TableCell className="py-1.5 px-1">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button 
@@ -379,10 +379,10 @@ export function MapOverlayTable({
 
         {/* Footer with instructions */}
         {!isMinimized && filteredProperties.length > 0 && (
-          <div className="p-2 border-t bg-muted/30 text-center">
+          <div className="p-1.5 border-t bg-muted/30 text-center">
             <p className="text-xs text-muted-foreground">
-              Click any row to center map on that property
-              {searchQuery.trim() && ` • ${filteredProperties.length} of ${properties.length} properties shown`}
+              Click to center map
+              {searchQuery.trim() && ` • ${filteredProperties.length}/${properties.length} shown`}
             </p>
           </div>
         )}
