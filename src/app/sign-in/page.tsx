@@ -83,9 +83,9 @@ export default function SignIn() {
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">RE</span>
+              <span className="text-primary-foreground font-bold text-sm">TT</span>
             </div>
-            <span className="font-semibold text-lg">Real Estate Portfolio</span>
+            <span className="font-semibold text-lg">Tuna Terra</span>
           </div>
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>

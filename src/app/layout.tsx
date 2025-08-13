@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Real Estate Portfolio",
-  description: "Manage your real estate properties with interactive maps and data tables",
+  title: "Tuna Terra",
+  description: "Tuna Terra - Manage your real estate properties with interactive maps and data tables",
 };
 
 export default function RootLayout({
