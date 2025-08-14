@@ -15,27 +15,30 @@ export default function DashboardLayout({
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6 min-w-0 flex-1">
             <Suspense fallback={
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-muted rounded-md animate-pulse" />
-                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-8 w-8 bg-muted rounded-md animate-pulse flex-shrink-0" />
+                <div className="h-4 w-32 bg-muted rounded animate-pulse hidden sm:block" />
               </div>
             }>
-              <PortfolioAwareHomeButton className="flex items-center gap-2" />
+              <PortfolioAwareHomeButton className="flex items-center gap-2 min-w-0" />
             </Suspense>
             <Suspense fallback={
-              <div className="hidden md:flex items-center gap-1">
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              <div className="flex items-center gap-1">
+                <div className="h-8 w-8 bg-muted rounded animate-pulse md:hidden" />
+                <div className="hidden md:flex items-center gap-1">
+                  <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                </div>
               </div>
             }>
               <PortfolioAwareNavigation />
             </Suspense>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
             <Button variant="ghost" size="sm" asChild className="hidden md:flex">
               <Link href="/dashboard/settings" className="flex items-center gap-2">
                 <SettingsIcon className="h-4 w-4" />
