@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,15 +12,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { UserIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { buildPortfolioUrl } from '@/lib/navigation'
 import type { User } from '@supabase/supabase-js'
 
-export function UserMenu() {
+function UserMenuContent() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
+  
+  // Get current portfolio context
+  const currentPortfolioId = searchParams.get('portfolio_id')
 
   useEffect(() => {
     const getUser = async () => {
@@ -77,7 +82,7 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/account" className="flex items-center">
+          <Link href={buildPortfolioUrl('/dashboard/account', currentPortfolioId)} className="flex items-center">
             <SettingsIcon className="mr-2 h-4 w-4" />
             <span>Account</span>
           </Link>
@@ -88,5 +93,18 @@ export function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+export function UserMenu() {
+  return (
+    <Suspense fallback={
+      <Button variant="ghost" size="sm" className="flex items-center gap-2" disabled>
+        <div className="h-6 w-6 bg-muted rounded-full animate-pulse" />
+        <div className="h-4 w-16 bg-muted rounded animate-pulse hidden md:block" />
+      </Button>
+    }>
+      <UserMenuContent />
+    </Suspense>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useCreatePortfolio } from '@/hooks/use-portfolios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,37 +18,20 @@ export default function NewPortfolioPage() {
     name: '',
     description: ''
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  
+  const createPortfolioMutation = useCreatePortfolio()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
-
+    
     try {
-      const response = await fetch('/api/portfolios', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create portfolio')
-      }
-
-      const { portfolio } = await response.json()
+      const result = await createPortfolioMutation.mutateAsync(formData)
       
-      // Redirect to the new portfolio
-      router.push(`/dashboard?portfolio_id=${portfolio.id}`)
+      // Redirect to the new portfolio with success indication
+      router.push(`/dashboard?portfolio_id=${result.portfolio.id}&created=true`)
     } catch (error) {
       console.error('Error creating portfolio:', error)
-      setError(error instanceof Error ? error.message : 'Failed to create portfolio')
-    } finally {
-      setLoading(false)
+      // Error is handled by the mutation
     }
   }
 
@@ -59,6 +43,8 @@ export default function NewPortfolioPage() {
   }
 
   const isValid = formData.name.trim().length > 0
+  const loading = createPortfolioMutation.isPending
+  const error = createPortfolioMutation.error?.message || null
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -137,8 +123,17 @@ export default function NewPortfolioPage() {
                 disabled={!isValid || loading}
                 className="flex items-center gap-2"
               >
-                <BuildingIcon className="h-4 w-4" />
-                {loading ? 'Creating...' : 'Create Portfolio'}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
+                    Creating Portfolio...
+                  </>
+                ) : (
+                  <>
+                    <BuildingIcon className="h-4 w-4" />
+                    Create Portfolio
+                  </>
+                )}
               </Button>
 
               <Link href="/dashboard/portfolios">

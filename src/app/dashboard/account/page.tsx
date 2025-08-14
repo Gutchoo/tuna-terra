@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,7 +28,11 @@ interface ProfileStats {
   total_properties: number
 }
 
-export default function AccountPage() {
+function AccountPageContent() {
+  const searchParams = useSearchParams()
+  // Portfolio context preserved for future navigation features
+  const _currentPortfolioId = searchParams.get('portfolio_id')
+  
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -301,7 +306,7 @@ export default function AccountPage() {
         </Alert>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Profile Information */}
         <Card>
           <CardHeader>
@@ -431,7 +436,7 @@ export default function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">CURRENT TIER</Label>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -520,7 +525,7 @@ export default function AccountPage() {
             </CardHeader>
             <CardContent>
               {stats ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">
                       {stats.portfolios_owned}
@@ -539,7 +544,7 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="col-span-2 text-center p-3 bg-muted/50 rounded-lg">
+                  <div className="col-span-2 sm:col-span-1 text-center p-3 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-orange-600">
                       {stats.total_properties}
                     </div>
@@ -561,5 +566,13 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading account...</div>}>
+      <AccountPageContent />
+    </Suspense>
   )
 }

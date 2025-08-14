@@ -39,14 +39,19 @@ export function getCurrentPortfolioId(): string | null {
 /**
  * Create portfolio-aware navigation URLs for dashboard layout
  * @param currentPortfolioId - The current portfolio ID to preserve
+ * @param portfolioExists - Whether the current portfolio actually exists (optional)
  * @returns Object with navigation URLs that maintain portfolio context
  */
-export function createPortfolioAwareNavigation(currentPortfolioId: string | null) {
+export function createPortfolioAwareNavigation(currentPortfolioId: string | null, portfolioExists?: boolean) {
+  // If we know the portfolio doesn't exist, don't preserve context
+  const shouldPreserveContext = currentPortfolioId && (portfolioExists !== false)
+  
   return {
-    home: buildPortfolioUrl('/dashboard', currentPortfolioId),
-    properties: buildPortfolioUrl('/dashboard', currentPortfolioId),
-    map: buildPortfolioUrl('/dashboard/map', currentPortfolioId),
+    home: buildPortfolioUrl('/dashboard', shouldPreserveContext ? currentPortfolioId : null),
+    properties: buildPortfolioUrl('/dashboard', shouldPreserveContext ? currentPortfolioId : null),
+    map: buildPortfolioUrl('/dashboard/map', shouldPreserveContext ? currentPortfolioId : null),
     portfolios: '/dashboard/portfolios', // Portfolio management doesn't need portfolio context
-    settings: '/dashboard/settings'
+    settings: '/dashboard/settings',
+    account: buildPortfolioUrl('/dashboard/account', shouldPreserveContext ? currentPortfolioId : null)
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
-import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
+import { checkAndIncrementUsageServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 
 export async function GET(request: NextRequest) {
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check user limits before making API call
-    const limitCheck = await checkUserLimitsServer(userId, 1)
+    // Check limits and immediately increment usage - prevents bypass vulnerabilities
+    const limitCheck = await checkAndIncrementUsageServer(userId, 1)
     if (!limitCheck.canProceed) {
       return NextResponse.json(
         createLimitExceededResponse(limitCheck),
@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Note: Usage will be incremented when property is actually added to portfolio
-    // This search is just for preview/lookup purposes
+    // Note: Usage has already been incremented above to prevent bypass vulnerabilities
+    // This ensures credits are consumed when expensive Regrid API calls are made
 
     return NextResponse.json({ 
       results,
@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
 
     const batchSize = apns ? apns.length : addresses ? addresses.length : 0
     
-    // Check user limits for batch operation
-    const limitCheck = await checkUserLimitsServer(userId, batchSize)
+    // Check limits and immediately increment usage for batch operation
+    const limitCheck = await checkAndIncrementUsageServer(userId, batchSize)
     if (!limitCheck.canProceed) {
       return NextResponse.json(
         createLimitExceededResponse(limitCheck),
@@ -114,8 +114,8 @@ export async function POST(request: NextRequest) {
       results = await RegridService.batchSearchByAddresses(addresses)
     }
 
-    // Note: Usage will be incremented when properties are actually added to portfolio
-    // This batch search is just for preview/lookup purposes
+    // Note: Usage has already been incremented above to prevent bypass vulnerabilities
+    // This ensures credits are consumed when expensive Regrid API calls are made
 
     return NextResponse.json({ 
       results,

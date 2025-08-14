@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { usePortfolios } from '@/hooks/use-portfolios'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -14,12 +15,18 @@ import {
 import { MapIcon, TableIcon, BuildingIcon, MenuIcon } from 'lucide-react'
 import { createPortfolioAwareNavigation } from '@/lib/navigation'
 
-export function PortfolioAwareNavigation() {
+function NavigationContent() {
   const searchParams = useSearchParams()
   const currentPortfolioId = searchParams.get('portfolio_id')
   const [isOpen, setIsOpen] = useState(false)
+  const { data: portfolios = [] } = usePortfolios()
   
-  const navigation = createPortfolioAwareNavigation(currentPortfolioId)
+  // Check if current portfolio actually exists
+  const portfolioExists = currentPortfolioId 
+    ? portfolios.some(p => p.id === currentPortfolioId)
+    : true // If no portfolio specified, assume valid state
+  
+  const navigation = createPortfolioAwareNavigation(currentPortfolioId, portfolioExists)
 
   const navItems = [
     {
@@ -95,15 +102,38 @@ export function PortfolioAwareNavigation() {
   )
 }
 
+export function PortfolioAwareNavigation() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center gap-1">
+        <div className="h-8 w-8 bg-muted rounded animate-pulse md:hidden" />
+        <div className="hidden md:flex items-center gap-1">
+          <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+          <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+          <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+        </div>
+      </div>
+    }>
+      <NavigationContent />
+    </Suspense>
+  )
+}
+
 interface PortfolioAwareHomeButtonProps {
   className?: string
 }
 
-export function PortfolioAwareHomeButton({ className }: PortfolioAwareHomeButtonProps) {
+function HomeButtonContent({ className }: PortfolioAwareHomeButtonProps) {
   const searchParams = useSearchParams()
   const currentPortfolioId = searchParams.get('portfolio_id')
+  const { data: portfolios = [] } = usePortfolios()
   
-  const navigation = createPortfolioAwareNavigation(currentPortfolioId)
+  // Check if current portfolio actually exists
+  const portfolioExists = currentPortfolioId 
+    ? portfolios.some(p => p.id === currentPortfolioId)
+    : true // If no portfolio specified, assume valid state
+  
+  const navigation = createPortfolioAwareNavigation(currentPortfolioId, portfolioExists)
 
   return (
     <Link href={navigation.home} className={className}>
@@ -112,5 +142,18 @@ export function PortfolioAwareHomeButton({ className }: PortfolioAwareHomeButton
       </div>
       <span className="font-semibold text-lg hidden sm:block truncate">Tuna Terra</span>
     </Link>
+  )
+}
+
+export function PortfolioAwareHomeButton({ className }: PortfolioAwareHomeButtonProps) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="h-8 w-8 bg-muted rounded-md animate-pulse flex-shrink-0" />
+        <div className="h-4 w-32 bg-muted rounded animate-pulse hidden sm:block" />
+      </div>
+    }>
+      <HomeButtonContent className={className} />
+    </Suspense>
   )
 }

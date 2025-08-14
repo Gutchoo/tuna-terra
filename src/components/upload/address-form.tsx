@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { debounce } from 'lodash'
@@ -26,6 +27,7 @@ type FormData = z.infer<typeof formSchema>
 interface AddressFormProps {
   portfolioId: string | null
   proLookupEnabled: boolean
+  onProLookupChange?: (enabled: boolean) => void
 }
 
 interface AddressSuggestion {
@@ -302,6 +304,16 @@ export function AddressForm({ portfolioId, proLookupEnabled }: AddressFormProps)
                   />
                 </FormControl>
                 <FormMessage />
+                
+                {/* Basic Mode Message */}
+                {!proLookupEnabled && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                    <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800 flex-shrink-0">
+                      Basic Mode
+                    </Badge>
+                    <span className="text-sm text-amber-600">Only address data will be stored. Enable Pro Lookup for detailed property information.</span>
+                  </div>
+                )}
               </FormItem>
             )}
           />
@@ -427,6 +439,22 @@ export function AddressForm({ portfolioId, proLookupEnabled }: AddressFormProps)
           </Card>
         )}
 
+        {/* Basic Mode Message */}
+        {selectedProperty && !proLookupEnabled && (
+          <Alert>
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertTitle className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
+                Basic Mode
+              </Badge>
+              Storage Information
+            </AlertTitle>
+            <AlertDescription>
+              Only address data will be stored. Enable Pro Lookup for detailed property information.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {selectedProperty && (
           <>
             <FormField
@@ -464,7 +492,7 @@ export function AddressForm({ portfolioId, proLookupEnabled }: AddressFormProps)
               )}
             />
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 type="submit"
                 disabled={createPropertyMutation.isPending}

@@ -2,12 +2,11 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
+import { UploadHeader } from '@/components/upload/UploadHeader'
 import { GlobalProLookupSettings } from '@/components/upload/GlobalProLookupSettings'
 import { LazyUploadTabs } from '@/components/upload/lazy-upload-tabs'
 import { useDefaultPortfolio } from '@/hooks/use-portfolios'
 import { useUsageData } from '@/hooks/use-user-limits'
-import type { PortfolioWithMembership } from '@/lib/supabase'
 
 function UploadPageContent() {
   const searchParams = useSearchParams()
@@ -69,45 +68,45 @@ function UploadPageContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Add Properties{currentPortfolio ? (
-              <>
-                <span className="hidden sm:inline"> to </span>
-                <span className="block sm:inline text-xl md:text-3xl text-primary truncate mt-1 sm:mt-0">
-                  {currentPortfolio.name}
-                </span>
-              </>
-            ) : ''}
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Import properties to your portfolio using CSV files, APNs, or addresses
-          </p>
-        </div>
-      </div>
-
-      {/* Portfolio Selector */}
-      <PortfolioSelector 
+    <div className="space-y-0">
+      {/* Dashboard-style header with portfolio selector and usage info */}
+      <UploadHeader 
         onPortfolioChange={(portfolioId) => {
           setCurrentPortfolioId(portfolioId)
         }}
-        compact={true}
-        enableInlineEdit={true}
       />
 
-      {/* Global Pro Lookup Settings with integrated usage display */}
-      <GlobalProLookupSettings 
-        enabled={proLookupEnabled}
-        onToggle={setProLookupEnabled}
-        usage={usageData}
-      />
+      <div className="space-y-6 p-6">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              <span className="block sm:inline">Add Properties</span>{currentPortfolio ? (
+                <>
+                  <span className="hidden sm:inline"> to </span>
+                  <span className="block sm:inline text-xl md:text-3xl text-primary truncate mt-1 sm:mt-0">
+                    {currentPortfolio.name}
+                  </span>
+                </>
+              ) : ''}
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Import properties to your portfolio using CSV files, APNs, or addresses
+            </p>
+          </div>
+        </div>
 
-      <LazyUploadTabs 
-        currentPortfolioId={currentPortfolioId}
-        proLookupEnabled={proLookupEnabled}
-      />
+        {/* Compact Pro Lookup Settings without usage info */}
+        <GlobalProLookupSettings 
+          enabled={proLookupEnabled}
+          onToggle={setProLookupEnabled}
+          usage={usageData}
+        />
+
+        <LazyUploadTabs 
+          currentPortfolioId={currentPortfolioId}
+          proLookupEnabled={proLookupEnabled}
+        />
+      </div>
     </div>
   )
 }

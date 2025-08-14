@@ -66,8 +66,37 @@ export function useCreatePortfolio() {
       return response.json()
     },
     onSuccess: () => {
-      // Invalidate portfolios cache to refetch fresh data
+      // Invalidate all portfolio-related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.portfolios() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(false) })
+    },
+  })
+}
+
+// Delete portfolio mutation
+export function useDeletePortfolio() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (portfolioId: string) => {
+      const response = await fetch(`/api/portfolios/${portfolioId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete portfolio')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      // Invalidate all portfolio-related queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(false) })
+      
+      // Also invalidate any property queries since they depend on portfolios
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }

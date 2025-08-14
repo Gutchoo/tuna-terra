@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { SettingsIcon } from 'lucide-react'
+// import { Button } from '@/components/ui/button' // Disabled with settings button
+// import Link from 'next/link' // Disabled with settings button
+// import { SettingsIcon } from 'lucide-react' // Disabled with settings button
 import { UserMenu } from '@/components/user-menu'
 import { PortfolioAwareNavigation, PortfolioAwareHomeButton } from '@/components/navigation/PortfolioAwareNavigation'
 
@@ -39,12 +39,15 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            {/* Settings button disabled - page not implemented yet */}
+            {/* 
             <Button variant="ghost" size="sm" asChild className="hidden md:flex">
               <Link href="/dashboard/settings" className="flex items-center gap-2">
                 <SettingsIcon className="h-4 w-4" />
                 Settings
               </Link>
             </Button>
+            */}
             <UserMenu />
           </div>
         </div>
