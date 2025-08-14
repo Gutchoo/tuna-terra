@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import type { Property } from '@/lib/supabase'
-import { checkUserLimitsServer, incrementUserUsageServer, createLimitExceededResponse } from '@/lib/limits'
+import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -304,20 +304,13 @@ async function handleSingleCreate(userId: string, body: unknown) {
   }
 
   let regridData: RegridProperty | null = null
-  let apiCallMade = false
 
   // Only fetch Regrid data if Pro Lookup is enabled
+  // NOTE: Usage is now tracked at lookup time (/api/properties/lookup), not at creation time
   if (validatedData.use_pro_lookup) {
-    // Check user limits before making Regrid API calls
-    const limitCheck = await checkUserLimitsServer(userId, 1)
-    if (!limitCheck.canProceed) {
-      throw new Error(`Property lookup limit exceeded. You've used ${limitCheck.currentUsed}/${limitCheck.limit} lookups this month.`)
-    }
-
     if (validatedData.apn) {
       console.log('handleSingleCreate - fetching by APN (Pro mode):', validatedData.apn)
       regridData = await RegridService.searchByAPN(validatedData.apn, validatedData.state)
-      apiCallMade = true
     } else if (validatedData.address) {
       console.log('handleSingleCreate - searching by address (Pro mode)')
       // Search by address
@@ -331,7 +324,6 @@ async function handleSingleCreate(userId: string, body: unknown) {
         console.log('handleSingleCreate - found address results, using full feature data')
         regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
       }
-      apiCallMade = true
     }
   } else {
     console.log('handleSingleCreate - Basic mode enabled, skipping Regrid API calls')
@@ -430,10 +422,8 @@ async function handleSingleCreate(userId: string, body: unknown) {
       throw new Error('Property creation returned null - possible RLS policy issue')
     }
     
-    // Increment usage counter if we made an API call and property was created successfully
-    if (apiCallMade && validatedData.use_pro_lookup) {
-      await incrementUserUsageServer(userId, 1)
-    }
+    // Usage tracking is now handled at lookup time to prevent bypass vulnerabilities
+    // No need to increment usage here as it was already incremented during the lookup phase
     
     return NextResponse.json({ property })
   } catch (dbError) {
@@ -462,17 +452,12 @@ async function handleBulkCreate(userId: string, body: unknown) {
 
   const results = []
   const errors = []
-  let apiCallsUsed = 0
-
   for (const [index, propertyInput] of properties.entries()) {
     try {
       // Pass the use_pro_lookup flag to each property
       const enrichedInput = { ...propertyInput, use_pro_lookup }
       const property = await createSinglePropertyFromInput(userId, enrichedInput)
       results.push(property)
-      if (use_pro_lookup) {
-        apiCallsUsed++ // Only count API calls in pro mode
-      }
     } catch (error) {
       console.error(`Error creating property at index ${index}:`, error)
       errors.push({
@@ -483,10 +468,8 @@ async function handleBulkCreate(userId: string, body: unknown) {
     }
   }
 
-  // Increment usage by number of successful API calls (only in pro mode)
-  if (apiCallsUsed > 0 && use_pro_lookup) {
-    await incrementUserUsageServer(userId, apiCallsUsed)
-  }
+  // Usage is now tracked at lookup time, not at creation time
+  // This prevents bypass vulnerabilities where users toggle off pro lookup after fetching data
 
   // Prepare response
   const response: {
@@ -518,9 +501,9 @@ async function handleBulkCreate(userId: string, body: unknown) {
   if (use_pro_lookup) {
     const limitCheck = await checkUserLimitsServer(userId, 0) // Get current usage
     response.usage = {
-      used: limitCheck.currentUsed + apiCallsUsed,
+      used: limitCheck.currentUsed,
       limit: limitCheck.limit,
-      remaining: limitCheck.remaining - apiCallsUsed
+      remaining: limitCheck.remaining
     }
   }
 

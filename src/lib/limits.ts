@@ -108,6 +108,62 @@ export async function incrementUserUsageServer(userId: string, count: number = 1
 }
 
 /**
+ * Server-side: Check limits and immediately increment usage if allowed
+ * This prevents bypass vulnerabilities by consuming credits when API calls are made
+ * @param userId - User ID from auth
+ * @param count - Number of lookups to check and increment (default: 1)
+ * @returns Promise<LimitCheckResult> - with canProceed=false if limits exceeded
+ */
+export async function checkAndIncrementUsageServer(userId: string, count: number = 1): Promise<LimitCheckResult> {
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Use atomic database function that checks and increments in one transaction
+    const { data, error } = await supabase
+      .rpc('check_and_increment_usage', {
+        p_user_id: userId,
+        p_increment: count
+      })
+
+    if (error) {
+      console.error('Error checking and incrementing usage:', error)
+      return {
+        canProceed: false,
+        remaining: 0,
+        currentUsed: 0,
+        limit: 0,
+        tier: 'free',
+        resetDate: new Date().toISOString(),
+        errorMessage: 'Failed to check and increment usage'
+      }
+    }
+
+    const result = data[0]
+    const remaining = result.tier === 'pro' ? 999999 : Math.max(0, result.usage_limit - result.current_usage)
+
+    return {
+      canProceed: result.can_proceed,
+      remaining,
+      currentUsed: result.current_usage,
+      limit: result.tier === 'pro' ? 999999 : result.usage_limit,
+      tier: result.tier as 'free' | 'pro',
+      resetDate: result.reset_date
+    }
+  } catch (error) {
+    console.error('Error checking and incrementing usage:', error)
+    return {
+      canProceed: false,
+      remaining: 0,
+      currentUsed: 0,
+      limit: 0,
+      tier: 'free',
+      resetDate: new Date().toISOString(),
+      errorMessage: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
  * Create a standardized limit exceeded error response
  */
 export function createLimitExceededResponse(limitCheck: LimitCheckResult) {

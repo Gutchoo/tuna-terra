@@ -338,6 +338,16 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
               </FormControl>
               <FormMessage />
               
+              {/* Basic Mode Message */}
+              {!proLookupEnabled && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
+                    Basic Mode
+                  </Badge>
+                  <span className="text-sm text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
+                </div>
+              )}
+              
               {/* Duplicate property warning */}
               {duplicateProperty && (
                 <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -378,13 +388,13 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
           )}
         />
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Button
             type="button"
             variant="outline"
             onClick={handleSearch}
             disabled={isSearching || !apnValue || !!duplicateProperty || isDuplicateChecking || isRecentlyChanged}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2"
           >
             {isSearching ? (
               <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -460,6 +470,22 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
           </Card>
         )}
 
+        {/* Basic Mode Message */}
+        {propertyPreview && !proLookupEnabled && (
+          <Alert>
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertTitle className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
+                Basic Mode
+              </Badge>
+              Storage Information
+            </AlertTitle>
+            <AlertDescription>
+              Only APN data will be stored. Enable Pro Lookup for detailed property information.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {propertyPreview && (
           <>
             <FormField
@@ -497,7 +523,7 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
               )}
             />
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 type="submit"
                 disabled={createPropertyMutation.isPending}

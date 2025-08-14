@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
-import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
+import { checkAndIncrementUsageServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 import { propertyLookupSchema, createErrorResponse } from '@/lib/validation'
 
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
       return rateLimitResponse
     }
 
-    // Check user limits before making API call (no increment - just preview)
-    const limitCheck = await checkUserLimitsServer(userId, 1)
+    // Check limits and immediately increment usage - prevents bypass vulnerabilities
+    const limitCheck = await checkAndIncrementUsageServer(userId, 1)
     if (!limitCheck.canProceed) {
       return NextResponse.json(createLimitExceededResponse(limitCheck), { status: 429 })
     }
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
     // The address endpoint already returns full property data
     const bestMatch = searchResults[0]
     
-    // Note: Usage will be incremented when property is actually added to portfolio
-    // This lookup is just for preview purposes
+    // Note: Usage has already been incremented above to prevent bypass vulnerabilities
+    // This ensures credits are consumed when expensive Regrid API calls are made
 
     // Use the full feature data to create a complete property object
     if (bestMatch._fullFeature) {

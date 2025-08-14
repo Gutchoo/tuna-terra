@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PlusIcon, UsersIcon, BuildingIcon } from 'lucide-react'
 import { InlineEditablePortfolioName } from './InlineEditablePortfolioName'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
-import type { PortfolioWithMembership } from '@/lib/supabase'
+// Types imported but may be used in future interface definitions
 
 interface PortfolioSelectorProps {
   onPortfolioChange?: (portfolioId: string | null) => void

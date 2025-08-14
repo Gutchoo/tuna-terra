@@ -69,7 +69,7 @@ export function PropertyCard({
   return (
     <Card className="transition-all duration-200 hover:shadow-md">
       {/* Card Header - Always Visible */}
-      <div className="px-6 py-4">
+      <div className="px-4 sm:px-6 py-4">
         <div className="flex justify-between items-start">
           <div 
             className="flex-1 cursor-pointer"
@@ -90,7 +90,7 @@ export function PropertyCard({
                 </div>
                 
                 {/* Compact Info Row */}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                   {property.year_built && (
                     <span>Built {property.year_built}</span>
                   )}
@@ -174,7 +174,7 @@ export function PropertyCard({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-6 pb-4">
+        <div className="px-4 sm:px-6 pb-4">
           <Separator className="mb-4" />
           
           <div className="space-y-5">
@@ -184,7 +184,7 @@ export function PropertyCard({
                 <BuildingIcon className="h-4 w-4" />
                 <h4 className="font-medium">Property Details</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 {property.year_built && (
                   <div>
                     <p className="text-muted-foreground">Year Built</p>

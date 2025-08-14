@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { TrashIcon } from 'lucide-react'
+import { useDeletePortfolio } from '@/hooks/use-portfolios'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface DeletePortfolioDialogProps {
@@ -29,32 +29,22 @@ export function DeletePortfolioDialog({
   onDeleteSuccess,
   onError
 }: DeletePortfolioDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const deletePortfolioMutation = useDeletePortfolio()
 
   const handleDeleteConfirm = async () => {
     if (!portfolio) return
 
-    setIsDeleting(true)
-
     try {
-      const response = await fetch(`/api/portfolios/${portfolio.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete portfolio')
-      }
-
+      await deletePortfolioMutation.mutateAsync(portfolio.id)
       onDeleteSuccess()
       onOpenChange(false)
     } catch (error) {
       console.error('Error deleting portfolio:', error)
       onError(error instanceof Error ? error.message : 'Failed to delete portfolio')
-    } finally {
-      setIsDeleting(false)
     }
   }
+
+  const isDeleting = deletePortfolioMutation.isPending
 
   if (!portfolio) return null
 

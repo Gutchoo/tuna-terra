@@ -131,6 +131,62 @@ export default function PortfoliosPage() {
     )
   }
 
+  // Show empty state if no portfolios exist
+  if (portfolios.length === 0 && !loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        {error && (
+          <div className="p-6">
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
+        {/* Centered empty state */}
+        <div className="flex flex-col items-center justify-center flex-1 max-w-md mx-auto px-6 text-center">
+          {/* Simple Icon */}
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
+              <BuildingIcon className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </div>
+          
+          {/* Clean Typography */}
+          <div className="space-y-4 mb-8">
+            <h1 className="text-2xl font-semibold text-foreground">
+              Create your first portfolio
+            </h1>
+            
+            <p className="text-muted-foreground leading-relaxed">
+              Organize and manage your real estate properties in one place. 
+              Get started by creating your first portfolio.
+            </p>
+          </div>
+
+          {/* Single CTA */}
+          <Button 
+            onClick={handleCreatePortfolio}
+            size="lg"
+            className="w-full max-w-xs h-12 flex items-center justify-center gap-2"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Create Portfolio
+          </Button>
+        </div>
+        
+        {/* Delete Portfolio Dialog */}
+        <DeletePortfolioDialog
+          portfolio={portfolioToDelete}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onDeleteSuccess={handleDeleteSuccess}
+          onError={handleDeleteError}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -256,22 +312,6 @@ export default function PortfoliosPage() {
             </CardContent>
           </Card>
         ))}
-
-        {portfolios.length === 0 && !loading && (
-          <Card className="col-span-full">
-            <CardContent className="text-center py-12">
-              <BuildingIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No portfolios yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create your first portfolio to start organizing your properties
-              </p>
-              <Button onClick={handleCreatePortfolio} className="flex items-center gap-2">
-                <PlusIcon className="h-4 w-4" />
-                Create Portfolio
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Delete Portfolio Dialog */}

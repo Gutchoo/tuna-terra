@@ -97,7 +97,7 @@ export function usePerformanceMonitor(name: string, deps?: DependencyList) {
 
   useEffect(() => {
     startTime.current = performance.now()
-  }, deps)
+  }, deps || [])
 }
 
 // Utility functions for common performance measurements

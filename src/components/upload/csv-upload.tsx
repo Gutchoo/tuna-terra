@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { UploadIcon, CheckCircleIcon, AlertCircleIcon, XCircleIcon, CrownIcon } from 'lucide-react'
 import Papa from 'papaparse'
 import { useRouter } from 'next/navigation'
-import { useBulkCreateProperties } from '@/hooks/use-create-property'
+// React Query hook available for future bulk operations
+// import { useBulkCreateProperties } from '@/hooks/use-create-property'
 
 interface CSVRow {
   apn?: string
@@ -415,14 +416,17 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           onChange={handleFileSelect}
           className="mt-1"
         />
-        <p className="text-sm text-muted-foreground mt-1">
-          CSV file must contain an APN column (apn, parcel, parcelnumber, etc.)
+        <div className="text-sm text-muted-foreground mt-1">
+          <p>CSV file must contain an APN column (apn, parcel, parcelnumber, etc.)</p>
           {!proLookupEnabled && (
-            <span className="block mt-1 text-amber-600">
-              Basic Mode: Only APN data will be stored. Enable Pro Lookup for detailed property information.
-            </span>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
+                Basic Mode
+              </Badge>
+              <span className="text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
+            </div>
           )}
-        </p>
+        </div>
       </div>
 
       {validation && (

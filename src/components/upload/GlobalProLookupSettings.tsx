@@ -1,9 +1,7 @@
 'use client'
 
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { CrownIcon, MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
+import { ModeToggle } from '@/components/upload/ModeToggle'
+import { MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
 import { useUsageData } from '@/hooks/use-user-limits'
 
 interface GlobalProLookupSettingsProps {
@@ -33,126 +31,112 @@ export function OptimizedGlobalProLookupSettings({
   )
 }
 
-export function GlobalProLookupSettings({ enabled, onToggle, usage }: GlobalProLookupSettingsProps) {
-  const remaining = usage ? usage.limit - usage.used : 0
-  const usagePercentage = usage ? (usage.used / usage.limit) * 100 : 0
-  
-  const formatResetDate = (dateString?: string) => {
-    if (!dateString) return 'Unknown'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
+export function GlobalProLookupSettings({ enabled, onToggle }: GlobalProLookupSettingsProps) {
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border border-blue-200 dark:border-blue-800/50 rounded-lg p-6">
-      <div className="flex items-start gap-6">
-        {/* Left Side - Usage Info and Benefits */}
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Lookup Settings
-            </h3>
-            {usage && (
-              <Badge variant={usage.tier === 'pro' ? 'default' : 'secondary'} className="px-2 py-1">
-                <CrownIcon className="h-3 w-3 mr-1" />
-                {usage.tier === 'pro' ? 'Pro Tier' : 'Free Tier'}
-              </Badge>
-            )}
+    <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 overflow-hidden">
+      <div className="flex items-start justify-between mb-6">
+        {/* Toggle Section */}
+        <div className="flex items-center">
+          <ModeToggle
+            enabled={enabled}
+            onToggle={onToggle}
+          />
+        </div>
+
+        {/* Enhanced Data Features Label */}
+        <div className="text-right">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+            Enhanced Data Features
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Available with Pro lookups
+          </p>
+        </div>
+      </div>
+      
+      {/* Benefits Grid - More compact */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {/* Column 1 */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center flex-shrink-0">
+              <MapIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                Property Mapping
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Exact boundaries & coordinates
+              </div>
+            </div>
           </div>
           
-          {usage && (
-            <div className="space-y-2">
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                <span className="font-medium">
-                  {remaining} pro lookups remaining
-                </span>
-              </div>
-              
-              {usage.tier === 'free' && (
-                <div className="space-y-1">
-                  <Progress value={usagePercentage} className="h-2" />
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {usage.used} of {usage.limit} used
-                    {usage.resetDate && (
-                      <span className="ml-2">
-                        • Resets {formatResetDate(usage.resetDate)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+          <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center flex-shrink-0">
+              <UserIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-          )}
-
-          {/* Pro Lookup Benefits - Always Visible */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <CrownIcon className="h-4 w-4" />
-              Pro Lookup Benefits
-            </h4>
-            
-            <div className="grid gap-2 text-sm">
-              <div className="flex items-center gap-3">
-                <MapIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">Property Mapping</span>
-                  <span className="text-gray-600 dark:text-gray-300 ml-2">Exact boundaries & coordinates</span>
-                </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                Owner Information
               </div>
-              
-              <div className="flex items-center gap-3">
-                <UserIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">Owner Information</span>
-                  <span className="text-gray-600 dark:text-gray-300 ml-2">Names & mailing addresses</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <DollarSignIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">Financial Data</span>
-                  <span className="text-gray-600 dark:text-gray-300 ml-2">Assessed values & sale history</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <HomeIcon className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">Property Details</span>
-                  <span className="text-gray-600 dark:text-gray-300 ml-2">Lot size, year built, stories & units</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">Zoning & Use</span>
-                  <span className="text-gray-600 dark:text-gray-300 ml-2">Codes & development restrictions</span>
-                </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Names & mailing addresses
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Right Side - Toggle Controls */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {enabled ? 'Pro Mode' : 'Basic Mode'}
+
+        {/* Column 2 */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center flex-shrink-0">
+              <DollarSignIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {enabled ? 'Enhanced data' : 'Address only'}
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                Financial Data
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Assessed values & sale history
+              </div>
             </div>
           </div>
-          <Switch
-            checked={enabled}
-            onCheckedChange={onToggle}
-            className="scale-110"
-          />
+          
+          <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center flex-shrink-0">
+              <HomeIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                Property Details
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Lot size, year built, stories & units
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3 */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-950/50 flex items-center justify-center flex-shrink-0">
+              <FileTextIcon className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                Zoning & Use
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Codes & development restrictions
+              </div>
+            </div>
+          </div>
+          
+          {/* Empty space for visual balance */}
+          <div className="h-[68px]"></div>
         </div>
       </div>
     </div>

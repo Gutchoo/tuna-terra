@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { InfoIcon, CrownIcon, MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
+import { InfoIcon, MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
 
 interface ProLookupToggleProps {
   enabled: boolean
@@ -22,7 +22,6 @@ export function ProLookupToggle({ enabled, onToggle, className }: ProLookupToggl
           onCheckedChange={onToggle}
         />
         <Label htmlFor="pro-lookup" className="flex items-center gap-2 font-medium">
-          <CrownIcon className="h-4 w-4" />
           Pro Lookup
         </Label>
       </div>
@@ -37,8 +36,7 @@ export function ProLookupToggle({ enabled, onToggle, className }: ProLookupToggl
         <PopoverContent className="w-80" align="start">
           <div className="space-y-4">
             <div className="space-y-2">
-              <h4 className="font-semibold text-sm flex items-center gap-2">
-                <CrownIcon className="h-4 w-4" />
+              <h4 className="font-semibold text-sm">
                 Pro Lookup Features
               </h4>
               <p className="text-sm text-muted-foreground">

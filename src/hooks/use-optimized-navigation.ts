@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
 import { perf } from '@/lib/performance'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 // Enhanced navigation hook with performance monitoring
 export function useOptimizedNavigation() {

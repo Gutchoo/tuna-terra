@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -8,8 +8,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   BuildingIcon, 
-  PlusIcon, 
-  SettingsIcon, 
   InfoIcon,
   MapIcon,
   UserIcon,
@@ -17,19 +15,16 @@ import {
   FileTextIcon,
   DollarSignIcon
 } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEditablePortfolioName'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
-import { useNavigationPreload } from '@/hooks/use-navigation-preload'
-import type { PortfolioWithMembership } from '@/lib/supabase'
 
-interface DashboardHeaderProps {
+interface UploadHeaderProps {
   onPortfolioChange?: (portfolioId: string | null) => void
 }
 
-export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
+function UploadHeaderContent({ onPortfolioChange }: UploadHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentPortfolio, setCurrentPortfolio] = useState<string | null>(null)
@@ -40,7 +35,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const { data: userLimits } = useUserLimits()
   const remainingLookups = useRemainingLookups()
   const updatePortfolioName = useUpdatePortfolioName()
-  const { handlePreloadUpload } = useNavigationPreload()
 
   const loading = portfoliosLoading
 
@@ -76,7 +70,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
       default: return 'bg-gray-100 text-gray-800'
     }
   }
-
 
   const selectedPortfolio = portfolios.find(p => p.id === currentPortfolio)
 
@@ -152,10 +145,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
               <div className="h-10 w-48 bg-muted rounded animate-pulse" />
               <div className="h-6 w-24 bg-muted rounded animate-pulse" />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-32 bg-muted rounded animate-pulse" />
-              <div className="h-9 w-28 bg-muted rounded animate-pulse" />
-            </div>
           </div>
         </div>
       </div>
@@ -210,9 +199,8 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
               </Select>
             </div>
 
-            {/* Second Row - Pro Lookups and Actions */}
+            {/* Second Row - Pro Lookups Information */}
             <div className="flex items-center justify-between gap-2">
-              {/* Pro Lookups Information - Compact */}
               {userLimits && (
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Badge 
@@ -245,28 +233,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                   </Tooltip>
                 </div>
               )}
-
-              {/* Action Buttons - Mobile */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="outline" size="sm" asChild className="text-xs px-2">
-                  <Link href="/dashboard/portfolios">
-                    <SettingsIcon className="h-3 w-3" />
-                    <span className="ml-1 hidden xs:inline">Manage</span>
-                  </Link>
-                </Button>
-                <Button 
-                  size="sm"
-                  asChild
-                  onMouseEnter={handlePreloadUpload}
-                  onFocus={handlePreloadUpload}
-                  className="text-xs px-2"
-                >
-                  <Link href="/upload">
-                    <PlusIcon className="h-3 w-3" />
-                    <span className="ml-1">Add</span>
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -359,30 +325,27 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                 </div>
               )}
             </div>
-
-            {/* Right side - Action buttons */}
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/portfolios" className="flex items-center gap-2">
-                  <SettingsIcon className="h-4 w-4" />
-                  Manage Portfolios
-                </Link>
-              </Button>
-              <Button 
-                asChild
-                onMouseEnter={handlePreloadUpload}
-                onFocus={handlePreloadUpload}
-              >
-                <Link href="/upload" className="flex items-center gap-2">
-                  <PlusIcon className="h-4 w-4" />
-                  Add Properties
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
       </div>
       <ProLookupModal />
     </TooltipProvider>
+  )
+}
+
+export function UploadHeader({ onPortfolioChange }: UploadHeaderProps) {
+  return (
+    <Suspense fallback={
+      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="animate-pulse flex items-center justify-between">
+            <div className="h-8 w-48 bg-muted rounded" />
+            <div className="h-8 w-32 bg-muted rounded" />
+          </div>
+        </div>
+      </div>
+    }>
+      <UploadHeaderContent onPortfolioChange={onPortfolioChange} />
+    </Suspense>
   )
 }
