@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { UploadIcon, CheckCircleIcon, AlertCircleIcon, XCircleIcon, CrownIcon } from 'lucide-react'
 import Papa from 'papaparse'
 import { useRouter } from 'next/navigation'
+import { useBulkCreateProperties } from '@/hooks/use-create-property'
 
 interface CSVRow {
   apn?: string
@@ -30,9 +31,10 @@ interface ValidationResult {
 
 interface CSVUploadProps {
   portfolioId: string | null
+  proLookupEnabled: boolean
 }
 
-export function CSVUpload({ portfolioId }: CSVUploadProps) {
+export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
   const [file, setFile] = useState<File | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -245,7 +247,8 @@ export function CSVUpload({ portfolioId }: CSVUploadProps) {
                     ...property,
                     portfolio_id: portfolioId
                   })),
-                  source: 'csv'
+                  source: 'csv',
+                  use_pro_lookup: proLookupEnabled
                 })
               })
 
@@ -401,6 +404,7 @@ export function CSVUpload({ portfolioId }: CSVUploadProps) {
 
   return (
     <div className="space-y-6">
+      
       <div>
         <Label htmlFor="csv-file">CSV File</Label>
         <Input
@@ -413,6 +417,11 @@ export function CSVUpload({ portfolioId }: CSVUploadProps) {
         />
         <p className="text-sm text-muted-foreground mt-1">
           CSV file must contain an APN column (apn, parcel, parcelnumber, etc.)
+          {!proLookupEnabled && (
+            <span className="block mt-1 text-amber-600">
+              Basic Mode: Only APN data will be stored. Enable Pro Lookup for detailed property information.
+            </span>
+          )}
         </p>
       </div>
 
@@ -488,7 +497,7 @@ export function CSVUpload({ portfolioId }: CSVUploadProps) {
           className="flex-1"
         >
           <UploadIcon className="h-4 w-4 mr-2" />
-          {isUploading ? 'Uploading...' : 'Upload Properties'}
+{isUploading ? 'Uploading...' : (proLookupEnabled ? 'Upload Properties (Pro Mode)' : 'Upload Properties (Basic Mode)')}
         </Button>
         {file && (
           <Button variant="outline" onClick={resetUpload}>

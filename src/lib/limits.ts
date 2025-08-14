@@ -28,7 +28,7 @@ async function createServerSupabaseClient() {
 }
 
 /**
- * Server-side: Check if user can perform property lookups
+ * Server-side: Check if user can perform property lookups (read-only)
  * @param userId - User ID from auth
  * @param count - Number of lookups to check for (default: 1)
  * @returns Promise<LimitCheckResult>
@@ -37,44 +37,15 @@ export async function checkUserLimitsServer(userId: string, count: number = 1): 
   try {
     const supabase = await createServerSupabaseClient()
 
-    // Get user limits, create if doesn't exist
-    const userLimitsResult = await supabase
-      .from('user_limits')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-    
-    let userLimits = userLimitsResult.data
-    const error = userLimitsResult.error
+    // Use atomic database function for checking limits
+    const { data, error } = await supabase
+      .rpc('check_usage_limits', {
+        p_user_id: userId,
+        p_check_count: count
+      })
 
-    if (error && error.code === 'PGRST116') {
-      // No limits found, create default
-      const { data: newLimits, error: createError } = await supabase
-        .from('user_limits')
-        .insert({
-          user_id: userId,
-          tier: 'free',
-          property_lookups_used: 0,
-          property_lookups_limit: 25
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Error creating user limits:', createError)
-        return {
-          canProceed: false,
-          remaining: 0,
-          currentUsed: 0,
-          limit: 0,
-          tier: 'free',
-          resetDate: new Date().toISOString(),
-          errorMessage: 'Failed to create user limits'
-        }
-      }
-      userLimits = newLimits
-    } else if (error) {
-      console.error('Error fetching user limits:', error)
+    if (error) {
+      console.error('Error checking user limits:', error)
       return {
         canProceed: false,
         remaining: 0,
@@ -82,32 +53,20 @@ export async function checkUserLimitsServer(userId: string, count: number = 1): 
         limit: 0,
         tier: 'free',
         resetDate: new Date().toISOString(),
-        errorMessage: 'Failed to fetch user limits'
+        errorMessage: 'Failed to check user limits'
       }
     }
 
-    // Check if reset is needed (monthly reset)
-    const now = new Date()
-    const resetDate = new Date(userLimits!.reset_date)
-    
-    let currentUsed = userLimits!.property_lookups_used
-    if (now >= resetDate) {
-      currentUsed = 0 // Usage resets
-    }
-
-    // For pro tier, allow unlimited (or very high limit)
-    const effectiveLimit = userLimits!.tier === 'pro' ? 999999 : userLimits!.property_lookups_limit
-
-    const canProceed = (currentUsed + count) <= effectiveLimit
-    const remaining = Math.max(0, effectiveLimit - currentUsed)
+    const result = data[0]
+    const remaining = result.tier === 'pro' ? 999999 : Math.max(0, result.usage_limit - result.current_usage)
 
     return {
-      canProceed,
+      canProceed: result.can_proceed,
       remaining,
-      currentUsed,
-      limit: effectiveLimit,
-      tier: userLimits!.tier,
-      resetDate: userLimits!.reset_date
+      currentUsed: result.current_usage,
+      limit: result.tier === 'pro' ? 999999 : result.usage_limit,
+      tier: result.tier as 'free' | 'pro',
+      resetDate: result.reset_date
     }
   } catch (error) {
     console.error('Error checking user limits:', error)
@@ -132,45 +91,15 @@ export async function incrementUserUsageServer(userId: string, count: number = 1
   try {
     const supabase = await createServerSupabaseClient()
 
-    // Get current limits
-    const { data: currentLimits, error: fetchError } = await supabase
-      .from('user_limits')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-
-    if (fetchError) {
-      console.error('Error fetching current limits for increment:', fetchError)
-      return
-    }
-
-    // Check if reset is needed first
-    const now = new Date()
-    const resetDate = new Date(currentLimits.reset_date)
-    
-    let currentUsed = currentLimits.property_lookups_used
-    if (now >= resetDate) {
-      currentUsed = 0 // Usage resets
-    }
-
-    // Calculate new usage
-    const newUsage = currentUsed + count
-    const nextMonth = now >= resetDate 
-      ? new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      : new Date(currentLimits.reset_date)
-
-    // Update usage
-    const { error: updateError } = await supabase
-      .from('user_limits')
-      .update({
-        property_lookups_used: newUsage,
-        reset_date: nextMonth.toISOString(),
-        updated_at: now.toISOString()
+    // Use atomic database function for incrementing usage
+    const { error } = await supabase
+      .rpc('check_and_increment_usage', {
+        p_user_id: userId,
+        p_increment: count
       })
-      .eq('user_id', userId)
 
-    if (updateError) {
-      console.error('Error updating user usage:', updateError)
+    if (error) {
+      console.error('Error incrementing user usage:', error)
     }
   } catch (error) {
     console.error('Error incrementing user usage:', error)

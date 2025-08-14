@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { debounce } from 'lodash'
+import { useCreateProperty } from '@/hooks/use-create-property'
 
 const formSchema = z.object({
   address: z.string().min(3, 'Address must be at least 3 characters'),
@@ -24,6 +25,7 @@ type FormData = z.infer<typeof formSchema>
 
 interface AddressFormProps {
   portfolioId: string | null
+  proLookupEnabled: boolean
 }
 
 interface AddressSuggestion {
@@ -50,19 +52,21 @@ interface PropertyDetails {
 
 
 
-export function AddressForm({ portfolioId }: AddressFormProps) {
+export function AddressForm({ portfolioId, proLookupEnabled }: AddressFormProps) {
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetails | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [isLookingUp, setIsLookingUp] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<string>('')
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  
+  // React Query mutation for property creation
+  const createPropertyMutation = useCreateProperty()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -147,7 +151,25 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
           inputRef.current.value = formattedAddress
         }
 
-        // Look up property in Regrid
+        // In basic mode, skip Regrid lookup and create basic property
+        if (!proLookupEnabled) {
+          setSelectedProperty({
+            id: '', // No Regrid ID in basic mode
+            apn: 'N/A',
+            address: formattedAddress,
+            city: '',
+            state: '',
+            zip: '',
+            owner: 'N/A',
+            lot_size_sqft: undefined,
+            assessed_value: undefined,
+            property_type: undefined,
+          })
+          setIsLookingUp(false)
+          return
+        }
+
+        // Look up property in Regrid (Pro mode)
         try {
           const propertyResponse = await fetch('/api/properties/lookup', {
             method: 'POST',
@@ -219,74 +241,46 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
       return
     }
 
-    setIsSubmitting(true)
-    setSearchError(null)
-
     try {
-      const response = await fetch('/api/user-properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          portfolio_id: portfolioId,
-          address: data.address,
-          regrid_id: selectedProperty.id,
-          user_notes: data.user_notes,
-          insurance_provider: data.insurance_provider,
-        }),
+      await createPropertyMutation.mutateAsync({
+        portfolio_id: portfolioId,
+        address: data.address,
+        regrid_id: proLookupEnabled ? selectedProperty.id : undefined,
+        apn: selectedProperty.apn !== 'N/A' ? selectedProperty.apn : undefined,
+        user_notes: data.user_notes,
+        insurance_provider: data.insurance_provider,
+        use_pro_lookup: proLookupEnabled,
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to add property')
+      // Success! Show success message and clear form but stay on page
+      setShowSuccess(true)
+      setSelectedProperty(null)
+      setSearchError(null)
+      setSelectedAddress('')
+      setSuggestions([])
+      setShowSuggestions(false)
+      form.reset()
+      if (inputRef.current) {
+        inputRef.current.value = ''
       }
-
-      setSubmitSuccess(true)
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 3000)
+      
     } catch (error) {
       console.error('Submit error:', error)
       setSearchError(error instanceof Error ? error.message : 'Failed to add property')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
 
-  if (submitSuccess) {
-    return (
-      <Alert>
-        <CheckCircleIcon className="h-4 w-4" />
-        <AlertTitle>Property Added Successfully</AlertTitle>
-        <AlertDescription>
-          The property has been added to your portfolio.
-        </AlertDescription>
-        <div className="mt-4 flex gap-4">
-          <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}>
-            View Properties
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setSubmitSuccess(false)
-              setSelectedProperty(null)
-              setSelectedAddress('')
-              setSuggestions([])
-              setShowSuggestions(false)
-              form.reset()
-              if (inputRef.current) {
-                inputRef.current.value = ''
-              }
-            }}
-          >
-            Add Another Property
-          </Button>
-        </div>
-      </Alert>
-    )
-  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
         <div className="relative" ref={suggestionRef}>
           <FormField
             control={form.control}
@@ -340,6 +334,14 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
         </div>
 
 
+        {showSuccess && (
+          <Alert>
+            <CheckCircleIcon className="h-4 w-4" />
+            <AlertTitle>Property Added Successfully</AlertTitle>
+            <AlertDescription>The property has been added to your portfolio. You can add another property or view your properties.</AlertDescription>
+          </Alert>
+        )}
+
         {searchError && (
           <Alert variant="destructive">
             <AlertCircleIcon className="h-4 w-4" />
@@ -373,9 +375,14 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <MapPinIcon className="h-5 w-5" />
-                Property Selected
+                {proLookupEnabled ? 'Property Selected' : 'Address Ready to Add'}
               </CardTitle>
-              <CardDescription>Review the property details below</CardDescription>
+              <CardDescription>
+                {proLookupEnabled 
+                  ? 'Review the property details below' 
+                  : 'Basic address information - no detailed property data will be fetched'
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
@@ -384,27 +391,36 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
                 {selectedProperty.state && `, ${selectedProperty.state}`}
                 {selectedProperty.zip && ` ${selectedProperty.zip}`}
               </div>
-              {selectedProperty.apn && (
-                <div>
-                  <strong>APN:</strong> {selectedProperty.apn}
-                </div>
-              )}
-              <div>
-                <strong>Owner:</strong> {selectedProperty.owner}
-              </div>
-              {selectedProperty.property_type && (
-                <div>
-                  <strong>Property Type:</strong> {selectedProperty.property_type}
-                </div>
-              )}
-              {selectedProperty.lot_size_sqft && (
-                <div>
-                  <strong>Lot Size:</strong> {selectedProperty.lot_size_sqft.toLocaleString()} sq ft
-                </div>
-              )}
-              {selectedProperty.assessed_value && (
-                <div>
-                  <strong>Assessed Value:</strong> ${selectedProperty.assessed_value.toLocaleString()}
+              {proLookupEnabled ? (
+                <>
+                  {selectedProperty.apn && selectedProperty.apn !== 'N/A' && (
+                    <div>
+                      <strong>APN:</strong> {selectedProperty.apn}
+                    </div>
+                  )}
+                  <div>
+                    <strong>Owner:</strong> {selectedProperty.owner}
+                  </div>
+                  {selectedProperty.property_type && (
+                    <div>
+                      <strong>Property Type:</strong> {selectedProperty.property_type}
+                    </div>
+                  )}
+                  {selectedProperty.lot_size_sqft && (
+                    <div>
+                      <strong>Lot Size:</strong> {selectedProperty.lot_size_sqft.toLocaleString()} sq ft
+                    </div>
+                  )}
+                  {selectedProperty.assessed_value && (
+                    <div>
+                      <strong>Assessed Value:</strong> ${selectedProperty.assessed_value.toLocaleString()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  This address will be saved with basic information only. 
+                  Enable Pro Lookup to fetch detailed property data including APN, owner, and financial information.
                 </div>
               )}
             </CardContent>
@@ -448,13 +464,23 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
               )}
             />
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? 'Adding Property...' : 'Add Property to Portfolio'}
-            </Button>
+            <div className="flex gap-4">
+              <Button
+                type="submit"
+                disabled={createPropertyMutation.isPending}
+                className="flex-1"
+              >
+                {createPropertyMutation.isPending ? 'Adding Property...' : 'Add Property to Portfolio'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}
+                className="flex-1"
+              >
+                View Properties
+              </Button>
+            </div>
           </>
         )}
       </form>

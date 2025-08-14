@@ -2,9 +2,10 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { Card, CardContent } from '@/components/ui/card'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { FullScreenMapView } from '@/components/properties/FullScreenMapView'
-import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 
 function MapPageContent() {
   const searchParams = useSearchParams()
@@ -122,12 +123,21 @@ function MapPageContent() {
 
   if (loading || isRedirecting) {
     return (
-      <div className="h-[calc(100vh-6rem)] pt-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">
-            {isRedirecting ? 'Setting up your portfolio...' : 'Loading map...'}
-          </p>
+      <div className="space-y-0">
+        <DashboardHeader 
+          onPortfolioChange={() => {}}
+        />
+        <div className="p-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">
+                  {isRedirecting ? 'Setting up your portfolio...' : 'Loading map...'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
@@ -135,48 +145,60 @@ function MapPageContent() {
 
   if (error) {
     return (
-      <div className="h-[calc(100vh-6rem)] pt-4 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">Error: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Try Again
-          </button>
+      <div className="space-y-0">
+        <DashboardHeader 
+          onPortfolioChange={() => {}}
+        />
+        <div className="p-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <p className="text-destructive mb-4">Error: {error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
+                  Try Again
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 pb-32">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Map View</h1>
-          <p className="text-muted-foreground">
-            Explore your properties on an interactive map ({properties.length} {properties.length === 1 ? 'property' : 'properties'})
-          </p>
-        </div>
-      </div>
-
-      {/* Portfolio Selector */}
-      <PortfolioSelector 
+    <div className="space-y-0">
+      <DashboardHeader 
         onPortfolioChange={(portfolioId) => {
           setCurrentPortfolioId(portfolioId)
         }}
-        compact={true}
-        enableInlineEdit={true}
       />
 
-      <div className="h-[80vh] -mx-4">
-        <FullScreenMapView
-          properties={properties}
-          selectedPropertyId={selectedPropertyId}
-          onPropertySelect={handlePropertySelect}
-          onPropertiesChange={handlePropertiesChange}
-          onError={handleError}
-        />
+      <div className="p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-lg font-medium mb-2">Interactive Map View</h2>
+                <p className="text-muted-foreground text-sm">
+                  Explore {properties.length} {properties.length === 1 ? 'property' : 'properties'} on the map
+                </p>
+              </div>
+              
+              <div className="h-[75vh] -mx-6 -mb-6">
+                <FullScreenMapView
+                  properties={properties}
+                  selectedPropertyId={selectedPropertyId}
+                  onPropertySelect={handlePropertySelect}
+                  onPropertiesChange={handlePropertiesChange}
+                  onError={handleError}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
@@ -185,10 +207,30 @@ function MapPageContent() {
 export default function MapPage() {
   return (
     <Suspense fallback={
-      <div className="h-[calc(100vh-6rem)] pt-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading map...</p>
+      <div className="space-y-0">
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <div className="h-10 w-48 bg-muted rounded animate-pulse" />
+                <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-9 w-28 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading map...</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     }>

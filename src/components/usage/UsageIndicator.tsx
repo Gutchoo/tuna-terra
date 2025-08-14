@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CrownIcon, SearchIcon, InfoIcon } from 'lucide-react'
+import { InfoIcon } from 'lucide-react'
 import type { UserLimits } from '@/lib/supabase'
 
 interface UsageIndicatorProps {
@@ -130,41 +130,30 @@ export function UsageIndicator({ compact = false, showTier = true }: UsageIndica
 
   if (compact) {
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-muted/50 rounded-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="px-3 py-2 bg-muted/50 rounded-lg border">
+        <div className="flex items-center gap-3">
           {showTier && (
-            <div className="flex items-center gap-2">
-              <CrownIcon className="h-4 w-4 text-muted-foreground" />
-              <Badge variant={userLimits.tier === 'pro' ? 'default' : 'secondary'} className="text-xs">
-                {userLimits.tier === 'pro' ? 'Pro' : 'Free'} Tier
-              </Badge>
-            </div>
+            <Badge variant={userLimits.tier === 'pro' ? 'default' : 'secondary'} className="text-xs font-medium">
+              {userLimits.tier === 'pro' ? 'Pro' : 'Free'} Tier
+            </Badge>
           )}
-          <div className="flex items-center gap-2">
-            <SearchIcon className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">
-              {userLimits.tier === 'pro' ? (
-                'Unlimited lookups'
-              ) : (
-                <>
-                  <span className={getUsageStatus() === 'critical' ? 'text-red-600' : 'text-foreground'}>
-                    {getRemainingLookups()} lookups remaining
+          <span className="text-sm text-muted-foreground">
+            {userLimits.tier === 'pro' ? (
+              'Unlimited lookups'
+            ) : (
+              <>
+                <span className={getUsageStatus() === 'critical' ? 'text-red-600 font-medium' : 'text-foreground font-medium'}>
+                  {getRemainingLookups()} property lookups remaining
+                </span>
+                {getUsageStatus() === 'critical' && (
+                  <span className="ml-1 text-xs text-red-600">
+                    (Low)
                   </span>
-                  {getUsageStatus() === 'critical' && (
-                    <span className="ml-1 text-xs text-red-600 font-normal">
-                      (Low)
-                    </span>
-                  )}
-                </>
-              )}
-            </span>
-          </div>
+                )}
+              </>
+            )}
+          </span>
         </div>
-        {userLimits.tier !== 'pro' && (
-          <div className="text-xs text-muted-foreground whitespace-nowrap">
-            Resets {formatResetDate(userLimits.reset_date)}
-          </div>
-        )}
       </div>
     )
   }
@@ -176,12 +165,9 @@ export function UsageIndicator({ compact = false, showTier = true }: UsageIndica
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {showTier && (
-                <>
-                  <CrownIcon className="h-5 w-5 text-muted-foreground" />
-                  <Badge variant={userLimits.tier === 'pro' ? 'default' : 'secondary'}>
-                    {userLimits.tier === 'pro' ? 'Pro Tier' : 'Free Tier'}
-                  </Badge>
-                </>
+                <Badge variant={userLimits.tier === 'pro' ? 'default' : 'secondary'}>
+                  {userLimits.tier === 'pro' ? 'Pro Tier' : 'Free Tier'}
+                </Badge>
               )}
             </div>
             {userLimits.tier === 'free' && (

@@ -13,6 +13,13 @@ export function buildPortfolioUrl(basePath: string, portfolioId: string | null):
     return basePath
   }
   
+  // Handle server-side rendering where window is not available
+  if (typeof window === 'undefined') {
+    const url = new URL(basePath, 'http://localhost')
+    url.searchParams.set('portfolio_id', portfolioId)
+    return url.pathname + url.search
+  }
+  
   const url = new URL(basePath, window.location.origin)
   url.searchParams.set('portfolio_id', portfolioId)
   return url.pathname + url.search

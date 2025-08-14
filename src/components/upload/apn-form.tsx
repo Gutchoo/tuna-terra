@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { SearchIcon, CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useCreateProperty } from '@/hooks/use-create-property'
 
 const formSchema = z.object({
   apn: z.string().min(1, 'APN is required'),
@@ -24,6 +25,7 @@ type FormData = z.infer<typeof formSchema>
 
 interface APNFormProps {
   portfolioId: string | null
+  proLookupEnabled: boolean
 }
 
 interface PropertyPreview {
@@ -48,12 +50,10 @@ interface DuplicateProperty {
 }
 
 
-export function APNForm({ portfolioId }: APNFormProps) {
+export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [propertyPreview, setPropertyPreview] = useState<PropertyPreview | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [isDuplicateChecking, setIsDuplicateChecking] = useState(false)
   const [duplicateProperty, setDuplicateProperty] = useState<DuplicateProperty | null>(null)
   const [isRecentlyChanged, setIsRecentlyChanged] = useState(false)
@@ -64,7 +64,11 @@ export function APNForm({ portfolioId }: APNFormProps) {
     limit: number
     resetDate: string
   } | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
   const router = useRouter()
+  
+  // React Query mutation for property creation
+  const createPropertyMutation = useCreateProperty()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -133,6 +137,22 @@ export function APNForm({ portfolioId }: APNFormProps) {
       return
     }
 
+    // In basic mode, skip the Regrid search and create a basic property preview
+    if (!proLookupEnabled) {
+      setPropertyPreview({
+        id: '', // No Regrid ID in basic mode
+        apn: apn,
+        address: `APN: ${apn}`, // Basic address display
+        city: '',
+        state: '',
+        zip_code: '',
+        owner: 'N/A',
+        lot_size_sqft: undefined,
+        assessed_value: undefined,
+      })
+      return
+    }
+
     setIsSearching(true)
     setSearchError(null)
     setPropertyPreview(null)
@@ -179,71 +199,56 @@ export function APNForm({ portfolioId }: APNFormProps) {
       return
     }
 
-    setIsSubmitting(true)
-
     try {
-      const response = await fetch('/api/user-properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          portfolio_id: portfolioId,
-          apn: data.apn,
-          address: propertyPreview.address,
-          city: propertyPreview.city,
-          state: propertyPreview.state,
-          zip_code: propertyPreview.zip_code,
-          regrid_id: propertyPreview.id,
-          user_notes: data.user_notes,
-          insurance_provider: data.insurance_provider,
-        }),
+      await createPropertyMutation.mutateAsync({
+        portfolio_id: portfolioId,
+        apn: data.apn,
+        address: proLookupEnabled ? propertyPreview.address : `APN: ${data.apn}`,
+        city: propertyPreview.city,
+        state: propertyPreview.state,
+        zip_code: propertyPreview.zip_code,
+        regrid_id: proLookupEnabled ? propertyPreview.id : undefined,
+        user_notes: data.user_notes,
+        insurance_provider: data.insurance_provider,
+        use_pro_lookup: proLookupEnabled,
       })
 
-      let result
-      try {
-        const responseText = await response.text()
-        console.log('API response status:', response.status)
-        console.log('API response text:', responseText)
-        
-        if (!responseText) {
-          throw new Error('Empty response from server')
-        }
-        
-        result = JSON.parse(responseText)
-      } catch (jsonError) {
-        console.error('JSON parsing error:', jsonError)
-        throw new Error('Invalid response from server. Please check the server logs.')
-      }
-
-      if (!response.ok) {
-        // Handle limit exceeded error
-        if (response.status === 429) {
-          setLimitExceeded({
-            message: result.message || 'Property lookup limit exceeded',
-            tier: result.details?.tier || 'free',
-            used: result.details?.used || 0,
-            limit: result.details?.limit || 25,
-            resetDate: result.details?.resetDate || new Date().toISOString()
-          })
-          return
-        }
-        throw new Error(result?.error || `Server error (${response.status})`)
-      }
-
-      setSubmitSuccess(true)
+      // Success! The mutation handles cache invalidation automatically
+      // Show success message and clear form, but stay on page
+      setShowSuccess(true)
+      setPropertyPreview(null)
+      setSearchError(null)
+      form.reset()
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 3000)
+      
     } catch (error) {
       console.error('Submit error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to add property'
       
+      // Handle limit exceeded error
+      if (errorMessage.includes('limit exceeded')) {
+        // Parse limit exceeded details if available
+        setLimitExceeded({
+          message: errorMessage,
+          tier: 'free', // Could be parsed from error if needed
+          used: 0,
+          limit: 25,
+          resetDate: new Date().toISOString()
+        })
+        return
+      }
+      
       // Special handling for duplicate property errors
       if (errorMessage.includes('already exists in your portfolio')) {
         setSearchError('This property is already in your portfolio. Please search for a different APN.')
-        // Clear the property preview since it's a duplicate
         setPropertyPreview(null)
       } else {
         setSearchError(errorMessage)
       }
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -302,37 +307,11 @@ export function APNForm({ portfolioId }: APNFormProps) {
     )
   }
 
-  if (submitSuccess) {
-    return (
-      <Alert>
-        <CheckCircleIcon className="h-4 w-4" />
-        <AlertTitle>Property Added Successfully</AlertTitle>
-        <AlertDescription>
-          The property has been added to your portfolio.
-        </AlertDescription>
-        <div className="mt-4 flex gap-4">
-          <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}>
-            View Properties
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setSubmitSuccess(false)
-              setPropertyPreview(null)
-              setSearchError(null)
-              form.reset()
-            }}
-          >
-            Add Another Property
-          </Button>
-        </div>
-      </Alert>
-    )
-  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
         <FormField
           control={form.control}
           name="apn"
@@ -412,9 +391,17 @@ export function APNForm({ portfolioId }: APNFormProps) {
             ) : (
               <SearchIcon className="h-4 w-4" />
             )}
-            {isSearching ? 'Searching...' : 'Search Property'}
+{isSearching ? 'Searching...' : (proLookupEnabled ? 'Search Property' : 'Use APN')}
           </Button>
         </div>
+
+        {showSuccess && (
+          <Alert>
+            <CheckCircleIcon className="h-4 w-4" />
+            <AlertTitle>Property Added Successfully</AlertTitle>
+            <AlertDescription>The property has been added to your portfolio. You can add another property or view your properties.</AlertDescription>
+          </Alert>
+        )}
 
         {searchError && (
           <Alert variant="destructive">
@@ -427,30 +414,46 @@ export function APNForm({ portfolioId }: APNFormProps) {
         {propertyPreview && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Property Found</CardTitle>
-              <CardDescription>Review the property details below</CardDescription>
+              <CardTitle className="text-lg">
+                {proLookupEnabled ? 'Property Found' : 'Property Ready to Add'}
+              </CardTitle>
+              <CardDescription>
+                {proLookupEnabled 
+                  ? 'Review the property details below' 
+                  : 'Basic property information - no detailed data will be fetched'
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <strong>APN:</strong> {propertyPreview.apn}
               </div>
-              <div>
-                <strong>Address:</strong> {propertyPreview.address}
-                {propertyPreview.city && `, ${propertyPreview.city}`}
-                {propertyPreview.state && `, ${propertyPreview.state}`}
-                {propertyPreview.zip_code && ` ${propertyPreview.zip_code}`}
-              </div>
-              <div>
-                <strong>Owner:</strong> {propertyPreview.owner}
-              </div>
-              {propertyPreview.lot_size_sqft && (
-                <div>
-                  <strong>Lot Size:</strong> {propertyPreview.lot_size_sqft.toLocaleString()} sq ft
-                </div>
-              )}
-              {propertyPreview.assessed_value && (
-                <div>
-                  <strong>Assessed Value:</strong> ${propertyPreview.assessed_value.toLocaleString()}
+              {proLookupEnabled ? (
+                <>
+                  <div>
+                    <strong>Address:</strong> {propertyPreview.address}
+                    {propertyPreview.city && `, ${propertyPreview.city}`}
+                    {propertyPreview.state && `, ${propertyPreview.state}`}
+                    {propertyPreview.zip_code && ` ${propertyPreview.zip_code}`}
+                  </div>
+                  <div>
+                    <strong>Owner:</strong> {propertyPreview.owner}
+                  </div>
+                  {propertyPreview.lot_size_sqft && (
+                    <div>
+                      <strong>Lot Size:</strong> {propertyPreview.lot_size_sqft.toLocaleString()} sq ft
+                    </div>
+                  )}
+                  {propertyPreview.assessed_value && (
+                    <div>
+                      <strong>Assessed Value:</strong> ${propertyPreview.assessed_value.toLocaleString()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  This property will be saved with basic information only. 
+                  Enable Pro Lookup to fetch detailed property data including address, owner, and financial information.
                 </div>
               )}
             </CardContent>
@@ -494,13 +497,23 @@ export function APNForm({ portfolioId }: APNFormProps) {
               )}
             />
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? 'Adding Property...' : 'Add Property to Portfolio'}
-            </Button>
+            <div className="flex gap-4">
+              <Button
+                type="submit"
+                disabled={createPropertyMutation.isPending}
+                className="flex-1"
+              >
+                {createPropertyMutation.isPending ? 'Adding Property...' : 'Add Property to Portfolio'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}
+                className="flex-1"
+              >
+                View Properties
+              </Button>
+            </div>
           </>
         )}
       </form>
