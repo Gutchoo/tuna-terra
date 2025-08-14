@@ -9,7 +9,7 @@ interface WelcomeEmptyStateProps {
 
 export function WelcomeEmptyState({ onCreatePortfolio }: WelcomeEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen max-w-md mx-auto px-6 text-center">
+    <div className="flex flex-col items-center justify-start min-h-screen max-w-md mx-auto px-6 pt-20 text-center">
       {/* Simple Icon */}
       <div className="mb-8">
         <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">

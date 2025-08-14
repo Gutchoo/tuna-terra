@@ -144,7 +144,7 @@ export default function PortfoliosPage() {
         )}
         
         {/* Centered empty state */}
-        <div className="flex flex-col items-center justify-center flex-1 max-w-md mx-auto px-6 text-center">
+        <div className="flex flex-col items-center justify-start flex-1 max-w-md mx-auto px-6 pt-20 text-center">
           {/* Simple Icon */}
           <div className="mb-8">
             <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
