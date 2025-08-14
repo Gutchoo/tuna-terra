@@ -23,7 +23,7 @@ import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEdita
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
 import { useNavigationPreload } from '@/hooks/use-navigation-preload'
-import type { PortfolioWithMembership } from '@/lib/supabase'
+// import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface DashboardHeaderProps {
   onPortfolioChange?: (portfolioId: string | null) => void

@@ -6,7 +6,7 @@ import { UploadHeader } from '@/components/upload/UploadHeader'
 import { GlobalProLookupSettings } from '@/components/upload/GlobalProLookupSettings'
 import { LazyUploadTabs } from '@/components/upload/lazy-upload-tabs'
 import { useDefaultPortfolio } from '@/hooks/use-portfolios'
-import { useUsageData } from '@/hooks/use-user-limits'
+import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
 
 function UploadPageContent() {
   const searchParams = useSearchParams()
@@ -17,7 +17,8 @@ function UploadPageContent() {
 
   // Use optimized hooks for data fetching
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
-  const { data: usageData } = useUsageData()
+  const { data: userLimits } = useUserLimits()
+  const remainingLookups = useRemainingLookups()
 
   // Get portfolio_id from URL params
   useEffect(() => {
@@ -50,6 +51,14 @@ function UploadPageContent() {
       setIsRedirecting(false)
     }
   }, [searchParams, router, isRedirecting, currentPortfolioId, portfoliosLoading, portfolios, defaultPortfolio])
+
+  // Force pro lookup to false if user has no lookups left
+  useEffect(() => {
+    const isProDisabled = userLimits?.tier === 'free' && remainingLookups <= 0
+    if (isProDisabled && proLookupEnabled) {
+      setProLookupEnabled(false)
+    }
+  }, [userLimits, remainingLookups, proLookupEnabled])
 
   const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
 
@@ -95,11 +104,10 @@ function UploadPageContent() {
           </div>
         </div>
 
-        {/* Compact Pro Lookup Settings without usage info */}
+        {/* Compact Pro Lookup Settings with usage limiting */}
         <GlobalProLookupSettings 
           enabled={proLookupEnabled}
           onToggle={setProLookupEnabled}
-          usage={usageData}
         />
 
         <LazyUploadTabs 

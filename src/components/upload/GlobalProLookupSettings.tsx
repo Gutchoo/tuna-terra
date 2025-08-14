@@ -2,7 +2,7 @@
 
 import { ModeToggle } from '@/components/upload/ModeToggle'
 import { MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
-import { useUsageData } from '@/hooks/use-user-limits'
+import { useUserLimits, useRemainingLookups, useUsageData } from '@/hooks/use-user-limits'
 
 interface GlobalProLookupSettingsProps {
   enabled: boolean
@@ -32,16 +32,54 @@ export function OptimizedGlobalProLookupSettings({
 }
 
 export function GlobalProLookupSettings({ enabled, onToggle }: GlobalProLookupSettingsProps) {
+  const { data: userLimits } = useUserLimits()
+  const remainingLookups = useRemainingLookups()
+  
+  // Determine if Pro mode should be disabled
+  const isProDisabled = userLimits?.tier === 'free' && remainingLookups <= 0
+
+  // Handle toggle with limitation check
+  const handleToggle = (newEnabled: boolean) => {
+    if (newEnabled && isProDisabled) {
+      // Don't allow enabling Pro if no lookups left
+      return
+    }
+    onToggle(newEnabled)
+  }
 
   return (
     <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 overflow-hidden">
       <div className="flex items-start justify-between mb-6">
-        {/* Toggle Section */}
-        <div className="flex items-center">
+        {/* Toggle Section with Usage Info */}
+        <div className="flex items-center gap-4">
           <ModeToggle
             enabled={enabled}
-            onToggle={onToggle}
+            onToggle={handleToggle}
+            disabled={isProDisabled}
           />
+          
+          {/* Usage Display */}
+          {userLimits && (
+            <div className="flex flex-col gap-1">
+              <span className={`text-sm font-medium ${
+                isProDisabled 
+                  ? 'text-red-600 dark:text-red-400' 
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}>
+                {userLimits?.tier === 'pro' 
+                  ? 'Unlimited lookups' 
+                  : remainingLookups <= 0
+                  ? 'No lookups left'
+                  : `${remainingLookups} lookups left`
+                }
+              </span>
+              {isProDisabled && (
+                <span className="text-xs text-red-500 dark:text-red-400">
+                  Pro lookups disabled
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Enhanced Data Features Label */}

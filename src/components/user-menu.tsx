@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserIcon, LogOutIcon, SettingsIcon } from 'lucide-react'
+import { UserIcon, LogOutIcon, SettingsIcon, SunIcon, MoonIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -23,6 +24,7 @@ function UserMenuContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const { theme, setTheme } = useTheme()
   
   // Get current portfolio context
   const currentPortfolioId = searchParams.get('portfolio_id')
@@ -87,6 +89,15 @@ function UserMenuContent() {
             <span>Account</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          {theme === 'dark' ? (
+            <SunIcon className="mr-2 h-4 w-4" />
+          ) : (
+            <MoonIcon className="mr-2 h-4 w-4" />
+          )}
+          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon className="mr-2 h-4 w-4" />
           <span>Sign out</span>

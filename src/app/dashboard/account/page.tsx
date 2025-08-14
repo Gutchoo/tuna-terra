@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+// import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +15,6 @@ import {
   ShieldIcon, 
   SaveIcon,
   BuildingIcon,
-  CrownIcon,
   SearchIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
@@ -29,9 +28,8 @@ interface ProfileStats {
 }
 
 function AccountPageContent() {
-  const searchParams = useSearchParams()
-  // Portfolio context preserved for future navigation features
-  const _currentPortfolioId = searchParams.get('portfolio_id')
+  // const searchParams = useSearchParams()
+  // Portfolio context can be added here for future navigation features
   
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -322,7 +320,7 @@ function AccountPageContent() {
 
             {/* Name Field */}
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">Name</Label>
               <Input
                 id="fullName"
                 value={fullName}
@@ -330,7 +328,7 @@ function AccountPageContent() {
                   setFullName(e.target.value)
                   if (nameError) setNameError('') // Clear error on change
                 }}
-                placeholder="Enter your full name"
+                placeholder="Enter your name"
                 className={nameError ? 'border-destructive' : ''}
                 maxLength={50}
               />
@@ -428,7 +426,7 @@ function AccountPageContent() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CrownIcon className="h-5 w-5" />
+                <SearchIcon className="h-5 w-5" />
                 Account Tier & Usage
               </CardTitle>
               <CardDescription>
@@ -466,7 +464,12 @@ function AccountPageContent() {
                           <span>
                             {userLimits.property_lookups_used} / {userLimits.tier === 'pro' ? '∞' : userLimits.property_lookups_limit} used
                           </span>
-                          {userLimits.tier !== 'pro' && getUsagePercentage() >= 90 && (
+                          {userLimits.tier !== 'pro' && userLimits.property_lookups_used >= userLimits.property_lookups_limit && (
+                            <Badge variant="destructive" className="text-xs">
+                              None Left
+                            </Badge>
+                          )}
+                          {userLimits.tier !== 'pro' && userLimits.property_lookups_used < userLimits.property_lookups_limit && getUsagePercentage() >= 90 && (
                             <Badge variant="destructive" className="text-xs">
                               Low
                             </Badge>
@@ -525,7 +528,7 @@ function AccountPageContent() {
             </CardHeader>
             <CardContent>
               {stats ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">
                       {stats.portfolios_owned}
@@ -534,17 +537,8 @@ function AccountPageContent() {
                       Portfolios Owned
                     </div>
                   </div>
-                  
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {stats.portfolios_shared}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Shared Access
-                    </div>
-                  </div>
 
-                  <div className="col-span-2 sm:col-span-1 text-center p-3 bg-muted/50 rounded-lg">
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-orange-600">
                       {stats.total_properties}
                     </div>
