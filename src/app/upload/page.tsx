@@ -70,12 +70,19 @@ function UploadPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Add Properties{currentPortfolio ? ` to ${currentPortfolio.name}` : ''}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Add Properties{currentPortfolio ? (
+              <>
+                <span className="hidden sm:inline"> to </span>
+                <span className="block sm:inline text-xl md:text-3xl text-primary truncate mt-1 sm:mt-0">
+                  {currentPortfolio.name}
+                </span>
+              </>
+            ) : ''}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm md:text-base">
             Import properties to your portfolio using CSV files, APNs, or addresses
           </p>
         </div>

@@ -167,8 +167,113 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   return (
     <TooltipProvider>
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4">
+          {/* Mobile Layout */}
+          <div className="flex flex-col gap-4 md:hidden">
+            {/* Top Row - Portfolio Selector */}
+            <div className="flex items-center gap-2">
+              <Select value={currentPortfolio || ''} onValueChange={handlePortfolioChange}>
+                <SelectTrigger className="flex-1 min-w-0">
+                  <SelectValue placeholder="Select portfolio">
+                    {selectedPortfolio && (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BuildingIcon className="h-4 w-4 flex-shrink-0" />
+                        <InlineEditablePortfolioName
+                          portfolioId={selectedPortfolio.id}
+                          initialName={selectedPortfolio.name}
+                          canEdit={selectedPortfolio.membership_role === 'owner'}
+                          onNameChange={(newName) => handlePortfolioNameUpdate(selectedPortfolio.id, newName)}
+                          onError={() => {}}
+                          className="font-medium truncate"
+                        />
+                        {selectedPortfolio.is_default && (
+                          <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
+                        )}
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {portfolios.map((portfolio) => (
+                    <SelectItem key={portfolio.id} value={portfolio.id}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BuildingIcon className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{portfolio.name}</span>
+                        {portfolio.is_default && (
+                          <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
+                        )}
+                        <Badge className={`text-xs flex-shrink-0 ${getRoleColor(portfolio.membership_role)}`}>
+                          {portfolio.membership_role}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Second Row - Pro Lookups and Actions */}
+            <div className="flex items-center justify-between gap-2">
+              {/* Pro Lookups Information - Compact */}
+              {userLimits && (
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Badge 
+                    variant={userLimits.tier === 'pro' ? 'default' : 'secondary'}
+                    className="font-medium text-xs flex-shrink-0"
+                  >
+                    {userLimits.tier === 'pro' ? 'Pro' : 'Free'}
+                  </Badge>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                    {userLimits?.tier === 'pro' 
+                      ? 'Unlimited' 
+                      : `${remainingLookups} left`
+                    }
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-muted flex-shrink-0"
+                        onClick={() => setShowProInfoModal(true)}
+                      >
+                        <InfoIcon className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        <span className="sr-only">What are Pro lookups?</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>What are Pro lookups?</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+
+              {/* Action Buttons - Mobile */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" asChild className="text-xs px-2">
+                  <Link href="/dashboard/portfolios">
+                    <SettingsIcon className="h-3 w-3" />
+                    <span className="ml-1 hidden xs:inline">Manage</span>
+                  </Link>
+                </Button>
+                <Button 
+                  size="sm"
+                  asChild
+                  onMouseEnter={handlePreloadUpload}
+                  onFocus={handlePreloadUpload}
+                  className="text-xs px-2"
+                >
+                  <Link href="/upload">
+                    <PlusIcon className="h-3 w-3" />
+                    <span className="ml-1">Add</span>
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between">
             {/* Left side - Portfolio selector and Pro Lookups */}
             <div className="flex items-center gap-8">
               {/* Portfolio Selector */}

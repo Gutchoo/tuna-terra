@@ -231,7 +231,98 @@ export function PropertyTableView({
         />
       </div>
       
-      <div className="border rounded-md">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-3">
+        {sortedProperties.map((property) => (
+          <div
+            key={property.id}
+            className={`border rounded-lg p-4 space-y-3 ${
+              selectedRows.has(property.id) ? 'bg-muted/50 border-primary/20' : ''
+            }`}
+          >
+            {/* Mobile Card Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <Checkbox
+                  checked={selectedRows.has(property.id)}
+                  onCheckedChange={(checked) => onRowSelect(property.id, !!checked)}
+                  aria-label={`Select ${property.address}`}
+                  className="mt-1 flex-shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm truncate" title={property.address || ''}>
+                    {property.address || '-'}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-mono mt-1">
+                    APN: {property.apn || '-'}
+                  </div>
+                </div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                    <MoreHorizontalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => onRefresh(property)}
+                    disabled={refreshingPropertyId === property.id || !property.apn}
+                    className="focus:bg-blue-50"
+                  >
+                    <RefreshCwIcon className={`mr-2 h-4 w-4 ${
+                      refreshingPropertyId === property.id ? 'animate-spin' : ''
+                    }`} />
+                    {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete(property)}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            {/* Mobile Card Body - Key Info Only */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="text-muted-foreground text-xs font-medium mb-1">Owner</div>
+                <div className="truncate" title={property.owner || ''}>
+                  {property.owner || '-'}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs font-medium mb-1">City</div>
+                <div className="truncate">
+                  {property.city || '-'}
+                </div>
+              </div>
+              {property.assessed_value && (
+                <div>
+                  <div className="text-muted-foreground text-xs font-medium mb-1">Assessed Value</div>
+                  <div className="font-mono text-sm">
+                    {formatCurrency(property.assessed_value)}
+                  </div>
+                </div>
+              )}
+              {property.lot_size_acres && (
+                <div>
+                  <div className="text-muted-foreground text-xs font-medium mb-1">Lot Size</div>
+                  <div className="text-sm">
+                    {(property.lot_size_acres as number).toFixed(2)} ac
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Desktop Table View */}
+      <div className="hidden md:block border rounded-md overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

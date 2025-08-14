@@ -204,7 +204,7 @@ export function MapOverlayTable({
   }
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-96 max-w-[25vw]">
+    <div className="absolute top-4 left-4 right-4 md:right-auto z-10 md:w-96 md:max-w-[25vw]">
       <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
         {/* Header */}
         <div className="p-2.5 border-b space-y-2">
