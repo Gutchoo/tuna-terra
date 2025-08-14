@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
-import { atomicCheckAndIncrement, createAtomicLimitExceededResponse } from '@/lib/atomicLimits'
+import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 import { propertyLookupSchema, createErrorResponse } from '@/lib/validation'
 
@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
       return rateLimitResponse
     }
 
-    // Atomic check and increment - prevents race conditions
-    const limitResult = await atomicCheckAndIncrement(userId, 1)
-    if (!limitResult.canProceed) {
-      return NextResponse.json(createAtomicLimitExceededResponse(limitResult), { status: 429 })
+    // Check user limits before making API call (no increment - just preview)
+    const limitCheck = await checkUserLimitsServer(userId, 1)
+    if (!limitCheck.canProceed) {
+      return NextResponse.json(createLimitExceededResponse(limitCheck), { status: 429 })
     }
 
     const body = await request.json()
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     // The address endpoint already returns full property data
     const bestMatch = searchResults[0]
     
-    // Usage already incremented atomically above - no need to increment again
+    // Note: Usage will be incremented when property is actually added to portfolio
+    // This lookup is just for preview purposes
 
     // Use the full feature data to create a complete property object
     if (bestMatch._fullFeature) {

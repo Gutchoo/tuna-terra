@@ -21,6 +21,9 @@ import {
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEditablePortfolioName'
+import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
+import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
+import { useNavigationPreload } from '@/hooks/use-navigation-preload'
 import type { PortfolioWithMembership, UserLimits } from '@/lib/supabase'
 
 interface DashboardHeaderProps {
@@ -30,44 +33,23 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [portfolios, setPortfolios] = useState<PortfolioWithMembership[]>([])
   const [currentPortfolio, setCurrentPortfolio] = useState<string | null>(null)
-  const [userLimits, setUserLimits] = useState<UserLimits | null>(null)
-  const [loading, setLoading] = useState(true)
   const [showProInfoModal, setShowProInfoModal] = useState(false)
+  
+  // Use optimized hooks for data fetching
+  const { data: portfolios = [], isLoading: portfoliosLoading } = usePortfolios(true)
+  const { data: userLimits } = useUserLimits()
+  const remainingLookups = useRemainingLookups()
+  const updatePortfolioName = useUpdatePortfolioName()
+  const { navigateToUpload, handlePreloadUpload } = useNavigationPreload()
+
+  const loading = portfoliosLoading
 
   // Get portfolio_id from URL params
   useEffect(() => {
     const portfolioIdFromUrl = searchParams.get('portfolio_id')
     setCurrentPortfolio(portfolioIdFromUrl)
   }, [searchParams])
-
-  // Fetch portfolios and user limits
-  useEffect(() => {
-    Promise.all([fetchPortfolios(), fetchUserLimits()]).finally(() => setLoading(false))
-  }, [])
-
-  const fetchPortfolios = async () => {
-    try {
-      const response = await fetch('/api/portfolios?include_stats=true')
-      if (!response.ok) throw new Error('Failed to fetch portfolios')
-      const data = await response.json()
-      setPortfolios(data.portfolios || [])
-    } catch (error) {
-      console.error('Error fetching portfolios:', error)
-    }
-  }
-
-  const fetchUserLimits = async () => {
-    try {
-      const response = await fetch('/api/user/limits')
-      if (!response.ok) throw new Error('Failed to load usage info')
-      const data = await response.json()
-      setUserLimits(data.limits)
-    } catch (error) {
-      console.error('Error loading user limits:', error)
-    }
-  }
 
   const handlePortfolioChange = (portfolioId: string | null) => {
     setCurrentPortfolio(portfolioId)
@@ -84,9 +66,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   }
 
   const handlePortfolioNameUpdate = (portfolioId: string, newName: string) => {
-    setPortfolios(prev => prev.map(p => 
-      p.id === portfolioId ? { ...p, name: newName } : p
-    ))
+    updatePortfolioName.mutate({ id: portfolioId, name: newName })
   }
 
   const getRoleColor = (role?: string) => {
@@ -96,11 +76,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
       case 'viewer': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
-  }
-
-  const getRemainingLookups = () => {
-    if (!userLimits) return 0
-    return Math.max(0, userLimits.property_lookups_limit - userLimits.property_lookups_used)
   }
 
 
@@ -255,9 +230,9 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                     </Badge>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Pro Lookups: {userLimits.tier === 'pro' 
+                        Pro Lookups: {userLimits?.tier === 'pro' 
                           ? 'Unlimited' 
-                          : `${getRemainingLookups()} remaining`
+                          : `${remainingLookups} remaining`
                         }
                       </span>
                       <Tooltip>
@@ -290,7 +265,11 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                   Manage Portfolios
                 </Link>
               </Button>
-              <Button asChild>
+              <Button 
+                asChild
+                onMouseEnter={handlePreloadUpload}
+                onFocus={handlePreloadUpload}
+              >
                 <Link href="/upload" className="flex items-center gap-2">
                   <PlusIcon className="h-4 w-4" />
                   Add Properties

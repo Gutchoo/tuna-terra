@@ -1,7 +1,14 @@
--- Add atomic limit checking to prevent race conditions
--- This migration adds a database function for atomic limit checking and usage increment
+-- Update default pro lookup limit from 25 to 15
+-- This migration updates both the database functions and existing user records
 
--- Function to atomically check and increment usage limits
+-- Step 1: Update existing users to new limit
+UPDATE user_limits 
+SET 
+  property_lookups_limit = 15,
+  updated_at = NOW()
+WHERE tier = 'free' AND property_lookups_limit = 25;
+
+-- Step 2: Update the atomic limit checking function with new default
 CREATE OR REPLACE FUNCTION check_and_increment_usage(
   p_user_id UUID,
   p_increment INTEGER DEFAULT 1
@@ -22,7 +29,7 @@ BEGIN
   WHERE user_id = p_user_id
   FOR UPDATE;
   
-  -- If user doesn't exist, create default limits
+  -- If user doesn't exist, create default limits with 15 lookups
   IF user_record IS NULL THEN
     INSERT INTO user_limits (user_id, tier, property_lookups_used, property_lookups_limit)
     VALUES (p_user_id, 'free', 0, 15)
@@ -89,7 +96,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to just check limits without incrementing (for preview/validation)
+-- Step 3: Update the read-only limit checking function with new default
 CREATE OR REPLACE FUNCTION check_usage_limits(
   p_user_id UUID,
   p_check_count INTEGER DEFAULT 1
@@ -108,7 +115,7 @@ BEGIN
   FROM user_limits 
   WHERE user_id = p_user_id;
   
-  -- If user doesn't exist, return default limits
+  -- If user doesn't exist, return default limits with 15 lookups
   IF user_record IS NULL THEN
     RETURN QUERY SELECT 
       (p_check_count <= 15),
@@ -146,6 +153,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Grant execute permissions to authenticated users
+-- Step 4: Grant execute permissions to authenticated users (in case they were lost)
 GRANT EXECUTE ON FUNCTION check_and_increment_usage(UUID, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION check_usage_limits(UUID, INTEGER) TO authenticated;
+
+-- Step 5: Verify the changes
+-- You can run this query after the migration to check results:
+-- SELECT user_id, tier, property_lookups_used, property_lookups_limit, updated_at 
+-- FROM user_limits 
+-- WHERE tier = 'free';

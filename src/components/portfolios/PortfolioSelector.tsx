@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { PlusIcon, UsersIcon, BuildingIcon } from 'lucide-react'
 import { InlineEditablePortfolioName } from './InlineEditablePortfolioName'
+import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface PortfolioSelectorProps {
@@ -25,44 +26,18 @@ export function PortfolioSelector({
 }: PortfolioSelectorProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [portfolios, setPortfolios] = useState<PortfolioWithMembership[]>([])
   const [currentPortfolio, setCurrentPortfolio] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Use optimized hooks for data fetching
+  const { data: portfolios = [], isLoading: loading } = usePortfolios(true)
+  const updatePortfolioName = useUpdatePortfolioName()
 
   // Get portfolio_id from URL params
   useEffect(() => {
     const portfolioIdFromUrl = searchParams.get('portfolio_id')
     setCurrentPortfolio(portfolioIdFromUrl)
   }, [searchParams])
-
-  // Fetch portfolios
-  useEffect(() => {
-    fetchPortfolios()
-  }, [])
-
-  const fetchPortfolios = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/portfolios?include_stats=true')
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch portfolios')
-      }
-
-      const data = await response.json()
-      setPortfolios(data.portfolios || [])
-
-      // Auto-selection is now handled by individual pages (dashboard, map) 
-      // This component just follows the URL state
-      // No auto-selection logic needed here to avoid conflicts with page-level redirects
-    } catch (error) {
-      console.error('Error fetching portfolios:', error)
-      setError('Failed to load portfolios')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handlePortfolioChange = (portfolioId: string | null) => {
     setCurrentPortfolio(portfolioId)
@@ -87,11 +62,7 @@ export function PortfolioSelector({
   }
 
   const handlePortfolioNameUpdate = (portfolioId: string, newName: string) => {
-    setPortfolios(prev => prev.map(p => 
-      p.id === portfolioId 
-        ? { ...p, name: newName }
-        : p
-    ))
+    updatePortfolioName.mutate({ id: portfolioId, name: newName })
   }
 
   const handleNameUpdateError = (errorMessage: string) => {

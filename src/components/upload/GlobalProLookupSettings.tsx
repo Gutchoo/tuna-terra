@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { CrownIcon, MapIcon, UserIcon, HomeIcon, FileTextIcon, DollarSignIcon } from 'lucide-react'
+import { useUsageData } from '@/hooks/use-user-limits'
 
 interface GlobalProLookupSettingsProps {
   enabled: boolean
@@ -14,6 +15,22 @@ interface GlobalProLookupSettingsProps {
     tier: 'free' | 'pro'
     resetDate?: string
   } | null
+}
+
+// Optimized version that can use React Query hooks
+export function OptimizedGlobalProLookupSettings({ 
+  enabled, 
+  onToggle 
+}: Omit<GlobalProLookupSettingsProps, 'usage'>) {
+  const { data: usage } = useUsageData()
+  
+  return (
+    <GlobalProLookupSettings 
+      enabled={enabled}
+      onToggle={onToggle}
+      usage={usage}
+    />
+  )
 }
 
 export function GlobalProLookupSettings({ enabled, onToggle, usage }: GlobalProLookupSettingsProps) {

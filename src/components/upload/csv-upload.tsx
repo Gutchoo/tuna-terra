@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { UploadIcon, CheckCircleIcon, AlertCircleIcon, XCircleIcon, CrownIcon } from 'lucide-react'
 import Papa from 'papaparse'
 import { useRouter } from 'next/navigation'
+import { useBulkCreateProperties } from '@/hooks/use-create-property'
 
 interface CSVRow {
   apn?: string

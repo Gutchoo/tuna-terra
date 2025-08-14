@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
-import { checkUserLimitsServer, incrementUserUsageServer, createLimitExceededResponse } from '@/lib/limits'
+import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 
 export async function GET(request: NextRequest) {
@@ -41,13 +41,11 @@ export async function GET(request: NextRequest) {
     }
 
     let results
-    let apiCallMade = false
 
     if (apn) {
-      // Search by APN - only count as API call if not using cached test data
+      // Search by APN
       const property = await RegridService.searchByAPN(apn, state || undefined)
       results = property ? [property] : []
-      apiCallMade = true // Always count APN lookups
     } else if (address) {
       // Search by address for autocomplete
       results = await RegridService.searchByAddress(
@@ -56,20 +54,17 @@ export async function GET(request: NextRequest) {
         state || undefined,
         limit
       )
-      apiCallMade = true // Always count address searches
     }
 
-    // Increment usage counter if we made an API call
-    if (apiCallMade && results && results.length > 0) {
-      await incrementUserUsageServer(userId, 1)
-    }
+    // Note: Usage will be incremented when property is actually added to portfolio
+    // This search is just for preview/lookup purposes
 
     return NextResponse.json({ 
       results,
       usage: limitCheck.canProceed ? {
-        used: limitCheck.currentUsed + (apiCallMade ? 1 : 0),
+        used: limitCheck.currentUsed,
         limit: limitCheck.limit,
-        remaining: limitCheck.remaining - (apiCallMade ? 1 : 0)
+        remaining: limitCheck.remaining
       } : undefined
     })
   } catch (error) {
@@ -119,17 +114,15 @@ export async function POST(request: NextRequest) {
       results = await RegridService.batchSearchByAddresses(addresses)
     }
 
-    // Increment usage by actual number of successful results
-    if (results.length > 0) {
-      await incrementUserUsageServer(userId, results.length)
-    }
+    // Note: Usage will be incremented when properties are actually added to portfolio
+    // This batch search is just for preview/lookup purposes
 
     return NextResponse.json({ 
       results,
       usage: {
-        used: limitCheck.currentUsed + results.length,
+        used: limitCheck.currentUsed,
         limit: limitCheck.limit,
-        remaining: limitCheck.remaining - results.length
+        remaining: limitCheck.remaining
       }
     })
   } catch (error) {
