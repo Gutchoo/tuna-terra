@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
 import { checkUserLimitsServer, incrementUserUsageServer, createLimitExceededResponse } from '@/lib/limits'
+import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 
 export async function GET(request: NextRequest) {
   try {
     const userId = await getUserId()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Apply rate limiting for search API calls
+    const rateLimitResponse = await applyRateLimit(userId, 'property-search', DEFAULT_CONFIGS.normal)
+    if (rateLimitResponse) {
+      return rateLimitResponse
     }
 
     const { searchParams } = new URL(request.url)

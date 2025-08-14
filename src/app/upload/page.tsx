@@ -8,7 +8,7 @@ import { CSVUpload } from '@/components/upload/csv-upload'
 import { APNForm } from '@/components/upload/apn-form'
 import { AddressForm } from '@/components/upload/address-form'
 import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
-import { UsageIndicator } from '@/components/usage/UsageIndicator'
+import { GlobalProLookupSettings } from '@/components/upload/GlobalProLookupSettings'
 import { UploadIcon, FileTextIcon, MapPinIcon } from 'lucide-react'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
@@ -18,6 +18,13 @@ function UploadPageContent() {
   const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(null)
   const [currentPortfolio, setCurrentPortfolio] = useState<PortfolioWithMembership | null>(null)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [proLookupEnabled, setProLookupEnabled] = useState(true)
+  const [usageData, setUsageData] = useState<{
+    used: number
+    limit: number
+    tier: 'free' | 'pro'
+    resetDate?: string
+  } | null>(null)
 
   // Get portfolio_id from URL params
   useEffect(() => {
@@ -93,6 +100,30 @@ function UploadPageContent() {
     }
   }, [currentPortfolioId])
 
+  // Fetch usage data
+  useEffect(() => {
+    const fetchUsageData = async () => {
+      try {
+        const response = await fetch('/api/user/limits')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.limits) {
+            setUsageData({
+              used: data.limits.property_lookups_used,
+              limit: data.limits.property_lookups_limit,
+              tier: data.limits.tier,
+              resetDate: data.limits.reset_date
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching usage data:', error)
+      }
+    }
+
+    fetchUsageData()
+  }, [])
+
   if (isRedirecting) {
     return (
       <div className="space-y-6">
@@ -129,8 +160,12 @@ function UploadPageContent() {
         enableInlineEdit={true}
       />
 
-      {/* Usage Indicator */}
-      <UsageIndicator compact={true} />
+      {/* Global Pro Lookup Settings with integrated usage display */}
+      <GlobalProLookupSettings 
+        enabled={proLookupEnabled}
+        onToggle={setProLookupEnabled}
+        usage={usageData}
+      />
 
       <Tabs defaultValue="csv" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -158,7 +193,7 @@ function UploadPageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CSVUpload portfolioId={currentPortfolioId} />
+              <CSVUpload portfolioId={currentPortfolioId} proLookupEnabled={proLookupEnabled} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -172,7 +207,7 @@ function UploadPageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <APNForm portfolioId={currentPortfolioId} />
+              <APNForm portfolioId={currentPortfolioId} proLookupEnabled={proLookupEnabled} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -186,7 +221,7 @@ function UploadPageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AddressForm portfolioId={currentPortfolioId} />
+              <AddressForm portfolioId={currentPortfolioId} proLookupEnabled={proLookupEnabled} />
             </CardContent>
           </Card>
         </TabsContent>

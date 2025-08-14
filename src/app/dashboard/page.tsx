@@ -1,15 +1,13 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlusIcon, SettingsIcon, BuildingIcon } from 'lucide-react'
-import Link from 'next/link'
+import { BuildingIcon, PlusIcon } from 'lucide-react'
 import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Property, PortfolioWithMembership } from '@/lib/supabase'
 import { PropertyView } from '@/components/properties/PropertyView'
-import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
-import { UsageIndicator } from '@/components/usage/UsageIndicator'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -249,58 +247,22 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
-              <UsageIndicator compact={true} showTier={true} />
-            </div>
-            <p className="text-muted-foreground">
-              Manage your real estate portfolio ({properties.length} {properties.length === 1 ? 'property' : 'properties'})
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/portfolios" className="flex items-center gap-2">
-              <SettingsIcon className="h-4 w-4" />
-              Manage Portfolios
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/upload" className="flex items-center gap-2">
-              <PlusIcon className="h-4 w-4" />
-              Add Properties
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Portfolio Selector */}
-      <PortfolioSelector 
+    <div className="space-y-0">
+      <DashboardHeader 
         onPortfolioChange={(portfolioId) => {
           // Only update local state - let useEffect handle fetching based on URL changes
           // This prevents race conditions between URL updates and direct API calls
           setCurrentPortfolioId(portfolioId)
         }}
-        compact={true}
-        enableInlineEdit={true}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Property Portfolio</CardTitle>
-          <CardDescription>
-            View and manage all your properties in one place
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {renderContent()}
-        </CardContent>
-      </Card>
-
+      <div className="p-6">
+        <Card>
+          <CardContent className="pt-6">
+            {renderContent()}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -308,10 +270,26 @@ function DashboardPageContent() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
+      <div className="space-y-0">
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-48 bg-muted rounded animate-pulse" />
+                <div className="h-6 w-24 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-9 w-28 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
         </div>
       </div>
     }>

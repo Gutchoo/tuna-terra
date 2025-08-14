@@ -69,7 +69,7 @@ export function PropertyCard({
   return (
     <Card className="transition-all duration-200 hover:shadow-md">
       {/* Card Header - Always Visible */}
-      <div className="p-6">
+      <div className="px-6 py-4">
         <div className="flex justify-between items-start">
           <div 
             className="flex-1 cursor-pointer"
@@ -174,10 +174,10 @@ export function PropertyCard({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-6 pb-6">
-          <Separator className="mb-6" />
+        <div className="px-6 pb-4">
+          <Separator className="mb-4" />
           
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Property Details */}
             <div>
               <div className="flex items-center gap-2 mb-3">

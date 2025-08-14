@@ -24,6 +24,7 @@ type FormData = z.infer<typeof formSchema>
 
 interface APNFormProps {
   portfolioId: string | null
+  proLookupEnabled: boolean
 }
 
 interface PropertyPreview {
@@ -48,7 +49,7 @@ interface DuplicateProperty {
 }
 
 
-export function APNForm({ portfolioId }: APNFormProps) {
+export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [propertyPreview, setPropertyPreview] = useState<PropertyPreview | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -133,6 +134,22 @@ export function APNForm({ portfolioId }: APNFormProps) {
       return
     }
 
+    // In basic mode, skip the Regrid search and create a basic property preview
+    if (!proLookupEnabled) {
+      setPropertyPreview({
+        id: '', // No Regrid ID in basic mode
+        apn: apn,
+        address: `APN: ${apn}`, // Basic address display
+        city: '',
+        state: '',
+        zip_code: '',
+        owner: 'N/A',
+        lot_size_sqft: undefined,
+        assessed_value: undefined,
+      })
+      return
+    }
+
     setIsSearching(true)
     setSearchError(null)
     setPropertyPreview(null)
@@ -188,13 +205,14 @@ export function APNForm({ portfolioId }: APNFormProps) {
         body: JSON.stringify({
           portfolio_id: portfolioId,
           apn: data.apn,
-          address: propertyPreview.address,
+          address: proLookupEnabled ? propertyPreview.address : `APN: ${data.apn}`,
           city: propertyPreview.city,
           state: propertyPreview.state,
           zip_code: propertyPreview.zip_code,
-          regrid_id: propertyPreview.id,
+          regrid_id: proLookupEnabled ? propertyPreview.id : undefined,
           user_notes: data.user_notes,
           insurance_provider: data.insurance_provider,
+          use_pro_lookup: proLookupEnabled,
         }),
       })
 
@@ -333,6 +351,7 @@ export function APNForm({ portfolioId }: APNFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
         <FormField
           control={form.control}
           name="apn"
@@ -412,7 +431,7 @@ export function APNForm({ portfolioId }: APNFormProps) {
             ) : (
               <SearchIcon className="h-4 w-4" />
             )}
-            {isSearching ? 'Searching...' : 'Search Property'}
+{isSearching ? 'Searching...' : (proLookupEnabled ? 'Search Property' : 'Use APN')}
           </Button>
         </div>
 
@@ -427,30 +446,46 @@ export function APNForm({ portfolioId }: APNFormProps) {
         {propertyPreview && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Property Found</CardTitle>
-              <CardDescription>Review the property details below</CardDescription>
+              <CardTitle className="text-lg">
+                {proLookupEnabled ? 'Property Found' : 'Property Ready to Add'}
+              </CardTitle>
+              <CardDescription>
+                {proLookupEnabled 
+                  ? 'Review the property details below' 
+                  : 'Basic property information - no detailed data will be fetched'
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <strong>APN:</strong> {propertyPreview.apn}
               </div>
-              <div>
-                <strong>Address:</strong> {propertyPreview.address}
-                {propertyPreview.city && `, ${propertyPreview.city}`}
-                {propertyPreview.state && `, ${propertyPreview.state}`}
-                {propertyPreview.zip_code && ` ${propertyPreview.zip_code}`}
-              </div>
-              <div>
-                <strong>Owner:</strong> {propertyPreview.owner}
-              </div>
-              {propertyPreview.lot_size_sqft && (
-                <div>
-                  <strong>Lot Size:</strong> {propertyPreview.lot_size_sqft.toLocaleString()} sq ft
-                </div>
-              )}
-              {propertyPreview.assessed_value && (
-                <div>
-                  <strong>Assessed Value:</strong> ${propertyPreview.assessed_value.toLocaleString()}
+              {proLookupEnabled ? (
+                <>
+                  <div>
+                    <strong>Address:</strong> {propertyPreview.address}
+                    {propertyPreview.city && `, ${propertyPreview.city}`}
+                    {propertyPreview.state && `, ${propertyPreview.state}`}
+                    {propertyPreview.zip_code && ` ${propertyPreview.zip_code}`}
+                  </div>
+                  <div>
+                    <strong>Owner:</strong> {propertyPreview.owner}
+                  </div>
+                  {propertyPreview.lot_size_sqft && (
+                    <div>
+                      <strong>Lot Size:</strong> {propertyPreview.lot_size_sqft.toLocaleString()} sq ft
+                    </div>
+                  )}
+                  {propertyPreview.assessed_value && (
+                    <div>
+                      <strong>Assessed Value:</strong> ${propertyPreview.assessed_value.toLocaleString()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  This property will be saved with basic information only. 
+                  Enable Pro Lookup to fetch detailed property data including address, owner, and financial information.
                 </div>
               )}
             </CardContent>

@@ -24,6 +24,7 @@ type FormData = z.infer<typeof formSchema>
 
 interface AddressFormProps {
   portfolioId: string | null
+  proLookupEnabled: boolean
 }
 
 interface AddressSuggestion {
@@ -50,7 +51,7 @@ interface PropertyDetails {
 
 
 
-export function AddressForm({ portfolioId }: AddressFormProps) {
+export function AddressForm({ portfolioId, proLookupEnabled }: AddressFormProps) {
   const [selectedProperty, setSelectedProperty] = useState<PropertyDetails | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -147,7 +148,25 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
           inputRef.current.value = formattedAddress
         }
 
-        // Look up property in Regrid
+        // In basic mode, skip Regrid lookup and create basic property
+        if (!proLookupEnabled) {
+          setSelectedProperty({
+            id: '', // No Regrid ID in basic mode
+            apn: 'N/A',
+            address: formattedAddress,
+            city: '',
+            state: '',
+            zip: '',
+            owner: 'N/A',
+            lot_size_sqft: undefined,
+            assessed_value: undefined,
+            property_type: undefined,
+          })
+          setIsLookingUp(false)
+          return
+        }
+
+        // Look up property in Regrid (Pro mode)
         try {
           const propertyResponse = await fetch('/api/properties/lookup', {
             method: 'POST',
@@ -229,9 +248,11 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
         body: JSON.stringify({
           portfolio_id: portfolioId,
           address: data.address,
-          regrid_id: selectedProperty.id,
+          regrid_id: proLookupEnabled ? selectedProperty.id : undefined,
+          apn: selectedProperty.apn !== 'N/A' ? selectedProperty.apn : undefined,
           user_notes: data.user_notes,
           insurance_provider: data.insurance_provider,
+          use_pro_lookup: proLookupEnabled,
         }),
       })
 
@@ -287,6 +308,7 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
         <div className="relative" ref={suggestionRef}>
           <FormField
             control={form.control}
@@ -373,9 +395,14 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <MapPinIcon className="h-5 w-5" />
-                Property Selected
+                {proLookupEnabled ? 'Property Selected' : 'Address Ready to Add'}
               </CardTitle>
-              <CardDescription>Review the property details below</CardDescription>
+              <CardDescription>
+                {proLookupEnabled 
+                  ? 'Review the property details below' 
+                  : 'Basic address information - no detailed property data will be fetched'
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
@@ -384,27 +411,36 @@ export function AddressForm({ portfolioId }: AddressFormProps) {
                 {selectedProperty.state && `, ${selectedProperty.state}`}
                 {selectedProperty.zip && ` ${selectedProperty.zip}`}
               </div>
-              {selectedProperty.apn && (
-                <div>
-                  <strong>APN:</strong> {selectedProperty.apn}
-                </div>
-              )}
-              <div>
-                <strong>Owner:</strong> {selectedProperty.owner}
-              </div>
-              {selectedProperty.property_type && (
-                <div>
-                  <strong>Property Type:</strong> {selectedProperty.property_type}
-                </div>
-              )}
-              {selectedProperty.lot_size_sqft && (
-                <div>
-                  <strong>Lot Size:</strong> {selectedProperty.lot_size_sqft.toLocaleString()} sq ft
-                </div>
-              )}
-              {selectedProperty.assessed_value && (
-                <div>
-                  <strong>Assessed Value:</strong> ${selectedProperty.assessed_value.toLocaleString()}
+              {proLookupEnabled ? (
+                <>
+                  {selectedProperty.apn && selectedProperty.apn !== 'N/A' && (
+                    <div>
+                      <strong>APN:</strong> {selectedProperty.apn}
+                    </div>
+                  )}
+                  <div>
+                    <strong>Owner:</strong> {selectedProperty.owner}
+                  </div>
+                  {selectedProperty.property_type && (
+                    <div>
+                      <strong>Property Type:</strong> {selectedProperty.property_type}
+                    </div>
+                  )}
+                  {selectedProperty.lot_size_sqft && (
+                    <div>
+                      <strong>Lot Size:</strong> {selectedProperty.lot_size_sqft.toLocaleString()} sq ft
+                    </div>
+                  )}
+                  {selectedProperty.assessed_value && (
+                    <div>
+                      <strong>Assessed Value:</strong> ${selectedProperty.assessed_value.toLocaleString()}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  This address will be saved with basic information only. 
+                  Enable Pro Lookup to fetch detailed property data including APN, owner, and financial information.
                 </div>
               )}
             </CardContent>
