@@ -97,6 +97,7 @@ export function usePerformanceMonitor(name: string, deps?: DependencyList) {
 
   useEffect(() => {
     startTime.current = performance.now()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps || [])
 }
 

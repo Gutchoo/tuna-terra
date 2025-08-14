@@ -14,8 +14,7 @@ import {
   MoreVerticalIcon, 
   RefreshCwIcon, 
   TrashIcon, 
-  ChevronDownIcon, 
-  ChevronUpIcon,
+  ChevronDownIcon,
   MapPinIcon,
   CalendarIcon,
   DollarSignIcon,
@@ -107,11 +106,7 @@ export function PropertyCard({
               </div>
               
               <Button variant="ghost" size="sm" className="ml-4">
-                {isExpanded ? (
-                  <ChevronUpIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronDownIcon className="h-4 w-4" />
-                )}
+                <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
               </Button>
             </div>
           </div>
@@ -173,7 +168,11 @@ export function PropertyCard({
       </div>
 
       {/* Expanded Content */}
-      {isExpanded && (
+      <div 
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
         <div className="px-4 sm:px-6 pb-4">
           <Separator className="mb-4" />
           
@@ -479,7 +478,7 @@ export function PropertyCard({
             </div>
           </div>
         </div>
-      )}
+      </div>
     </Card>
   )
 }

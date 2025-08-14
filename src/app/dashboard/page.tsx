@@ -15,13 +15,15 @@ import { useProperties } from '@/hooks/use-properties'
 function DashboardPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(null)
+  const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(() => 
+    searchParams.get('portfolio_id')
+  )
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
   const { showToast, ToastContainer } = useSuccessToast()
   
   // Use refs to prevent unnecessary effect re-runs
-  const lastPortfolioIdRef = useRef<string | null>(null)
+  const lastPortfolioIdRef = useRef<string | null>(searchParams.get('portfolio_id'))
   const hasShownToastRef = useRef(false)
   const isMountedRef = useRef(true)
   

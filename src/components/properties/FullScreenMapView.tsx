@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Property } from '@/lib/supabase'
@@ -17,67 +17,6 @@ interface FullScreenMapViewProps {
 // Set the Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || ''
 
-// Custom style switcher control class
-class StyleSwitcherControl {
-  private map: mapboxgl.Map | undefined
-  private container: HTMLDivElement | undefined
-  private button: HTMLButtonElement | undefined
-  private isSatellite: boolean = true
-  private onStyleChange: () => void
-
-  constructor(onStyleChange: () => void) {
-    this.onStyleChange = onStyleChange
-  }
-
-  onAdd(map: mapboxgl.Map): HTMLElement {
-    this.map = map
-    this.container = document.createElement('div')
-    this.container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'
-    
-    this.button = document.createElement('button')
-    this.button.className = 'mapboxgl-ctrl-icon'
-    this.button.type = 'button'
-    this.button.title = 'Toggle satellite/street view'
-    this.button.innerHTML = '🛰️'
-    this.button.style.fontSize = '16px'
-    this.button.style.display = 'flex'
-    this.button.style.alignItems = 'center'
-    this.button.style.justifyContent = 'center'
-    
-    this.button.addEventListener('click', () => {
-      this.toggleStyle()
-    })
-    
-    this.container.appendChild(this.button)
-    return this.container
-  }
-
-  onRemove(): void {
-    if (this.container && this.container.parentNode) {
-      this.container.parentNode.removeChild(this.container)
-    }
-    this.map = undefined
-  }
-
-  toggleStyle(): void {
-    if (!this.map) return
-
-    const newStyle = this.isSatellite 
-      ? 'mapbox://styles/mapbox/streets-v12'
-      : 'mapbox://styles/mapbox/satellite-streets-v12'
-    
-    this.map.setStyle(newStyle)
-    this.isSatellite = !this.isSatellite
-    
-    if (this.button) {
-      this.button.innerHTML = this.isSatellite ? '🛰️' : '🗺️'
-      this.button.title = this.isSatellite ? 'Switch to street view' : 'Switch to satellite view'
-    }
-    
-    // Notify parent component that style is changing
-    this.onStyleChange()
-  }
-}
 
 export function FullScreenMapView({
   properties,
@@ -92,9 +31,10 @@ export function FullScreenMapView({
   const [error, setError] = useState<string | null>(null)
   const [refreshingPropertyId, setRefreshingPropertyId] = useState<string | null>(null)
   const [eventHandlersSet, setEventHandlersSet] = useState(false)
+  const [mapInitialized, setMapInitialized] = useState(false)
 
-  // Calculate map center from properties with coordinates
-  const getMapCenter = (): [number, number] => {
+  // Memoized map center calculation - only recalculates when properties with coordinates change
+  const mapCenter = useMemo((): [number, number] => {
     const propertiesWithCoords = properties.filter(p => p.lat && p.lng)
     
     if (propertiesWithCoords.length === 0) {
@@ -111,7 +51,7 @@ export function FullScreenMapView({
     const avgLat = propertiesWithCoords.reduce((sum, p) => sum + p.lat!, 0) / propertiesWithCoords.length
     
     return [avgLng, avgLat]
-  }
+  }, [properties])
 
   // Transform properties to GeoJSON format
   const createGeoJSONData = useCallback(() => {
@@ -295,9 +235,9 @@ export function FullScreenMapView({
     setEventHandlersSet(true)
   }
 
-  // Initialize map
+  // Initialize map once - prevent reinitialization when properties change
   useEffect(() => {
-    if (!mapContainer.current || map.current) return
+    if (!mapContainer.current || map.current || mapInitialized) return
 
     if (!mapboxgl.accessToken) {
       setError('Mapbox access token is not configured')
@@ -306,7 +246,7 @@ export function FullScreenMapView({
     }
 
     try {
-      const [centerLng, centerLat] = getMapCenter()
+      const [centerLng, centerLat] = mapCenter
       
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -315,6 +255,8 @@ export function FullScreenMapView({
         zoom: properties.length > 0 ? 12 : 4,
         antialias: true
       })
+      
+      setMapInitialized(true)
 
       // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
@@ -322,12 +264,6 @@ export function FullScreenMapView({
       // Add fullscreen control
       map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right')
 
-      // Add style switcher control
-      const styleSwitcher = new StyleSwitcherControl(() => {
-        // This callback will be called when style changes
-        // Property layers will be re-added automatically via the styledata event
-      })
-      map.current.addControl(styleSwitcher, 'top-left')
 
       map.current.on('load', () => {
         setIsLoading(false)
@@ -363,9 +299,11 @@ export function FullScreenMapView({
       if (map.current) {
         map.current.remove()
         map.current = null
+        setMapInitialized(false)
       }
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only initialize once - never recreate map
 
   // Add property layers to map
   const addPropertyLayers = () => {
@@ -435,25 +373,8 @@ export function FullScreenMapView({
     }
 
 
-    // Fit map bounds to show all properties
-    if (geoJsonData.features.length > 1) {
-      const coordinates = geoJsonData.features.flatMap(feature => {
-        if (feature.geometry.type === 'Polygon') {
-          return feature.geometry.coordinates[0]
-        }
-        return []
-      })
-
-      if (coordinates.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds()
-        coordinates.forEach(coord => bounds.extend(coord as [number, number]))
-        
-        map.current.fitBounds(bounds, {
-          padding: 50,
-          maxZoom: 15
-        })
-      }
-    }
+    // Note: Bounds fitting is now handled in the portfolio switching effect
+    // to provide smooth transitions between portfolios
   }
 
   // Update property layers when selection changes
@@ -471,6 +392,34 @@ export function FullScreenMapView({
       centerOnProperty(selectedPropertyId)
     }
   }, [selectedPropertyId, centerOnProperty])
+
+  // Handle portfolio switching - adjust map view when properties change significantly
+  useEffect(() => {
+    if (!map.current || !mapInitialized || properties.length === 0) return
+
+    // If this is the first time we have properties, or if we switched to a very different location,
+    // gently adjust the map view without destroying it
+    const propertiesWithCoords = properties.filter(p => p.lat && p.lng)
+    
+    if (propertiesWithCoords.length > 0) {
+      // Calculate bounds for current properties
+      const coordinates = propertiesWithCoords.flatMap(p => [p.lng!, p.lat!])
+      
+      if (coordinates.length >= 2) {
+        const bounds = new mapboxgl.LngLatBounds()
+        for (let i = 0; i < coordinates.length; i += 2) {
+          bounds.extend([coordinates[i], coordinates[i + 1]])
+        }
+        
+        // Smoothly transition to show all properties in new portfolio
+        map.current.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 15,
+          duration: 1000 // Smooth transition instead of instant jump
+        })
+      }
+    }
+  }, [properties, mapInitialized])
 
   // Handle property refresh
   const handleRefreshProperty = async (property: Property) => {
