@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -32,7 +32,6 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [currentPortfolio, setCurrentPortfolio] = useState<string | null>(null)
   const [showProInfoModal, setShowProInfoModal] = useState(false)
   
   // Use optimized hooks for data fetching
@@ -43,16 +42,11 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const { handlePreloadUpload } = useNavigationPreload()
 
   const loading = portfoliosLoading
+  
+  // Get current portfolio from URL params directly (no local state)
+  const currentPortfolio = searchParams.get('portfolio_id')
 
-  // Get portfolio_id from URL params
-  useEffect(() => {
-    const portfolioIdFromUrl = searchParams.get('portfolio_id')
-    setCurrentPortfolio(portfolioIdFromUrl)
-  }, [searchParams])
-
-  const handlePortfolioChange = (portfolioId: string | null) => {
-    setCurrentPortfolio(portfolioId)
-    
+  const handlePortfolioChange = useCallback((portfolioId: string | null) => {
     const url = new URL(window.location.href)
     if (portfolioId) {
       url.searchParams.set('portfolio_id', portfolioId)
@@ -62,23 +56,28 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
     
     router.replace(url.pathname + url.search)
     onPortfolioChange?.(portfolioId)
-  }
+  }, [router, onPortfolioChange])
 
-  const handlePortfolioNameUpdate = (portfolioId: string, newName: string) => {
+  const handlePortfolioNameUpdate = useCallback((portfolioId: string, newName: string) => {
     updatePortfolioName.mutate({ id: portfolioId, name: newName })
-  }
+  }, [updatePortfolioName])
 
-  const getRoleColor = (role?: string) => {
+  const getRoleColor = useCallback((role?: string) => {
     switch (role) {
       case 'owner': return 'bg-blue-100 text-blue-800'
       case 'editor': return 'bg-green-100 text-green-800'
       case 'viewer': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
-  }
+  }, [])
 
-
-  const selectedPortfolio = portfolios.find(p => p.id === currentPortfolio)
+  const selectedPortfolio = useMemo(() => 
+    portfolios.find(p => p.id === currentPortfolio), 
+    [portfolios, currentPortfolio]
+  )
+  
+  // Check if we have a portfolio ID but no matching portfolio data yet (loading state)
+  const isWaitingForPortfolioData = currentPortfolio && !selectedPortfolio && !loading
 
   const ProLookupModal = () => (
     <Dialog open={showProInfoModal} onOpenChange={setShowProInfoModal}>
@@ -173,7 +172,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
               <Select value={currentPortfolio || ''} onValueChange={handlePortfolioChange}>
                 <SelectTrigger className="flex-1 min-w-0">
                   <SelectValue placeholder="Select portfolio">
-                    {selectedPortfolio && (
+                    {selectedPortfolio ? (
                       <div className="flex items-center gap-2 min-w-0">
                         <BuildingIcon className="h-4 w-4 flex-shrink-0" />
                         <InlineEditablePortfolioName
@@ -188,12 +187,17 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                           <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
                         )}
                       </div>
-                    )}
+                    ) : isWaitingForPortfolioData ? (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BuildingIcon className="h-4 w-4 flex-shrink-0" />
+                        <span className="font-medium truncate">Loading portfolio...</span>
+                      </div>
+                    ) : null}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {portfolios.map((portfolio) => (
-                    <SelectItem key={portfolio.id} value={portfolio.id}>
+                  {portfolios?.map((portfolio) => (
+                    <SelectItem key={`portfolio-${portfolio.id}`} value={portfolio.id}>
                       <div className="flex items-center gap-2 min-w-0">
                         <BuildingIcon className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">{portfolio.name}</span>
@@ -205,7 +209,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                         </Badge>
                       </div>
                     </SelectItem>
-                  ))}
+                  )) || []}
                 </SelectContent>
               </Select>
             </div>
@@ -279,7 +283,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                 <Select value={currentPortfolio || ''} onValueChange={handlePortfolioChange}>
                   <SelectTrigger className="w-[280px]">
                     <SelectValue placeholder="Select portfolio">
-                      {selectedPortfolio && (
+                      {selectedPortfolio ? (
                         <div className="flex items-center gap-2">
                           <BuildingIcon className="h-4 w-4" />
                           <InlineEditablePortfolioName
@@ -299,12 +303,17 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                             {selectedPortfolio.membership_role}
                           </Badge>
                         </div>
-                      )}
+                      ) : isWaitingForPortfolioData ? (
+                        <div className="flex items-center gap-2">
+                          <BuildingIcon className="h-4 w-4" />
+                          <span className="font-medium">Loading portfolio...</span>
+                        </div>
+                      ) : null}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {portfolios.map((portfolio) => (
-                      <SelectItem key={portfolio.id} value={portfolio.id}>
+                    {portfolios?.map((portfolio) => (
+                      <SelectItem key={`desktop-portfolio-${portfolio.id}`} value={portfolio.id}>
                         <div className="flex items-center gap-2">
                           <BuildingIcon className="h-4 w-4" />
                           <span>{portfolio.name}</span>
@@ -316,7 +325,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                           </Badge>
                         </div>
                       </SelectItem>
-                    ))}
+                    )) || []}
                   </SelectContent>
                 </Select>
               </div>

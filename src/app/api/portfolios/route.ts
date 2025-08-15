@@ -150,11 +150,19 @@ export async function GET(request: NextRequest) {
 
     const portfoliosWithMembership: PortfolioWithMembership[] = Array.from(portfolioMap.values())
       .sort((a, b) => {
-        // Sort by default first, then by creation date
+        // Sort by default first, then by creation date (newest first), then by name ascending
         if (a.is_default !== b.is_default) {
           return a.is_default ? -1 : 1
         }
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        
+        // Sort by creation date (newest first)
+        const dateComparison = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        if (dateComparison !== 0) {
+          return dateComparison
+        }
+        
+        // If same date, sort by name ascending
+        return a.name.localeCompare(b.name)
       })
 
     // Include stats if requested
@@ -211,7 +219,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating portfolio:', error)
-      return NextResponse.json({ error: 'Failed to create portfolio' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Failed to create portfolio', 
+        details: error.message 
+      }, { status: 500 })
     }
 
     // The trigger will automatically create the owner membership
@@ -225,6 +236,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Portfolio creation error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: error instanceof Error ? error.message : String(error) 
+    }, { status: 500 })
   }
 }

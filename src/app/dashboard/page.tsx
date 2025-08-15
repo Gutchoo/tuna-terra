@@ -15,15 +15,17 @@ import { useProperties } from '@/hooks/use-properties'
 function DashboardPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(() => 
-    searchParams.get('portfolio_id')
-  )
+  // Get current portfolio ID directly from URL params to avoid state sync issues
+  const currentPortfolioId = searchParams.get('portfolio_id')
+  
+  // Debug log immediately to see what we're getting
+  console.log('[DASHBOARD] Component render - currentPortfolioId:', currentPortfolioId, 'searchParams:', searchParams.toString())
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
   const { showToast, ToastContainer } = useSuccessToast()
   
-  // Use refs to prevent unnecessary effect re-runs
-  const lastPortfolioIdRef = useRef<string | null>(searchParams.get('portfolio_id'))
+  // Use refs to prevent unnecessary effect re-runs and track state
+  const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
   const hasShownToastRef = useRef(false)
   const isMountedRef = useRef(true)
   
@@ -36,54 +38,54 @@ function DashboardPageContent() {
 
   // Use optimized hooks for data fetching
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
+  
+  // Debug: Log what we're passing to useProperties
+  console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
   const { data: properties = [], isLoading: propertiesLoading, error: propertiesError } = useProperties(currentPortfolioId)
 
-  // Effect 1: Handle URL parameter changes and update current portfolio ID
+  // Simplified effect: Handle portfolio validation and creation success
   useEffect(() => {
-    const portfolioId = searchParams.get('portfolio_id')
+    const portfolioId = currentPortfolioId // Already from searchParams
+    const created = searchParams.get('created')
     
-    // Only update if different to prevent unnecessary re-renders
+    // Track portfolio ID changes for logging
     if (portfolioId !== lastPortfolioIdRef.current && isMountedRef.current) {
       console.log(`[DASHBOARD] URL changed: portfolio_id=${portfolioId}`)
       lastPortfolioIdRef.current = portfolioId
-      setCurrentPortfolioId(portfolioId)
     }
-  }, [searchParams])
 
-  // Effect 2: Handle portfolio creation success notification
-  useEffect(() => {
-    const created = searchParams.get('created')
-    const portfolioId = searchParams.get('portfolio_id')
-    
+    // Handle portfolio creation success notification
     if (created === 'true' && portfolioId && portfolios && !hasShownToastRef.current) {
       const portfolio = portfolios.find(p => p.id === portfolioId)
       if (portfolio) {
         console.log('[DASHBOARD] Portfolio created successfully:', portfolio.name)
         hasShownToastRef.current = true
+        
         showToast({
           message: 'Portfolio created successfully!',
           description: `"${portfolio.name}" is ready for your properties`,
           duration: 5000
         })
+        
         // Clean up URL without triggering navigation
         const newUrl = new URL(window.location.href)
         newUrl.searchParams.delete('created')
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+        
+        // Reset states for valid portfolio
+        setHasNoPortfolios(false)
+        setIsRedirecting(false)
+        return
       }
     }
     
-    // Reset toast flag when not in creation mode
+    // Reset creation flag when not in creation mode
     if (created !== 'true') {
       hasShownToastRef.current = false
     }
-  }, [searchParams, portfolios, showToast])
-
-  // Effect 3: Handle redirect logic when no portfolio is specified or invalid portfolio ID
-  useEffect(() => {
-    const portfolioId = searchParams.get('portfolio_id')
     
-    // Don't run redirect logic if still loading or already redirecting
-    if (portfoliosLoading || isRedirecting) {
+    // Skip redirect logic if still loading or during creation flow
+    if (portfoliosLoading || created === 'true') {
       return
     }
     
@@ -91,58 +93,53 @@ function DashboardPageContent() {
     if (!portfolioId) {
       if (!portfolios || portfolios.length === 0) {
         console.log('[DASHBOARD] No portfolios found - showing welcome state')
-        if (!hasNoPortfolios) {
-          setHasNoPortfolios(true)
-        }
+        setHasNoPortfolios(true)
         return
       }
       
-      // Redirect to default portfolio if available and not already attempted
-      if (defaultPortfolio && defaultPortfolio.id && !isRedirecting) {
+      // Redirect to default portfolio if available
+      if (defaultPortfolio?.id) {
         console.log('[DASHBOARD] Redirecting to default portfolio:', defaultPortfolio.id)
         setIsRedirecting(true)
         router.replace(`/dashboard?portfolio_id=${defaultPortfolio.id}`)
         return
       }
-    } else {
-      // We have a portfolio ID - validate it exists
-      if (portfolios && portfolios.length > 0) {
-        const portfolioExists = portfolios.some(p => p.id === portfolioId)
-        
-        if (!portfolioExists) {
-          console.log('[DASHBOARD] Portfolio ID does not exist:', portfolioId, 'redirecting to default')
-          
-          // Invalid portfolio ID - redirect to default or welcome state
-          if (defaultPortfolio && defaultPortfolio.id && !isRedirecting) {
-            setIsRedirecting(true)
-            router.replace(`/dashboard?portfolio_id=${defaultPortfolio.id}`)
-            return
-          } else if (!isRedirecting) {
-            // No default portfolio available - show welcome state
-            setHasNoPortfolios(true)
-            setIsRedirecting(true)
-            router.replace('/dashboard')
-            return
-          }
+    }
+    
+    // Validate portfolio ID exists
+    if (portfolioId && portfolios && portfolios.length > 0) {
+      const portfolioExists = portfolios.some(p => p.id === portfolioId)
+      
+      if (!portfolioExists) {
+        console.log('[DASHBOARD] Portfolio ID does not exist:', portfolioId)
+        // Redirect to default or welcome state
+        if (defaultPortfolio?.id) {
+          setIsRedirecting(true)
+          router.replace(`/dashboard?portfolio_id=${defaultPortfolio.id}`)
+        } else {
+          setHasNoPortfolios(true)
+          router.replace('/dashboard')
         }
+        return
       }
       
-      // Valid portfolio ID, ensure welcome state is reset if needed
-      if (hasNoPortfolios) {
-        setHasNoPortfolios(false)
-      }
-    }
-  }, [searchParams, portfoliosLoading, portfolios, defaultPortfolio, router, hasNoPortfolios, isRedirecting])
-
-  // Effect 4: Reset redirecting state after successful navigation
-  useEffect(() => {
-    const portfolioId = searchParams.get('portfolio_id')
-    
-    // Only reset if we have a portfolio ID and we're currently redirecting
-    if (isRedirecting && portfolioId) {
+      // Valid portfolio - ensure clean state
+      setHasNoPortfolios(false)
       setIsRedirecting(false)
     }
-  }, [searchParams, isRedirecting])
+  }, [currentPortfolioId, searchParams, portfoliosLoading, portfolios, defaultPortfolio, router, showToast])
+
+  // Safety effect: Reset stuck isRedirecting state
+  useEffect(() => {
+    // If we have valid portfolio data but are still redirecting, reset the state
+    if (isRedirecting && !portfoliosLoading && portfolios && currentPortfolioId) {
+      const portfolioExists = portfolios.some(p => p.id === currentPortfolioId)
+      if (portfolioExists) {
+        console.log('[DASHBOARD] Safety reset: clearing stuck isRedirecting for valid portfolio')
+        setIsRedirecting(false)
+      }
+    }
+  }, [isRedirecting, portfoliosLoading, portfolios, currentPortfolioId])
 
   const handlePropertiesChange = () => {
     // Properties are now managed by React Query
@@ -155,7 +152,34 @@ function DashboardPageContent() {
   }
 
   const renderContent = () => {
-    if (portfoliosLoading || propertiesLoading || isRedirecting) {
+    // Debug: Log current state for troubleshooting
+    console.log('[DASHBOARD] renderContent called:', {
+      currentPortfolioId,
+      portfoliosLoading,
+      propertiesLoading,
+      isRedirecting,
+      hasNoPortfolios,
+      portfoliosCount: portfolios?.length,
+      propertiesCount: properties?.length
+    })
+
+    // CRITICAL FIX: Force reset isRedirecting if we have valid data
+    // This prevents infinite loading when navigating from portfolios page with valid portfolio_id
+    if (isRedirecting && !portfoliosLoading && portfolios && portfolios.length > 0 && currentPortfolioId) {
+      const portfolioExists = portfolios.some(p => p.id === currentPortfolioId)
+      if (portfolioExists) {
+        console.log('[DASHBOARD] Force resetting isRedirecting - we have valid data')
+        // Use setTimeout to prevent React state update during render
+        setTimeout(() => setIsRedirecting(false), 0)
+        // Don't return loading state if we have valid data
+      }
+    }
+
+    // Only show loading if we're actually loading data, not if we're stuck in redirecting state with valid data
+    const shouldShowLoading = portfoliosLoading || propertiesLoading || 
+      (isRedirecting && (!portfolios || !currentPortfolioId || !portfolios.some(p => p.id === currentPortfolioId)))
+
+    if (shouldShowLoading) {
       return (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -186,6 +210,7 @@ function DashboardPageContent() {
     }
 
     if (!currentPortfolioId) {
+      console.log('[DASHBOARD] No portfolio ID detected:', { currentPortfolioId, searchParamsValue: searchParams.get('portfolio_id') })
       return (
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">Please select a portfolio to view your properties</p>
@@ -219,9 +244,9 @@ function DashboardPageContent() {
       {!hasNoPortfolios && (
         <DashboardHeader 
           onPortfolioChange={(portfolioId) => {
-            // Only update local state - let useEffect handle fetching based on URL changes
-            // This prevents race conditions between URL updates and direct API calls
-            setCurrentPortfolioId(portfolioId)
+            // Note: DashboardHeader handles URL updates directly
+            // This callback is just for potential future use
+            console.log('Portfolio changed to:', portfolioId)
           }}
         />
       )}

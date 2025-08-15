@@ -60,16 +60,36 @@ export function useCreatePortfolio() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+      
       if (!response.ok) {
-        throw new Error('Failed to create portfolio')
+        // Try to get detailed error information from the server
+        let errorMessage = 'Failed to create portfolio'
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMessage = errorData.error
+          }
+          if (errorData.details) {
+            // For validation errors, show the details
+            errorMessage += ': ' + JSON.stringify(errorData.details)
+          }
+        } catch {
+          // If we can't parse the error response, use status text
+          errorMessage = `Failed to create portfolio (${response.status}: ${response.statusText})`
+        }
+        throw new Error(errorMessage)
       }
+      
       return response.json()
     },
     onSuccess: () => {
       // Invalidate all portfolio-related queries to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios() })
-      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(true) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(false) })
+      // Use micro-task scheduling to prevent immediate re-render conflicts
+      queueMicrotask(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.portfolios() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(true) })
+        queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(false) })
+      })
     },
   })
 }

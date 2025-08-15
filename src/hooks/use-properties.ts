@@ -24,10 +24,18 @@ async function fetchProperties(portfolioId?: string | null): Promise<PropertiesR
 
 // Hook to get properties with caching
 export function useProperties(portfolioId?: string | null) {
+  console.log('[USE_PROPERTIES] Hook called with portfolioId:', portfolioId, 'enabled:', !!portfolioId)
+  
   return useQuery({
     queryKey: queryKeys.properties(portfolioId),
-    queryFn: () => fetchProperties(portfolioId),
-    select: (data) => data.properties,
+    queryFn: () => {
+      console.log('[USE_PROPERTIES] Fetching properties for portfolio:', portfolioId)
+      return fetchProperties(portfolioId)
+    },
+    select: (data) => {
+      console.log('[USE_PROPERTIES] Properties data received:', data?.properties?.length, 'properties')
+      return data.properties
+    },
     // Cache for 3 minutes since property data can change
     staleTime: 3 * 60 * 1000,
     // Keep in cache for 10 minutes

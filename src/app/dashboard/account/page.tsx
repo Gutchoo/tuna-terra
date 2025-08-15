@@ -9,13 +9,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   UserIcon, 
   CalendarIcon, 
   ShieldIcon, 
   SaveIcon,
   BuildingIcon,
-  SearchIcon
+  SearchIcon,
+  InfoIcon,
+  MapIcon,
+  HomeIcon,
+  FileTextIcon,
+  DollarSignIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -40,6 +47,7 @@ function AccountPageContent() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [nameError, setNameError] = useState('')
   const [initialName, setInitialName] = useState('')
+  const [showProInfoModal, setShowProInfoModal] = useState(false)
   
   const supabase = createClient()
 
@@ -256,6 +264,69 @@ function AccountPageContent() {
     return Math.min(percentage, 100)
   }
 
+  const ProLookupModal = () => (
+    <Dialog open={showProInfoModal} onOpenChange={setShowProInfoModal}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            Pro Lookup Benefits
+          </DialogTitle>
+          <DialogDescription>
+            Unlock comprehensive property data with detailed property information
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="grid gap-2 text-sm">
+            <div className="flex items-center gap-3">
+              <MapIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900 dark:text-gray-100">Property Mapping</span>
+                <span className="text-gray-600 dark:text-gray-300 ml-2">Exact boundaries & coordinates</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <UserIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900 dark:text-gray-100">Owner Information</span>
+                <span className="text-gray-600 dark:text-gray-300 ml-2">Names & mailing addresses</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <DollarSignIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900 dark:text-gray-100">Financial Data</span>
+                <span className="text-gray-600 dark:text-gray-300 ml-2">Assessed values & sale history</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <HomeIcon className="h-4 w-4 text-purple-500 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900 dark:text-gray-100">Property Details</span>
+                <span className="text-gray-600 dark:text-gray-300 ml-2">Lot size, year built, stories & units</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <FileTextIcon className="h-4 w-4 text-orange-500 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-900 dark:text-gray-100">Zoning & Use</span>
+                <span className="text-gray-600 dark:text-gray-300 ml-2">Codes & development restrictions</span>
+              </div>
+            </div>
+          </div>
+          <div className="pt-2">
+            <Button className="w-full" disabled>
+              Pro Tier Coming Soon
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -288,6 +359,7 @@ function AccountPageContent() {
   }
 
   return (
+    <TooltipProvider>
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -425,9 +497,27 @@ function AccountPageContent() {
           {/* Account Tier & Usage */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <SearchIcon className="h-5 w-5" />
-                Account Tier & Usage
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SearchIcon className="h-5 w-5" />
+                  Account Tier & Usage
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 hover:bg-muted"
+                      onClick={() => setShowProInfoModal(true)}
+                    >
+                      <InfoIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      <span className="sr-only">What are Pro lookups?</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>What are Pro lookups?</p>
+                  </TooltipContent>
+                </Tooltip>
               </CardTitle>
               <CardDescription>
                 Property lookup limits and usage tracking
@@ -560,6 +650,8 @@ function AccountPageContent() {
         </div>
       </div>
     </div>
+    <ProLookupModal />
+    </TooltipProvider>
   )
 }
 
