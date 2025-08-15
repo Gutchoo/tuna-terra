@@ -32,10 +32,12 @@ interface ValidationResult {
 
 interface CSVUploadProps {
   portfolioId: string | null
-  proLookupEnabled: boolean
+  onSuccess?: (result: unknown) => void
+  onError?: (error: string) => void
+  isModal?: boolean
 }
 
-export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
+export function CSVUpload({ portfolioId, onSuccess, onError, isModal = false }: CSVUploadProps) {
   const [file, setFile] = useState<File | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -249,7 +251,7 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
                     portfolio_id: portfolioId
                   })),
                   source: 'csv',
-                  use_pro_lookup: proLookupEnabled
+                  use_pro_lookup: true // Always attempt pro lookup first
                 })
               })
 
@@ -284,24 +286,40 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           }
 
           setUploadProgress(100)
-          setUploadResults({
+          const uploadResult = {
             total: properties.length,
             successful: results.length,
             failed: errors.length,
             results,
             errors
-          })
+          }
+          
+          if (isModal && onSuccess) {
+            // Modal context: call success callback
+            onSuccess(uploadResult)
+          } else {
+            // Regular page context: set results for display
+            setUploadResults(uploadResult)
+          }
         }
       })
     } catch (error) {
       console.error('Upload error:', error)
-      setUploadResults({
-        total: 0,
-        successful: 0,
-        failed: 1,
-        results: [],
-        errors: [{ error: error instanceof Error ? error.message : 'Upload failed' }]
-      })
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
+      
+      if (isModal && onError) {
+        // Modal context: call error callback
+        onError(errorMessage)
+      } else {
+        // Regular page context: set error results for display
+        setUploadResults({
+          total: 0,
+          successful: 0,
+          failed: 1,
+          results: [],
+          errors: [{ error: errorMessage }]
+        })
+      }
     } finally {
       setIsUploading(false)
     }
@@ -416,14 +434,6 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           onChange={handleFileSelect}
           className="mt-1"
         />
-        {!proLookupEnabled && (
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
-              Basic Mode
-            </Badge>
-            <span className="text-sm text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
-          </div>
-        )}
       </div>
 
       {validation && (

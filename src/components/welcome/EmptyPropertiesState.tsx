@@ -2,13 +2,13 @@
 
 import { Button } from '@/components/ui/button'
 import { UploadIcon, ChevronRightIcon } from 'lucide-react'
-import Link from 'next/link'
 
 interface EmptyPropertiesStateProps {
   portfolioId?: string | null
+  onAddProperties?: () => void
 }
 
-export function EmptyPropertiesState({ portfolioId }: EmptyPropertiesStateProps) {
+export function EmptyPropertiesState({ portfolioId, onAddProperties }: EmptyPropertiesStateProps) {
   const currentPortfolioParam = portfolioId ? `?portfolio_id=${portfolioId}` : ''
 
   return (
@@ -37,12 +37,10 @@ export function EmptyPropertiesState({ portfolioId }: EmptyPropertiesStateProps)
         <Button 
           size="lg"
           className="w-full h-12 flex items-center justify-center gap-2"
-          asChild
+          onClick={onAddProperties || (() => window.location.href = `/upload${currentPortfolioParam}`)}
         >
-          <Link href={`/upload${currentPortfolioParam}`}>
-            <UploadIcon className="h-4 w-4" />
-            Add Properties
-          </Link>
+          <UploadIcon className="h-4 w-4" />
+          Add Properties
         </Button>
 
         {/* Secondary Action - Subtle */}
@@ -50,12 +48,12 @@ export function EmptyPropertiesState({ portfolioId }: EmptyPropertiesStateProps)
           variant="ghost"
           size="sm"
           className="w-full text-muted-foreground hover:text-foreground"
-          asChild
+          onClick={onAddProperties || (() => window.location.href = `/upload${currentPortfolioParam}`)}
         >
-          <Link href={`/upload${currentPortfolioParam}`} className="flex items-center justify-center gap-1">
+          <div className="flex items-center justify-center gap-1">
             View upload options
             <ChevronRightIcon className="h-3 w-3" />
-          </Link>
+          </div>
         </Button>
       </div>
     </div>

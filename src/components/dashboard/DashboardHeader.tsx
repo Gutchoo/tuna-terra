@@ -20,9 +20,9 @@ import {
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEditablePortfolioName'
+import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
-import { useNavigationPreload } from '@/hooks/use-navigation-preload'
 // import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface DashboardHeaderProps {
@@ -33,13 +33,13 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showProInfoModal, setShowProInfoModal] = useState(false)
+  const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   
   // Use optimized hooks for data fetching
   const { data: portfolios = [], isLoading: portfoliosLoading } = usePortfolios(true)
   const { data: userLimits } = useUserLimits()
   const remainingLookups = useRemainingLookups()
   const updatePortfolioName = useUpdatePortfolioName()
-  const { handlePreloadUpload } = useNavigationPreload()
 
   const loading = portfoliosLoading
   
@@ -260,15 +260,11 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                 </Button>
                 <Button 
                   size="sm"
-                  asChild
-                  onMouseEnter={handlePreloadUpload}
-                  onFocus={handlePreloadUpload}
+                  onClick={() => setShowAddPropertiesModal(true)}
                   className="text-xs px-2"
                 >
-                  <Link href="/upload">
-                    <PlusIcon className="h-3 w-3" />
-                    <span className="ml-1">Add</span>
-                  </Link>
+                  <PlusIcon className="h-3 w-3" />
+                  <span className="ml-1">Add</span>
                 </Button>
               </div>
             </div>
@@ -378,20 +374,22 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                 </Link>
               </Button>
               <Button 
-                asChild
-                onMouseEnter={handlePreloadUpload}
-                onFocus={handlePreloadUpload}
+                onClick={() => setShowAddPropertiesModal(true)}
+                className="flex items-center gap-2"
               >
-                <Link href="/upload" className="flex items-center gap-2">
-                  <PlusIcon className="h-4 w-4" />
-                  Add Properties
-                </Link>
+                <PlusIcon className="h-4 w-4" />
+                Add Properties
               </Button>
             </div>
           </div>
         </div>
       </div>
       <ProLookupModal />
+      <AddPropertiesModal
+        open={showAddPropertiesModal}
+        onOpenChange={setShowAddPropertiesModal}
+        portfolioId={currentPortfolio}
+      />
     </TooltipProvider>
   )
 }
