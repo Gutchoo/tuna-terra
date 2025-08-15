@@ -8,7 +8,8 @@ import { PropertyView } from '@/components/properties/PropertyView'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { WelcomeEmptyState } from '@/components/welcome/WelcomeEmptyState'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
-import { useSuccessToast } from '@/components/ui/success-toast'
+import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
+import { toast } from 'sonner'
 import { useDefaultPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
 
@@ -22,7 +23,7 @@ function DashboardPageContent() {
   console.log('[DASHBOARD] Component render - currentPortfolioId:', currentPortfolioId, 'searchParams:', searchParams.toString())
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
-  const { showToast, ToastContainer } = useSuccessToast()
+  const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   
   // Use refs to prevent unnecessary effect re-runs and track state
   const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
@@ -61,10 +62,8 @@ function DashboardPageContent() {
         console.log('[DASHBOARD] Portfolio created successfully:', portfolio.name)
         hasShownToastRef.current = true
         
-        showToast({
-          message: 'Portfolio created successfully!',
-          description: `"${portfolio.name}" is ready for your properties`,
-          duration: 5000
+        toast.success('Portfolio created successfully!', {
+          description: `"${portfolio.name}" is ready for your properties`
         })
         
         // Clean up URL without triggering navigation
@@ -127,7 +126,7 @@ function DashboardPageContent() {
       setHasNoPortfolios(false)
       setIsRedirecting(false)
     }
-  }, [currentPortfolioId, searchParams, portfoliosLoading, portfolios, defaultPortfolio, router, showToast])
+  }, [currentPortfolioId, searchParams, portfoliosLoading, portfolios, defaultPortfolio, router])
 
   // Safety effect: Reset stuck isRedirecting state
   useEffect(() => {
@@ -223,6 +222,7 @@ function DashboardPageContent() {
       return (
         <EmptyPropertiesState 
           portfolioId={currentPortfolioId}
+          onAddProperties={() => setShowAddPropertiesModal(true)}
         />
       )
     }
@@ -238,7 +238,6 @@ function DashboardPageContent() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <ToastContainer />
       
       {/* Only show header when user has portfolios */}
       {!hasNoPortfolios && (
@@ -265,6 +264,12 @@ function DashboardPageContent() {
           </Card>
         </div>
       )}
+
+      <AddPropertiesModal
+        open={showAddPropertiesModal}
+        onOpenChange={setShowAddPropertiesModal}
+        portfolioId={currentPortfolioId}
+      />
     </div>
   )
 }

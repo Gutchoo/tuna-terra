@@ -31,11 +31,21 @@ export function useCreateProperty() {
   
   return useMutation({
     mutationFn: async (data: CreatePropertyData): Promise<CreatePropertyResponse> => {
-      const response = await fetch('/api/user-properties', {
+      let response = await fetch('/api/user-properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+      
+      // If 429 error (limit exceeded) and we were using pro lookup, retry with basic mode
+      if (response.status === 429 && data.use_pro_lookup) {
+        console.log('Pro lookup limit exceeded, retrying with basic mode...')
+        response = await fetch('/api/user-properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, use_pro_lookup: false }),
+        })
+      }
       
       if (!response.ok) {
         const errorData = await response.json()
@@ -107,11 +117,21 @@ export function useBulkCreateProperties() {
   
   return useMutation({
     mutationFn: async (data: BulkCreatePropertyData): Promise<BulkCreateResponse> => {
-      const response = await fetch('/api/user-properties', {
+      let response = await fetch('/api/user-properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+      
+      // If 429 error (limit exceeded) and we were using pro lookup, retry with basic mode
+      if (response.status === 429 && data.use_pro_lookup) {
+        console.log('Pro lookup limit exceeded for bulk upload, retrying with basic mode...')
+        response = await fetch('/api/user-properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, use_pro_lookup: false }),
+        })
+      }
       
       if (!response.ok) {
         const errorData = await response.json()

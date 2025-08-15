@@ -6,39 +6,26 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { SearchIcon, CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon } from 'lucide-react'
+import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCreateProperty } from '@/hooks/use-create-property'
 
 const formSchema = z.object({
   apn: z.string().min(1, 'APN is required'),
-  user_notes: z.string().optional(),
-  insurance_provider: z.string().optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
 
 interface APNFormProps {
   portfolioId: string | null
-  proLookupEnabled: boolean
+  onSuccess?: (property: unknown) => void
+  onError?: (error: string) => void
+  isModal?: boolean
 }
 
-interface PropertyPreview {
-  id: string
-  apn: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  owner: string
-  lot_size_sqft?: number
-  assessed_value?: number
-}
 
 interface DuplicateProperty {
   id: string
@@ -50,10 +37,9 @@ interface DuplicateProperty {
 }
 
 
-export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
-  const [isSearching, setIsSearching] = useState(false)
-  const [propertyPreview, setPropertyPreview] = useState<PropertyPreview | null>(null)
-  const [searchError, setSearchError] = useState<string | null>(null)
+export function APNForm({ portfolioId, onSuccess, onError, isModal = false }: APNFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [isDuplicateChecking, setIsDuplicateChecking] = useState(false)
   const [duplicateProperty, setDuplicateProperty] = useState<DuplicateProperty | null>(null)
   const [isRecentlyChanged, setIsRecentlyChanged] = useState(false)
@@ -74,8 +60,6 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       apn: '',
-      user_notes: '',
-      insurance_provider: '',
     },
   })
 
@@ -123,107 +107,59 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
     return () => clearTimeout(timeoutId)
   }, [apnValue, portfolioId])
 
-  const handleSearch = async () => {
-    const apn = form.getValues('apn')
-
-    if (!apn) {
-      setSearchError('Please enter an APN')
-      return
-    }
-
-    // Prevent search if duplicate is found
-    if (duplicateProperty) {
-      setSearchError('This property already exists in your portfolio')
-      return
-    }
-
-    // In basic mode, skip the Regrid search and create a basic property preview
-    if (!proLookupEnabled) {
-      setPropertyPreview({
-        id: '', // No Regrid ID in basic mode
-        apn: apn,
-        address: `APN: ${apn}`, // Basic address display
-        city: '',
-        state: '',
-        zip_code: '',
-        owner: 'N/A',
-        lot_size_sqft: undefined,
-        assessed_value: undefined,
-      })
-      return
-    }
-
-    setIsSearching(true)
-    setSearchError(null)
-    setPropertyPreview(null)
-
-    try {
-      const response = await fetch(`/api/properties/search?apn=${encodeURIComponent(apn)}`)
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Search failed')
-      }
-
-      if (data.results && data.results.length > 0) {
-        const property = data.results[0]
-        setPropertyPreview({
-          id: property.id,
-          apn: property.apn,
-          address: property.address?.line1 || 'Address not available',
-          city: property.address?.city || '',
-          state: property.address?.state || '',
-          zip_code: property.address?.zip || '',
-          owner: property.properties?.owner || 'Owner not available',
-          lot_size_sqft: property.properties?.lot_size_sqft,
-          assessed_value: property.properties?.assessed_value,
-        })
-      } else {
-        setSearchError('No property found with this APN')
-      }
-    } catch (error) {
-      console.error('Search error:', error)
-      setSearchError(error instanceof Error ? error.message : 'Failed to search property')
-    } finally {
-      setIsSearching(false)
-    }
-  }
 
   const onSubmit = async (data: FormData) => {
-    if (!propertyPreview) {
-      setSearchError('Please search for a property first')
-      return
-    }
     if (!portfolioId) {
-      setSearchError('Please select a portfolio before adding properties.')
+      const errorMsg = 'Please select a portfolio before adding properties.'
+      if (isModal && onError) {
+        onError(errorMsg)
+      } else {
+        setSubmitError(errorMsg)
+      }
       return
     }
 
+    // Check for duplicates first
+    if (duplicateProperty) {
+      const errorMsg = 'This property already exists in your portfolio'
+      if (isModal && onError) {
+        onError(errorMsg)
+      } else {
+        setSubmitError(errorMsg)
+      }
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+
     try {
+      // Use the existing create property mutation which handles the Regrid lookup internally
       await createPropertyMutation.mutateAsync({
         portfolio_id: portfolioId,
         apn: data.apn,
-        address: proLookupEnabled ? propertyPreview.address : `APN: ${data.apn}`,
-        city: propertyPreview.city,
-        state: propertyPreview.state,
-        zip_code: propertyPreview.zip_code,
-        regrid_id: proLookupEnabled ? propertyPreview.id : undefined,
-        user_notes: data.user_notes,
-        insurance_provider: data.insurance_provider,
-        use_pro_lookup: proLookupEnabled,
+        address: `APN: ${data.apn}`, // Fallback address - will be updated by Regrid API
+        use_pro_lookup: true, // Always attempt pro lookup first
       })
 
       // Success! The mutation handles cache invalidation automatically
-      // Show success message and clear form, but stay on page
-      setShowSuccess(true)
-      setPropertyPreview(null)
-      setSearchError(null)
-      form.reset()
-      
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false)
-      }, 3000)
+      if (isModal && onSuccess) {
+        // Modal context: call success callback with property data
+        onSuccess({
+          apn: data.apn,
+          address: `APN: ${data.apn}`,
+        })
+      } else {
+        // Regular page context: show success message and clear form
+        setShowSuccess(true)
+        setSubmitError(null)
+        form.reset()
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setShowSuccess(false)
+        }, 3000)
+      }
       
     } catch (error) {
       console.error('Submit error:', error)
@@ -231,24 +167,29 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
       
       // Handle limit exceeded error
       if (errorMessage.includes('limit exceeded')) {
-        // Parse limit exceeded details if available
-        setLimitExceeded({
-          message: errorMessage,
-          tier: 'free', // Could be parsed from error if needed
-          used: 0,
-          limit: 25,
-          resetDate: new Date().toISOString()
-        })
+        if (isModal && onError) {
+          onError(errorMessage)
+        } else {
+          // Parse limit exceeded details if available
+          setLimitExceeded({
+            message: errorMessage,
+            tier: 'free', // Could be parsed from error if needed
+            used: 0,
+            limit: 25,
+            resetDate: new Date().toISOString()
+          })
+        }
         return
       }
       
-      // Special handling for duplicate property errors
-      if (errorMessage.includes('already exists in your portfolio')) {
-        setSearchError('This property is already in your portfolio. Please search for a different APN.')
-        setPropertyPreview(null)
+      // Handle errors for modal context
+      if (isModal && onError) {
+        onError(errorMessage)
       } else {
-        setSearchError(errorMessage)
+        setSubmitError(errorMessage)
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -291,8 +232,6 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
             variant="outline" 
             onClick={() => {
               setLimitExceeded(null)
-              setPropertyPreview(null)
-              setSearchError(null)
               form.reset()
             }}
             className="flex-1"
@@ -324,29 +263,10 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
                   placeholder="e.g. 123-456-789-000"
                   onChange={(e) => {
                     field.onChange(e)
-                    setPropertyPreview(null)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      if (apnValue && !isSearching) {
-                        handleSearch()
-                      }
-                    }
                   }}
                 />
               </FormControl>
               <FormMessage />
-              
-              {/* Basic Mode Message */}
-              {!proLookupEnabled && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
-                    Basic Mode
-                  </Badge>
-                  <span className="text-sm text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
-                </div>
-              )}
               
               {/* Duplicate property warning */}
               {duplicateProperty && (
@@ -390,18 +310,16 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
-            type="button"
-            variant="outline"
-            onClick={handleSearch}
-            disabled={isSearching || !apnValue || !!duplicateProperty || isDuplicateChecking || isRecentlyChanged}
+            type="submit"
+            disabled={isSubmitting || !apnValue || !!duplicateProperty || isDuplicateChecking || isRecentlyChanged}
             className="flex items-center justify-center gap-2"
           >
-            {isSearching ? (
+            {isSubmitting ? (
               <LoaderIcon className="h-4 w-4 animate-spin" />
             ) : (
-              <SearchIcon className="h-4 w-4" />
+              <CheckCircleIcon className="h-4 w-4" />
             )}
-{isSearching ? 'Searching...' : (proLookupEnabled ? 'Search Property' : 'Use APN')}
+            {isSubmitting ? 'Adding Property...' : 'Add Property'}
           </Button>
         </div>
 
@@ -421,125 +339,14 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
           </Alert>
         )}
 
-        {searchError && (
+        {submitError && (
           <Alert variant="destructive">
             <AlertCircleIcon className="h-4 w-4" />
-            <AlertTitle>Search Error</AlertTitle>
-            <AlertDescription>{searchError}</AlertDescription>
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         )}
 
-        {propertyPreview && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {proLookupEnabled ? 'Property Found' : 'Property Ready to Add'}
-              </CardTitle>
-              <CardDescription>
-                {proLookupEnabled 
-                  ? 'Review the property details below' 
-                  : 'Basic property information - no detailed data will be fetched'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <strong>APN:</strong> {propertyPreview.apn}
-              </div>
-              {proLookupEnabled ? (
-                <>
-                  <div>
-                    <strong>Address:</strong> {propertyPreview.address}
-                    {propertyPreview.city && `, ${propertyPreview.city}`}
-                    {propertyPreview.state && `, ${propertyPreview.state}`}
-                    {propertyPreview.zip_code && ` ${propertyPreview.zip_code}`}
-                  </div>
-                  <div>
-                    <strong>Owner:</strong> {propertyPreview.owner}
-                  </div>
-                  {propertyPreview.lot_size_sqft && (
-                    <div>
-                      <strong>Lot Size:</strong> {propertyPreview.lot_size_sqft.toLocaleString()} sq ft
-                    </div>
-                  )}
-                  {propertyPreview.assessed_value && (
-                    <div>
-                      <strong>Assessed Value:</strong> ${propertyPreview.assessed_value.toLocaleString()}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-muted-foreground text-sm">
-                  This property will be saved with basic information only. 
-                  Enable Pro Lookup to fetch detailed property data including address, owner, and financial information.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Basic Mode Message */}
-        {propertyPreview && !proLookupEnabled && (
-          <Alert>
-            <AlertCircleIcon className="h-4 w-4" />
-            <AlertTitle className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
-                Basic Mode
-              </Badge>
-              Storage Information
-            </AlertTitle>
-            <AlertDescription>
-              Only APN data will be stored. Enable Pro Lookup for detailed property information.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {propertyPreview && (
-          <>
-            <FormField
-              control={form.control}
-              name="user_notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Add any notes about this property..."
-                      rows={3}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="insurance_provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Insurance Provider (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g. State Farm, Allstate"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              disabled={createPropertyMutation.isPending}
-              className="w-full"
-            >
-              {createPropertyMutation.isPending ? 'Adding Property...' : 'Add Property to Portfolio'}
-            </Button>
-          </>
-        )}
       </form>
     </Form>
   )

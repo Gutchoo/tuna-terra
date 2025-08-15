@@ -14,7 +14,6 @@ const AddressForm = lazy(() => import('./address-form').then(module => ({ defaul
 
 interface LazyUploadTabsProps {
   currentPortfolioId: string | null
-  proLookupEnabled: boolean
 }
 
 // Loading component for upload forms
@@ -34,7 +33,7 @@ function UploadFormSkeleton() {
   )
 }
 
-export function LazyUploadTabs({ currentPortfolioId, proLookupEnabled }: LazyUploadTabsProps) {
+export function LazyUploadTabs({ currentPortfolioId }: LazyUploadTabsProps) {
   const [activeTab, setActiveTab] = useState('csv')
 
   return (
@@ -102,7 +101,7 @@ export function LazyUploadTabs({ currentPortfolioId, proLookupEnabled }: LazyUpl
               <Suspense fallback={<UploadFormSkeleton />}>
                 <CSVUpload 
                   portfolioId={currentPortfolioId} 
-                  proLookupEnabled={proLookupEnabled} 
+ 
                 />
               </Suspense>
             ) : (
@@ -127,7 +126,7 @@ export function LazyUploadTabs({ currentPortfolioId, proLookupEnabled }: LazyUpl
               <Suspense fallback={<UploadFormSkeleton />}>
                 <APNForm 
                   portfolioId={currentPortfolioId} 
-                  proLookupEnabled={proLookupEnabled} 
+ 
                 />
               </Suspense>
             ) : (
@@ -152,7 +151,7 @@ export function LazyUploadTabs({ currentPortfolioId, proLookupEnabled }: LazyUpl
               <Suspense fallback={<UploadFormSkeleton />}>
                 <AddressForm 
                   portfolioId={currentPortfolioId} 
-                  proLookupEnabled={proLookupEnabled} 
+ 
                 />
               </Suspense>
             ) : (
