@@ -91,7 +91,18 @@ export function DeletePortfolioDialog({
               </div>
             )}
 
-            {portfolio.is_default && (
+            {portfolio.is_sample && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-800 font-medium text-sm">
+                  🔒 This is a sample portfolio
+                </p>
+                <p className="text-red-700 text-sm mt-1">
+                  Sample portfolios showcase our platform capabilities and cannot be deleted. They remain available as examples of our data quality.
+                </p>
+              </div>
+            )}
+
+            {portfolio.is_default && !portfolio.is_sample && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                 <p className="text-orange-800 font-medium text-sm">
                   🏠 This is your default portfolio
@@ -107,10 +118,10 @@ export function DeletePortfolioDialog({
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteConfirm}
-            disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            disabled={isDeleting || portfolio.is_sample}
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isDeleting ? 'Deleting...' : 'Delete Portfolio'}
+            {portfolio.is_sample ? 'Cannot Delete Sample' : isDeleting ? 'Deleting...' : 'Delete Portfolio'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { UploadIcon, ChevronRightIcon } from 'lucide-react'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
 interface EmptyPropertiesStateProps {
   portfolioId?: string | null
@@ -10,6 +11,11 @@ interface EmptyPropertiesStateProps {
 
 export function EmptyPropertiesState({ portfolioId, onAddProperties }: EmptyPropertiesStateProps) {
   const currentPortfolioParam = portfolioId ? `?portfolio_id=${portfolioId}` : ''
+  
+  // Safety check: this component should not be used for virtual sample portfolio
+  if (portfolioId && isVirtualSamplePortfolio(portfolioId)) {
+    return null
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-md mx-auto px-6 text-center">

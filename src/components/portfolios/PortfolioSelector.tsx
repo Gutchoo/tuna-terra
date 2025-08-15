@@ -125,7 +125,10 @@ export function PortfolioSelector({
                   ) : (
                     <span>{selectedPortfolio.name}</span>
                   )}
-                  {selectedPortfolio.is_default && (
+                  {selectedPortfolio.is_sample && (
+                    <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
+                  )}
+                  {selectedPortfolio.is_default && !selectedPortfolio.is_sample && (
                     <Badge variant="secondary" className="text-xs">Default</Badge>
                   )}
                 </div>
@@ -138,7 +141,10 @@ export function PortfolioSelector({
                 <div className="flex items-center gap-2">
                   <BuildingIcon className="h-4 w-4" />
                   <span>{portfolio.name}</span>
-                  {portfolio.is_default && (
+                  {portfolio.is_sample && (
+                    <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
+                  )}
+                  {portfolio.is_default && !portfolio.is_sample && (
                     <Badge variant="secondary" className="text-xs">Default</Badge>
                   )}
                   <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
@@ -203,7 +209,10 @@ export function PortfolioSelector({
                       ) : (
                         <span className="font-medium">{selectedPortfolio.name}</span>
                       )}
-                      {selectedPortfolio.is_default && (
+                      {selectedPortfolio.is_sample && (
+                        <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
+                      )}
+                      {selectedPortfolio.is_default && !selectedPortfolio.is_sample && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                     </div>
@@ -233,7 +242,10 @@ export function PortfolioSelector({
                   <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{portfolio.name}</span>
-                      {portfolio.is_default && (
+                      {portfolio.is_sample && (
+                        <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
+                      )}
+                      {portfolio.is_default && !portfolio.is_sample && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                     </div>

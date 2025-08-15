@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
 // Lazy import upload forms
 import dynamic from 'next/dynamic'
@@ -170,49 +171,76 @@ export function AddPropertiesModal({
     await handleSuccess(property as PropertyData)
   }
 
-  const renderMethodSelection = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h3 className="text-lg font-semibold">Add Property</h3>
-        <p className="text-sm text-muted-foreground">
-          Choose how you&apos;d like to add properties to your portfolio
-        </p>
-      </div>
+  const renderMethodSelection = () => {
+    // Check if this is the virtual sample portfolio
+    if (portfolioId && isVirtualSamplePortfolio(portfolioId)) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center space-y-3">
+            <h3 className="text-lg font-semibold">Demo Portfolio</h3>
+            <div className="p-4 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  Demo
+                </Badge>
+              </div>
+              <p className="text-sm text-purple-800 dark:text-purple-200">
+                This is a demonstration portfolio showcasing our platform features. 
+                Properties cannot be added to this portfolio.
+              </p>
+              <p className="text-sm text-purple-700 dark:text-purple-300 mt-2">
+                Create your own portfolio to start managing your real estate data.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
 
-      <div className="space-y-3">
-        {uploadMethods.map((method) => {
-          const Icon = method.icon
-          return (
-            <Card 
-              key={method.id}
-              className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
-              onClick={() => handleMethodSelect(method.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{method.title}</h4>
-                      <Badge variant="secondary" className="text-xs">
-                        {method.id === 'csv' ? 'Bulk' : 'Single'}
-                      </Badge>
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-semibold">Add Property</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose how you&apos;d like to add properties to your portfolio
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {uploadMethods.map((method) => {
+            const Icon = method.icon
+            return (
+              <Card 
+                key={method.id}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
+                onClick={() => handleMethodSelect(method.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Icon className="h-5 w-5 text-primary" />
                     </div>
-                    <p className="text-sm text-muted-foreground">{method.description}</p>
-                    <p className="text-xs text-muted-foreground/70 italic">
-                      e.g. {method.example}
-                    </p>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{method.title}</h4>
+                        <Badge variant="secondary" className="text-xs">
+                          {method.id === 'csv' ? 'Bulk' : 'Single'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{method.description}</p>
+                      <p className="text-xs text-muted-foreground/70 italic">
+                        e.g. {method.example}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderForm = () => {
     if (!selectedMethod) return null

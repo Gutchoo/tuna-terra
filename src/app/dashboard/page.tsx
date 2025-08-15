@@ -8,10 +8,13 @@ import { PropertyView } from '@/components/properties/PropertyView'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { WelcomeEmptyState } from '@/components/welcome/WelcomeEmptyState'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
+import { VirtualSamplePortfolioState } from '@/components/welcome/VirtualSamplePortfolioState'
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
+import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { toast } from 'sonner'
 import { useDefaultPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -24,6 +27,7 @@ function DashboardPageContent() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
   const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
+  const [showCreatePortfolioModal, setShowCreatePortfolioModal] = useState(false)
   
   // Use refs to prevent unnecessary effect re-runs and track state
   const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
@@ -42,7 +46,11 @@ function DashboardPageContent() {
   
   // Debug: Log what we're passing to useProperties
   console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
-  const { data: properties = [], isLoading: propertiesLoading, error: propertiesError } = useProperties(currentPortfolioId)
+  
+  // Fetch properties for all portfolios (virtual sample portfolio will return sample data)
+  const { data: properties = [], isLoading: propertiesLoading, error: propertiesError } = useProperties(
+    currentPortfolioId
+  )
 
   // Simplified effect: Handle portfolio validation and creation success
   useEffect(() => {
@@ -217,8 +225,17 @@ function DashboardPageContent() {
       )
     }
 
-    // Show empty properties state if user has portfolio but no properties
-    if (properties.length === 0 && currentPortfolioId) {
+    // Show virtual sample portfolio state for sample portfolio ONLY if it has no properties
+    if (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) {
+      return (
+        <VirtualSamplePortfolioState 
+          onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
+        />
+      )
+    }
+
+    // Show empty properties state if user has portfolio but no properties (excluding virtual sample portfolio)
+    if (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) {
       return (
         <EmptyPropertiesState 
           portfolioId={currentPortfolioId}
@@ -251,7 +268,7 @@ function DashboardPageContent() {
       )}
 
       {/* Conditional layout - empty states get full height, content gets card wrapper */}
-      {hasNoPortfolios || (properties.length === 0 && currentPortfolioId) ? (
+      {hasNoPortfolios || (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
         <div className="flex-1 flex flex-col">
           {renderContent()}
         </div>
@@ -269,6 +286,10 @@ function DashboardPageContent() {
         open={showAddPropertiesModal}
         onOpenChange={setShowAddPropertiesModal}
         portfolioId={currentPortfolioId}
+      />
+      <CreatePortfolioModal
+        open={showCreatePortfolioModal}
+        onOpenChange={setShowCreatePortfolioModal}
       />
     </div>
   )

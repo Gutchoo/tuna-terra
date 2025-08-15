@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import type { Property } from '@/lib/supabase'
+import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 
 type ViewMode = 'cards' | 'table'
 
@@ -138,7 +139,9 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedRows(new Set(filteredProperties.map(p => p.id)))
+      // Only select non-sample properties
+      const selectableProperties = filteredProperties.filter(p => !isVirtualSampleProperty(p.id))
+      setSelectedRows(new Set(selectableProperties.map(p => p.id)))
     } else {
       setSelectedRows(new Set())
     }
@@ -218,7 +221,10 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   // Bulk operations
   const handleBulkRefresh = async () => {
     setBulkProcessing(true)
-    const selectedProperties = filteredProperties.filter(p => selectedRows.has(p.id))
+    // Filter out sample properties from bulk operations
+    const selectedProperties = filteredProperties.filter(p => 
+      selectedRows.has(p.id) && !isVirtualSampleProperty(p.id)
+    )
     let successCount = 0
     let errorCount = 0
 
@@ -248,7 +254,8 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
   const handleBulkDeleteConfirm = async () => {
     setBulkProcessing(true)
-    const selectedIds = Array.from(selectedRows)
+    // Filter out sample properties from bulk delete
+    const selectedIds = Array.from(selectedRows).filter(id => !isVirtualSampleProperty(id))
 
     try {
       const deletePromises = selectedIds.map(id =>

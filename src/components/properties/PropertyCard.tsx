@@ -26,6 +26,7 @@ import {
   TreesIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
+import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 
 interface PropertyCardProps {
   property: Property
@@ -121,7 +122,7 @@ export function PropertyCard({
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() => onRefresh(property)}
-                disabled={isRefreshing || !property.apn}
+                disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
                 className="focus:bg-blue-50"
               >
                 <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -130,6 +131,7 @@ export function PropertyCard({
               <DropdownMenuItem
                 onClick={() => onDelete(property)}
                 className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                disabled={isVirtualSampleProperty(property.id)}
               >
                 <TrashIcon className="mr-2 h-4 w-4" />
                 Delete Property
