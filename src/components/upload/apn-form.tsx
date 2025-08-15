@@ -409,7 +409,15 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
           <Alert>
             <CheckCircleIcon className="h-4 w-4" />
             <AlertTitle>Property Added Successfully</AlertTitle>
-            <AlertDescription>The property has been added to your portfolio. You can add another property or view your properties.</AlertDescription>
+            <AlertDescription className="space-y-3">
+              <p>The property has been added to your portfolio. You can add another property or view your properties.</p>
+              <Button 
+                onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}
+                disabled={createPropertyMutation.isPending}
+              >
+                View Properties
+              </Button>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -523,23 +531,13 @@ export function APNForm({ portfolioId, proLookupEnabled }: APNFormProps) {
               )}
             />
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                type="submit"
-                disabled={createPropertyMutation.isPending}
-                className="flex-1"
-              >
-                {createPropertyMutation.isPending ? 'Adding Property...' : 'Add Property to Portfolio'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)}
-                className="flex-1"
-              >
-                View Properties
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              disabled={createPropertyMutation.isPending}
+              className="w-full"
+            >
+              {createPropertyMutation.isPending ? 'Adding Property...' : 'Add Property to Portfolio'}
+            </Button>
           </>
         )}
       </form>

@@ -68,7 +68,7 @@ export async function GET() {
           user_id: userId,
           tier: 'free',
           property_lookups_used: 0,
-          property_lookups_limit: 25
+          property_lookups_limit: 10
         })
         .select()
         .single()

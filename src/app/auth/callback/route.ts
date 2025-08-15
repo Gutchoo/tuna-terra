@@ -56,24 +56,26 @@ export async function GET(request: NextRequest) {
         console.log('User authenticated successfully:', { userId: data.user.id, email: data.user.email })
         
         // Verify user has required records (portfolio and limits)
-        const { data: portfolio } = await supabase
+        const { data: portfolio, error: portfolioError } = await supabase
           .from('portfolios')
           .select('id')
           .eq('owner_id', data.user.id)
           .eq('is_default', true)
           .single()
 
-        const { data: limits } = await supabase
+        const { data: limits, error: limitsError } = await supabase
           .from('user_limits')
           .select('id')
           .eq('user_id', data.user.id)
           .single()
 
         if (!portfolio || !limits) {
-          console.warn('User missing required records:', {
+          console.warn('User missing required records (database triggers may have failed):', {
             userId: data.user.id,
             hasPortfolio: !!portfolio,
-            hasLimits: !!limits
+            portfolioError: portfolioError?.message,
+            hasLimits: !!limits,
+            limitsError: limitsError?.message
           })
           // Still redirect to dashboard - the app should handle missing records gracefully
         }

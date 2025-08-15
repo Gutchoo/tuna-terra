@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import type { Property } from '@/lib/supabase'
-import { checkUserLimitsServer, createLimitExceededResponse } from '@/lib/limits'
+import { checkUserLimitsServer, createLimitExceededResponse, checkAndIncrementUsageServer } from '@/lib/limits'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -305,25 +305,41 @@ async function handleSingleCreate(userId: string, body: unknown) {
 
   let regridData: RegridProperty | null = null
 
-  // Only fetch Regrid data if Pro Lookup is enabled
-  // NOTE: Usage is now tracked at lookup time (/api/properties/lookup), not at creation time
+  // Only fetch Regrid data if Pro Lookup is enabled and increment usage atomically
   if (validatedData.use_pro_lookup) {
-    if (validatedData.apn) {
-      console.log('handleSingleCreate - fetching by APN (Pro mode):', validatedData.apn)
-      regridData = await RegridService.searchByAPN(validatedData.apn, validatedData.state)
-    } else if (validatedData.address) {
-      console.log('handleSingleCreate - searching by address (Pro mode)')
-      // Search by address
-      const searchResults = await RegridService.searchByAddress(
-        validatedData.address,
-        validatedData.city,
-        validatedData.state,
-        1
+    // Check and increment usage before making API calls to prevent bypass
+    const limitResult = await checkAndIncrementUsageServer(userId, 1)
+    if (!limitResult.canProceed) {
+      return NextResponse.json(
+        createLimitExceededResponse(limitResult),
+        { status: 429 }
       )
-      if (searchResults.length > 0 && searchResults[0]._fullFeature) {
-        console.log('handleSingleCreate - found address results, using full feature data')
-        regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
+    }
+
+    try {
+      if (validatedData.apn) {
+        console.log('handleSingleCreate - fetching by APN (Pro mode):', validatedData.apn)
+        regridData = await RegridService.searchByAPN(validatedData.apn, validatedData.state)
+      } else if (validatedData.address) {
+        console.log('handleSingleCreate - searching by address (Pro mode)')
+        // Search by address
+        const searchResults = await RegridService.searchByAddress(
+          validatedData.address,
+          validatedData.city,
+          validatedData.state,
+          1
+        )
+        if (searchResults.length > 0 && searchResults[0]._fullFeature) {
+          console.log('handleSingleCreate - found address results, using full feature data')
+          regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
+        }
       }
+      
+      console.log(`handleSingleCreate - Pro lookup successful, usage incremented`)
+    } catch (error) {
+      console.error('handleSingleCreate - Regrid API error:', error)
+      // API call failed but usage was already incremented - this is acceptable
+      // as we want to prevent abuse and the user attempted a legitimate lookup
     }
   } else {
     console.log('handleSingleCreate - Basic mode enabled, skipping Regrid API calls')
@@ -422,9 +438,6 @@ async function handleSingleCreate(userId: string, body: unknown) {
       throw new Error('Property creation returned null - possible RLS policy issue')
     }
     
-    // Usage tracking is now handled at lookup time to prevent bypass vulnerabilities
-    // No need to increment usage here as it was already incremented during the lookup phase
-    
     return NextResponse.json({ property })
   } catch (dbError) {
     console.error('handleSingleCreate - database error:', dbError)
@@ -439,9 +452,56 @@ async function handleBulkCreate(userId: string, body: unknown) {
   const validatedData = bulkCreateSchema.parse(body)
   const { properties, source, use_pro_lookup } = validatedData
 
-  // Only check user limits if pro lookup is enabled
-  if (use_pro_lookup) {
-    const limitCheck = await checkUserLimitsServer(userId, properties.length)
+  // Pre-filter duplicates to avoid unnecessary API calls and usage increments
+  const filteredProperties = []
+  const duplicateErrors = []
+  
+  if (properties.length > 0 && properties[0].apn) {
+    console.log('Bulk create: Pre-filtering duplicates before API calls')
+    
+    for (const [index, propertyInput] of properties.entries()) {
+      if (!propertyInput.apn) {
+        filteredProperties.push({ index, propertyInput })
+        continue
+      }
+      
+      try {
+        // Check for duplicates using the same portfolio_id from the property input
+        const existingProperties = await DatabaseService.getFilteredProperties(userId, {
+          search: propertyInput.apn,
+          portfolio_id: propertyInput.portfolio_id
+        })
+        
+        const exactMatch = existingProperties.find(
+          property => property.apn?.toLowerCase() === propertyInput.apn?.toLowerCase()
+        )
+        
+        if (exactMatch) {
+          duplicateErrors.push({
+            index,
+            input: propertyInput,
+            error: `APN ${propertyInput.apn} already exists in this portfolio`,
+            type: 'duplicate'
+          })
+        } else {
+          filteredProperties.push({ index, propertyInput })
+        }
+      } catch (error) {
+        console.warn(`Failed duplicate check for APN ${propertyInput.apn}:`, error)
+        // If duplicate check fails, allow the property through to avoid blocking legitimate uploads
+        filteredProperties.push({ index, propertyInput })
+      }
+    }
+    
+    console.log(`Duplicate filtering: ${duplicateErrors.length} duplicates found, ${filteredProperties.length} properties to process`)
+  } else {
+    // No APNs to check, process all properties
+    filteredProperties.push(...properties.map((propertyInput, index) => ({ index, propertyInput })))
+  }
+
+  // Only check user limits for non-duplicate properties if pro lookup is enabled
+  if (use_pro_lookup && filteredProperties.length > 0) {
+    const limitCheck = await checkUserLimitsServer(userId, filteredProperties.length)
     if (!limitCheck.canProceed) {
       return NextResponse.json(
         createLimitExceededResponse(limitCheck),
@@ -451,25 +511,41 @@ async function handleBulkCreate(userId: string, body: unknown) {
   }
 
   const results = []
-  const errors = []
-  for (const [index, propertyInput] of properties.entries()) {
+  const errors = [...duplicateErrors] // Start with duplicate errors
+  let successfulLookupCount = 0 // Track successful API lookups for usage increment
+  
+  for (const { index, propertyInput } of filteredProperties) {
     try {
       // Pass the use_pro_lookup flag to each property
       const enrichedInput = { ...propertyInput, use_pro_lookup }
-      const property = await createSinglePropertyFromInput(userId, enrichedInput)
-      results.push(property)
+      const result = await createSinglePropertyFromInput(userId, enrichedInput)
+      results.push(result.property)
+      
+      // Track successful lookups that actually used the Regrid API
+      if (result.usedRegridApi) {
+        successfulLookupCount++
+      }
     } catch (error) {
       console.error(`Error creating property at index ${index}:`, error)
       errors.push({
         index,
         input: propertyInput,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        type: 'creation_error'
       })
     }
   }
 
-  // Usage is now tracked at lookup time, not at creation time
-  // This prevents bypass vulnerabilities where users toggle off pro lookup after fetching data
+  // Increment usage counter only for successful Regrid API lookups
+  if (use_pro_lookup && successfulLookupCount > 0) {
+    try {
+      await checkAndIncrementUsageServer(userId, successfulLookupCount)
+      console.log(`Incremented usage by ${successfulLookupCount} for successful CSV lookups`)
+    } catch (error) {
+      console.error('Failed to increment usage after successful lookups:', error)
+      // Don't fail the request - properties were already created
+    }
+  }
 
   // Prepare response
   const response: {
@@ -510,7 +586,7 @@ async function handleBulkCreate(userId: string, body: unknown) {
   return NextResponse.json(response)
 }
 
-async function createSinglePropertyFromInput(userId: string, input: unknown) {
+async function createSinglePropertyFromInput(userId: string, input: unknown): Promise<{ property: Property; usedRegridApi: boolean }> {
   const validatedInput = createPropertySchema.parse(input)
 
   // Determine the target portfolio
@@ -546,12 +622,15 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
   }
 
   let regridData: RegridProperty | null = null
+  let usedRegridApi = false
 
   // Only fetch Regrid data if Pro Lookup is enabled
+  // NOTE: Usage tracking is handled by the calling function for bulk operations
   if (validatedInput.use_pro_lookup) {
     try {
       if (validatedInput.apn) {
         regridData = await RegridService.searchByAPN(validatedInput.apn, validatedInput.state)
+        usedRegridApi = true // API call was made
       } else {
         const searchResults = await RegridService.searchByAddress(
           validatedInput.address,
@@ -562,10 +641,12 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
         if (searchResults.length > 0 && searchResults[0]._fullFeature) {
           regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
         }
+        usedRegridApi = true // API call was made
       }
     } catch (error) {
       // Log but don't fail - we can still create the property without Regrid data
       console.warn('Failed to fetch Regrid data:', error)
+      // usedRegridApi remains false if API call failed
     }
   } else {
     console.log('Basic mode enabled for bulk create, skipping Regrid API calls')
@@ -632,5 +713,10 @@ async function createSinglePropertyFromInput(userId: string, input: unknown) {
     maintenance_history: validatedInput.maintenance_history || null,
   }
 
-  return await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
+  const createdProperty = await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
+  
+  return {
+    property: createdProperty,
+    usedRegridApi
+  }
 }

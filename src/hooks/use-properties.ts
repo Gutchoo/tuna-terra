@@ -42,6 +42,10 @@ export function useProperties(portfolioId?: string | null) {
     gcTime: 10 * 60 * 1000,
     // Only fetch if we have a portfolio ID (avoid unnecessary calls)
     enabled: !!portfolioId,
+    // Refetch on window focus to ensure fresh data after navigation
+    refetchOnWindowFocus: true,
+    // Ensure we get fresh data after mutations
+    refetchOnMount: 'always',
   })
 }
 

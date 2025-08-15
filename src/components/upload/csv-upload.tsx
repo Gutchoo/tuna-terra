@@ -380,7 +380,7 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           <Button onClick={() => router.push(`/dashboard?portfolio_id=${portfolioId}`)} className="flex-1">
             View Properties
           </Button>
-          <Button variant="outline" onClick={resetUpload}>
+          <Button variant="outline" onClick={resetUpload} className="flex-1">
             Upload Another File
           </Button>
         </div>
@@ -407,7 +407,7 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
     <div className="space-y-6">
       
       <div>
-        <Label htmlFor="csv-file">CSV File</Label>
+        <Label htmlFor="csv-file">Select File</Label>
         <Input
           ref={fileInputRef}
           id="csv-file"
@@ -416,17 +416,14 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           onChange={handleFileSelect}
           className="mt-1"
         />
-        <div className="text-sm text-muted-foreground mt-1">
-          <p>CSV file must contain an APN column (apn, parcel, parcelnumber, etc.)</p>
-          {!proLookupEnabled && (
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
-                Basic Mode
-              </Badge>
-              <span className="text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
-            </div>
-          )}
-        </div>
+        {!proLookupEnabled && (
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="secondary" className="text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-800">
+              Basic Mode
+            </Badge>
+            <span className="text-sm text-amber-600">Only APN data will be stored. Enable Pro Lookup for detailed property information.</span>
+          </div>
+        )}
       </div>
 
       {validation && (
@@ -501,7 +498,7 @@ export function CSVUpload({ portfolioId, proLookupEnabled }: CSVUploadProps) {
           className="flex-1"
         >
           <UploadIcon className="h-4 w-4 mr-2" />
-{isUploading ? 'Uploading...' : (proLookupEnabled ? 'Upload Properties (Pro Mode)' : 'Upload Properties (Basic Mode)')}
+{isUploading ? 'Uploading...' : 'Upload Properties'}
         </Button>
         {file && (
           <Button variant="outline" onClick={resetUpload}>
