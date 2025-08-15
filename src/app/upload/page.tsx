@@ -99,7 +99,7 @@ function UploadPageContent() {
               ) : ''}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Import properties to your portfolio using CSV files, APNs, or addresses
+              Import properties to your portfolio using CSV files with APNs, individual APN entry, or address search
             </p>
           </div>
         </div>

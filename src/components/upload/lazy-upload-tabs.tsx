@@ -3,7 +3,9 @@
 import { Suspense, lazy, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UploadIcon, FileTextIcon, MapPinIcon } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { UploadIcon, FileTextIcon, MapPinIcon, HelpCircleIcon } from 'lucide-react'
 
 // Lazy load heavy upload components
 const CSVUpload = lazy(() => import('./csv-upload').then(module => ({ default: module.CSVUpload })))
@@ -55,10 +57,44 @@ export function LazyUploadTabs({ currentPortfolioId, proLookupEnabled }: LazyUpl
       <TabsContent value="csv" className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>CSV File Upload</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>CSV File Upload</CardTitle>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircleIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="right" className="p-4 max-w-sm">
+                  <div className="space-y-3">
+                    <p className="font-medium">Expected CSV format:</p>
+                    <div className="border rounded-md bg-muted/30">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="py-2 px-3 text-xs font-bold">apn</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="py-1 px-3 text-xs">123-456-789</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="py-1 px-3 text-xs">456-789-012</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="py-1 px-3 text-xs">789-012-345</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Just one column with &quot;apn&quot; as the header. We accept variations like &quot;parcel&quot;, &quot;parcelnumber&quot;, etc.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <CardDescription>
-              Upload a CSV file containing property data. Supported formats include APN-only files 
-              or address-based files with columns for address, city, and state.
+              Upload a CSV file containing APN data. Only APN-based files are supported.
             </CardDescription>
           </CardHeader>
           <CardContent>
