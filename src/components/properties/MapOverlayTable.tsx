@@ -231,16 +231,18 @@ export function MapOverlayTable({
                 className="h-8 w-8 p-0"
               >
                 {isMinimized ? (
-                  <ChevronUpIcon className="h-4 w-4" />
+                  <ChevronUpIcon className="h-4 w-4 transition-transform duration-200" />
                 ) : (
-                  <ChevronDownIcon className="h-4 w-4" />
+                  <ChevronDownIcon className="h-4 w-4 transition-transform duration-200" />
                 )}
               </Button>
             </div>
           </div>
           
           {/* Search Input */}
-          {!isMinimized && (
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            !isMinimized ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+          }`}>
             <div className="relative">
               <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
@@ -261,11 +263,13 @@ export function MapOverlayTable({
                 </Button>
               )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Table Content */}
-        {!isMinimized && (
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          !isMinimized ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}>
           <div className="max-h-48 overflow-auto">
             {filteredProperties.length === 0 && searchQuery.trim().length > 0 ? (
               <div className="text-center py-8">
@@ -354,7 +358,7 @@ export function MapOverlayTable({
                               <RefreshCwIcon className={`mr-2 h-3 w-3 ${
                                 refreshingPropertyId === property.id ? 'animate-spin' : ''
                               }`} />
-                              {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
+                              {refreshingPropertyId === property.id ? 'Refreshing..' : 'Refresh'}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={(e) => {
@@ -375,17 +379,19 @@ export function MapOverlayTable({
               </Table>
             )}
           </div>
-        )}
+        </div>
 
         {/* Footer with instructions */}
-        {!isMinimized && filteredProperties.length > 0 && (
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          !isMinimized && filteredProperties.length > 0 ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+        }`}>
           <div className="p-1.5 border-t bg-muted/30 text-center">
             <p className="text-xs text-muted-foreground">
               Click to center map
               {searchQuery.trim() && ` • ${filteredProperties.length}/${properties.length} shown`}
             </p>
           </div>
-        )}
+        </div>
       </Card>
     </div>
   )

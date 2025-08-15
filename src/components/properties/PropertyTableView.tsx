@@ -206,7 +206,6 @@ export function PropertyTableView({
   })
 
   const allSelected = properties.length > 0 && selectedRows.size === properties.length
-  const someSelected = selectedRows.size > 0 && selectedRows.size < properties.length
 
   if (properties.length === 0) {
     return (
@@ -329,7 +328,6 @@ export function PropertyTableView({
               <TableHead className="w-12">
                 <Checkbox
                   checked={allSelected}
-                  {...(someSelected && { indeterminate: true })}
                   onCheckedChange={(checked) => onSelectAll(!!checked)}
                   aria-label="Select all"
                 />

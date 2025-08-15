@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { PropertyViewToggle } from './PropertyViewToggle'
 import { PropertyCardView } from './PropertyCardView'
 import { PropertyTableView } from './PropertyTableView'
@@ -34,6 +34,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
+  const previousSearchQuery = useRef('')
   
   // Action states
   const [refreshingPropertyId, setRefreshingPropertyId] = useState<string | null>(null)
@@ -60,6 +61,18 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
     // Clear selections when switching views
     setSelectedRows(new Set())
   }
+
+  // Clean up invalid selections when properties change
+  useEffect(() => {
+    if (selectedRows.size > 0) {
+      const validPropertyIds = new Set(properties.map(p => p.id))
+      const validSelections = Array.from(selectedRows).filter(id => validPropertyIds.has(id))
+      
+      if (validSelections.length !== selectedRows.size) {
+        setSelectedRows(new Set(validSelections))
+      }
+    }
+  }, [properties, selectedRows])
 
   // Multi-field search algorithm
   const searchInProperty = (property: Property, query: string): boolean => {
@@ -93,9 +106,12 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
   // Handle search query change
   const handleSearchChange = (query: string) => {
+    // Only clear selections when the search query actually changes
+    if (query !== previousSearchQuery.current) {
+      setSelectedRows(new Set())
+      previousSearchQuery.current = query
+    }
     setSearchQuery(query)
-    // Clear selections when search changes
-    setSelectedRows(new Set())
   }
 
   // Card expansion
