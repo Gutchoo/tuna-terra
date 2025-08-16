@@ -229,10 +229,10 @@ export async function DELETE(
     const { id: portfolioId } = await params
     const supabase = await createServerSupabaseClient()
 
-    // Check if user owns the portfolio and it's not a default portfolio
+    // Check if user owns the portfolio and if it's a sample portfolio
     const { data: portfolio, error: checkError } = await supabase
       .from('portfolios')
-      .select('owner_id, is_default')
+      .select('owner_id, is_default, is_sample')
       .eq('id', portfolioId)
       .single()
 
@@ -244,7 +244,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only portfolio owners can delete portfolios' }, { status: 403 })
     }
 
-    // Allow deletion of default portfolios and portfolios with properties
+    // Prevent deletion of sample portfolios
+    if (portfolio.is_sample) {
+      return NextResponse.json({ 
+        error: 'Sample portfolios cannot be deleted', 
+        message: 'This sample portfolio showcases our platform capabilities and cannot be removed. You can create your own portfolios to manage your properties.' 
+      }, { status: 400 })
+    }
+
+    // Allow deletion of other portfolios (including regular default portfolios)
     // The cascade delete will handle all related data (properties, memberships, invitations)
 
     // Delete portfolio (cascade will handle memberships and invitations)

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
+import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 
 type SortField = keyof Property
 type SortDirection = 'asc' | 'desc' | null
@@ -205,7 +206,9 @@ export function PropertyTableView({
     return 0
   })
 
-  const allSelected = properties.length > 0 && selectedRows.size === properties.length
+  // Only count selectable (non-sample) properties for "all selected" calculation
+  const selectableProperties = properties.filter(p => !isVirtualSampleProperty(p.id))
+  const allSelected = selectableProperties.length > 0 && selectedRows.size === selectableProperties.length
 
   if (properties.length === 0) {
     return (
@@ -247,6 +250,7 @@ export function PropertyTableView({
                   onCheckedChange={(checked) => onRowSelect(property.id, !!checked)}
                   aria-label={`Select ${property.address}`}
                   className="mt-1 flex-shrink-0"
+                  disabled={isVirtualSampleProperty(property.id)}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate" title={property.address || ''}>
@@ -266,7 +270,7 @@ export function PropertyTableView({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => onRefresh(property)}
-                    disabled={refreshingPropertyId === property.id || !property.apn}
+                    disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
                     className="focus:bg-blue-50"
                   >
                     <RefreshCwIcon className={`mr-2 h-4 w-4 ${
@@ -277,6 +281,7 @@ export function PropertyTableView({
                   <DropdownMenuItem
                     onClick={() => onDelete(property)}
                     className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                    disabled={isVirtualSampleProperty(property.id)}
                   >
                     <TrashIcon className="mr-2 h-4 w-4" />
                     Delete
@@ -373,6 +378,7 @@ export function PropertyTableView({
                     checked={selectedRows.has(property.id)}
                     onCheckedChange={(checked) => onRowSelect(property.id, !!checked)}
                     aria-label={`Select ${property.address}`}
+                    disabled={isVirtualSampleProperty(property.id)}
                   />
                 </TableCell>
                 
@@ -399,7 +405,7 @@ export function PropertyTableView({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         onClick={() => onRefresh(property)}
-                        disabled={refreshingPropertyId === property.id || !property.apn}
+                        disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
                         className="focus:bg-blue-50"
                       >
                         <RefreshCwIcon className={`mr-2 h-4 w-4 ${
@@ -410,6 +416,7 @@ export function PropertyTableView({
                       <DropdownMenuItem
                         onClick={() => onDelete(property)}
                         className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                        disabled={isVirtualSampleProperty(property.id)}
                       >
                         <TrashIcon className="mr-2 h-4 w-4" />
                         Delete

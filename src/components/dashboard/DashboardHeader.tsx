@@ -23,6 +23,7 @@ import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEdita
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 // import type { PortfolioWithMembership } from '@/lib/supabase'
 
 interface DashboardHeaderProps {
@@ -61,6 +62,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const handlePortfolioNameUpdate = useCallback((portfolioId: string, newName: string) => {
     updatePortfolioName.mutate({ id: portfolioId, name: newName })
   }, [updatePortfolioName])
+
 
   const getRoleColor = useCallback((role?: string) => {
     switch (role) {
@@ -186,6 +188,11 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                         {selectedPortfolio.is_default && (
                           <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
                         )}
+                        {isVirtualSamplePortfolio(selectedPortfolio.id) && (
+                          <Badge className="text-xs flex-shrink-0 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            Demo
+                          </Badge>
+                        )}
                       </div>
                     ) : isWaitingForPortfolioData ? (
                       <div className="flex items-center gap-2 min-w-0">
@@ -204,9 +211,15 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                         {portfolio.is_default && (
                           <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
                         )}
-                        <Badge className={`text-xs flex-shrink-0 ${getRoleColor(portfolio.membership_role)}`}>
-                          {portfolio.membership_role}
-                        </Badge>
+                        {isVirtualSamplePortfolio(portfolio.id) ? (
+                          <Badge className="text-xs flex-shrink-0 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            Demo
+                          </Badge>
+                        ) : (
+                          <Badge className={`text-xs flex-shrink-0 ${getRoleColor(portfolio.membership_role)}`}>
+                            {portfolio.membership_role}
+                          </Badge>
+                        )}
                       </div>
                     </SelectItem>
                   )) || []}
@@ -258,14 +271,26 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                     <span className="ml-1 hidden xs:inline">Manage</span>
                   </Link>
                 </Button>
-                <Button 
-                  size="sm"
-                  onClick={() => setShowAddPropertiesModal(true)}
-                  className="text-xs px-2"
-                >
-                  <PlusIcon className="h-3 w-3" />
-                  <span className="ml-1">Add</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button 
+                        size="sm"
+                        onClick={() => setShowAddPropertiesModal(true)}
+                        className="text-xs px-2"
+                        disabled={currentPortfolio ? isVirtualSamplePortfolio(currentPortfolio) : false}
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                        <span className="ml-1">Add</span>
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
+                    <TooltipContent>
+                      <p>Cannot add properties to demo portfolio</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -293,11 +318,17 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                           {selectedPortfolio.is_default && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
-                          <Badge 
-                            className={`text-xs ${getRoleColor(selectedPortfolio.membership_role)}`}
-                          >
-                            {selectedPortfolio.membership_role}
-                          </Badge>
+                          {isVirtualSamplePortfolio(selectedPortfolio.id) ? (
+                            <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              Demo
+                            </Badge>
+                          ) : (
+                            <Badge 
+                              className={`text-xs ${getRoleColor(selectedPortfolio.membership_role)}`}
+                            >
+                              {selectedPortfolio.membership_role}
+                            </Badge>
+                          )}
                         </div>
                       ) : isWaitingForPortfolioData ? (
                         <div className="flex items-center gap-2">
@@ -316,9 +347,15 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                           {portfolio.is_default && (
                             <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
-                          <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
-                            {portfolio.membership_role}
-                          </Badge>
+                          {isVirtualSamplePortfolio(portfolio.id) ? (
+                            <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              Demo
+                            </Badge>
+                          ) : (
+                            <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
+                              {portfolio.membership_role}
+                            </Badge>
+                          )}
                         </div>
                       </SelectItem>
                     )) || []}
@@ -367,19 +404,42 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
 
             {/* Right side - Action buttons */}
             <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/portfolios" className="flex items-center gap-2">
-                  <SettingsIcon className="h-4 w-4" />
-                  Manage Portfolios
-                </Link>
-              </Button>
-              <Button 
-                onClick={() => setShowAddPropertiesModal(true)}
-                className="flex items-center gap-2"
-              >
-                <PlusIcon className="h-4 w-4" />
-                Add Properties
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button variant="outline" asChild>
+                      <Link href="/dashboard/portfolios" className="flex items-center gap-2">
+                        <SettingsIcon className="h-4 w-4" />
+                        Manage Portfolios
+                      </Link>
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
+                  <TooltipContent>
+                    <p>Create and manage your portfolios here</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      onClick={() => setShowAddPropertiesModal(true)}
+                      className="flex items-center gap-2"
+                      disabled={currentPortfolio ? isVirtualSamplePortfolio(currentPortfolio) : false}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      Add Properties
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
+                  <TooltipContent>
+                    <p>Cannot add properties to demo portfolio</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
             </div>
           </div>
         </div>

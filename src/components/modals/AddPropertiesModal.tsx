@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
-  UploadIcon, 
+  Sheet, 
   FileTextIcon, 
   MapPinIcon, 
   ArrowLeftIcon,
@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
 // Lazy import upload forms
 import dynamic from 'next/dynamic'
@@ -46,6 +47,7 @@ interface AddPropertiesModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   portfolioId: string | null
+  initialMethod?: UploadMethod
 }
 
 interface MethodOption {
@@ -61,7 +63,7 @@ const uploadMethods: MethodOption[] = [
     id: 'csv',
     title: 'CSV Upload',
     description: 'Upload multiple properties from a CSV file',
-    icon: UploadIcon,
+    icon: Sheet,
     example: 'Bulk import from spreadsheet'
   },
   {
@@ -83,7 +85,8 @@ const uploadMethods: MethodOption[] = [
 export function AddPropertiesModal({ 
   open, 
   onOpenChange, 
-  portfolioId
+  portfolioId,
+  initialMethod
 }: AddPropertiesModalProps) {
   const [currentStep, setCurrentStep] = useState<'method' | 'form' | 'success'>('method')
   const [selectedMethod, setSelectedMethod] = useState<UploadMethod | null>(null)
@@ -92,10 +95,17 @@ export function AddPropertiesModal({
   // Reset modal state when opened
   useEffect(() => {
     if (open) {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        // Skip method selection and go directly to form
+        setCurrentStep('form')
+        setSelectedMethod(initialMethod)
+      } else {
+        // Normal flow - start with method selection
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     }
-  }, [open])
+  }, [open, initialMethod])
 
   const handleMethodSelect = (method: UploadMethod) => {
     setSelectedMethod(method)
@@ -104,11 +114,22 @@ export function AddPropertiesModal({
 
   const handleBack = () => {
     if (currentStep === 'form') {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        // If we started with a specific method, close the modal instead of going back to method selection
+        onOpenChange(false)
+      } else {
+        // Normal flow - go back to method selection
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     } else if (currentStep === 'success') {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        setCurrentStep('form')
+        setSelectedMethod(initialMethod)
+      } else {
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     }
   }
 
@@ -128,9 +149,14 @@ export function AddPropertiesModal({
       })
     }
 
-    // Reset to method selection for next upload
-    setCurrentStep('method')
-    setSelectedMethod(null)
+    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
+    if (initialMethod) {
+      setCurrentStep('form')
+      setSelectedMethod(initialMethod)
+    } else {
+      setCurrentStep('method')
+      setSelectedMethod(null)
+    }
   }
 
   const handleCsvSuccess = async (result: unknown) => {
@@ -150,9 +176,14 @@ export function AddPropertiesModal({
       })
     }
 
-    // Reset to method selection for next upload
-    setCurrentStep('method')
-    setSelectedMethod(null)
+    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
+    if (initialMethod) {
+      setCurrentStep('form')
+      setSelectedMethod(initialMethod)
+    } else {
+      setCurrentStep('method')
+      setSelectedMethod(null)
+    }
   }
 
   const handleError = (error: string) => {
@@ -170,49 +201,76 @@ export function AddPropertiesModal({
     await handleSuccess(property as PropertyData)
   }
 
-  const renderMethodSelection = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h3 className="text-lg font-semibold">Add Property</h3>
-        <p className="text-sm text-muted-foreground">
-          Choose how you&apos;d like to add properties to your portfolio
-        </p>
-      </div>
+  const renderMethodSelection = () => {
+    // Check if this is the virtual sample portfolio
+    if (portfolioId && isVirtualSamplePortfolio(portfolioId)) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center space-y-3">
+            <h3 className="text-lg font-semibold">Demo Portfolio</h3>
+            <div className="p-4 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  Demo
+                </Badge>
+              </div>
+              <p className="text-sm text-purple-800 dark:text-purple-200">
+                This is a demonstration portfolio showcasing our platform features. 
+                Properties cannot be added to this portfolio.
+              </p>
+              <p className="text-sm text-purple-700 dark:text-purple-300 mt-2">
+                Create your own portfolio to start managing your real estate data.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
 
-      <div className="space-y-3">
-        {uploadMethods.map((method) => {
-          const Icon = method.icon
-          return (
-            <Card 
-              key={method.id}
-              className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
-              onClick={() => handleMethodSelect(method.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{method.title}</h4>
-                      <Badge variant="secondary" className="text-xs">
-                        {method.id === 'csv' ? 'Bulk' : 'Single'}
-                      </Badge>
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-semibold">Add Property</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose how you&apos;d like to add properties to your portfolio
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {uploadMethods.map((method) => {
+            const Icon = method.icon
+            return (
+              <Card 
+                key={method.id}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
+                onClick={() => handleMethodSelect(method.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Icon className="h-5 w-5 text-primary" />
                     </div>
-                    <p className="text-sm text-muted-foreground">{method.description}</p>
-                    <p className="text-xs text-muted-foreground/70 italic">
-                      e.g. {method.example}
-                    </p>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{method.title}</h4>
+                        <Badge variant="secondary" className="text-xs">
+                          {method.id === 'csv' ? 'Bulk' : 'Single'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{method.description}</p>
+                      <p className="text-xs text-muted-foreground/70 italic">
+                        e.g. {method.example}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderForm = () => {
     if (!selectedMethod) return null

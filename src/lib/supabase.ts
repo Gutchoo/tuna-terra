@@ -81,6 +81,7 @@ export type Property = {
   tags: string[] | null
   insurance_provider: string | null
   maintenance_history: string | null
+  is_sample: boolean // Whether this is a sample property for demonstration
   portfolio_id: string | null // Portfolio this property belongs to
   created_at: string
   updated_at: string
@@ -93,6 +94,7 @@ export interface Portfolio {
   description: string | null
   owner_id: string
   is_default: boolean
+  is_sample: boolean // Whether this is a sample portfolio for demonstration
   created_at: string
   updated_at: string
 }

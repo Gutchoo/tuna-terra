@@ -71,6 +71,26 @@ export async function PUT(
     // Validate update data
     const validatedData = updatePropertySchema.parse(body)
 
+    // Check if property is a sample property before updating
+    const existingProperty = await DatabaseService.getProperty(id, userId)
+    
+    if (!existingProperty) {
+      return NextResponse.json(
+        { error: 'Property not found' },
+        { status: 404 }
+      )
+    }
+
+    if (existingProperty.is_sample) {
+      return NextResponse.json(
+        { 
+          error: 'Sample properties cannot be edited',
+          message: 'This sample property showcases our platform capabilities and cannot be modified. You can add your own properties to manage and edit.'
+        },
+        { status: 400 }
+      )
+    }
+
     // Update the property
     const property = await DatabaseService.updateProperty(id, userId, {
       ...validatedData,
@@ -110,6 +130,26 @@ export async function DELETE(
     if (!id) {
       return NextResponse.json(
         { error: 'Property ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if property is a sample property before deletion
+    const property = await DatabaseService.getProperty(id, userId)
+    
+    if (!property) {
+      return NextResponse.json(
+        { error: 'Property not found' },
+        { status: 404 }
+      )
+    }
+
+    if (property.is_sample) {
+      return NextResponse.json(
+        { 
+          error: 'Sample properties cannot be deleted',
+          message: 'This sample property showcases our platform capabilities and cannot be removed. You can add your own properties to manage.'
+        },
         { status: 400 }
       )
     }

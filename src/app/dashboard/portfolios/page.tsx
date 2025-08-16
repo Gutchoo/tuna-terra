@@ -15,8 +15,10 @@ import { DeletePortfolioDialog } from '@/components/portfolios/DeletePortfolioDi
 import { BulkActionBar } from '@/components/portfolios/BulkActionBar'
 import { SearchBar } from '@/components/properties/SearchBar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
 import type { PortfolioWithMembership } from '@/lib/supabase'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
 export default function PortfoliosPage() {
   const router = useRouter()
@@ -27,13 +29,14 @@ export default function PortfoliosPage() {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isProcessingBulk, setIsProcessingBulk] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [createPortfolioModalOpen, setCreatePortfolioModalOpen] = useState(false)
   
   // Use React Query for consistent data management
   const { data: portfolios = [], isLoading: loading, refetch } = usePortfolios(true)
   const updatePortfolioName = useUpdatePortfolioName()
 
   const handleCreatePortfolio = () => {
-    router.push('/dashboard/portfolios/new')
+    setCreatePortfolioModalOpen(true)
   }
 
   const handleViewPortfolio = (portfolioId: string) => {
@@ -266,8 +269,8 @@ export default function PortfoliosPage() {
     )
   }
 
-  // Filter portfolios that user owns for selection (use filtered list)
-  const ownedPortfolios = filteredPortfolios.filter(p => p.membership_role === 'owner')
+  // Filter portfolios that user owns for selection (use filtered list, exclude sample portfolios)
+  const ownedPortfolios = filteredPortfolios.filter(p => p.membership_role === 'owner' && !isVirtualSamplePortfolio(p.id))
   const allOwnedSelected = ownedPortfolios.length > 0 && 
     ownedPortfolios.every(p => selectedPortfolios.has(p.id))
 
@@ -336,13 +339,15 @@ export default function PortfoliosPage() {
           <Card 
             key={portfolio.id} 
             className={`relative group transition-all duration-200 ${
-              isSelected 
-                ? 'bg-muted/30 border-muted-foreground/20' 
-                : 'hover:shadow-md'
+              isVirtualSamplePortfolio(portfolio.id)
+                ? 'bg-accent/10 border-accent/20 shadow-sm ring-1 ring-accent/10'
+                : isSelected 
+                  ? 'bg-muted/30 border-muted-foreground/20' 
+                  : 'hover:shadow-md'
             }`}
           >
-            {/* Checkbox overlay for owner portfolios */}
-            {portfolio.membership_role === 'owner' && (
+            {/* Checkbox overlay for owner portfolios (except sample portfolios) */}
+            {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
               <div className="absolute top-3 left-3 z-10">
                 <Checkbox
                   checked={selectedPortfolios.has(portfolio.id)}
@@ -357,32 +362,45 @@ export default function PortfoliosPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <CardTitle className="flex items-center gap-2 mb-2">
-                    {portfolio.membership_role === 'owner' && (
+                    {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
                       <div className="w-5 h-5" />
                     )}
                     <BuildingIcon className="h-5 w-5" />
                     <div className="truncate">
-                      <InlineEditablePortfolioName
-                        portfolioId={portfolio.id}
-                        initialName={portfolio.name}
-                        canEdit={portfolio.membership_role === 'owner'}
-                        onNameChange={(newName) => handlePortfolioNameUpdate(portfolio.id, newName)}
-                        onError={handleNameUpdateError}
-                        className="truncate"
-                      />
+                      {isVirtualSamplePortfolio(portfolio.id) ? (
+                        <span className="truncate font-medium">{portfolio.name}</span>
+                      ) : (
+                        <InlineEditablePortfolioName
+                          portfolioId={portfolio.id}
+                          initialName={portfolio.name}
+                          canEdit={portfolio.membership_role === 'owner'}
+                          onNameChange={(newName) => handlePortfolioNameUpdate(portfolio.id, newName)}
+                          onError={handleNameUpdateError}
+                          className="truncate"
+                        />
+                      )}
                     </div>
                   </CardTitle>
-                  <CardDescription className="mt-1">
-                    {portfolio.description || 'No description'}
-                  </CardDescription>
+                  {!isVirtualSamplePortfolio(portfolio.id) && (
+                    <CardDescription className="mt-1 h-6 line-clamp-2">
+                      {portfolio.description || 'No description'}
+                    </CardDescription>
+                  )}
+                  {isVirtualSamplePortfolio(portfolio.id) && (
+                    <div className="h-6" />
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
-                    {portfolio.membership_role}
-                  </Badge>
+                  {isVirtualSamplePortfolio(portfolio.id) ? (
+                    <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
+                  ) : (
+                    <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
+                      {portfolio.membership_role}
+                    </Badge>
+                  )}
 
-                  {portfolio.membership_role === 'owner' && (
+                  {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-1">
@@ -436,7 +454,7 @@ export default function PortfoliosPage() {
                     View Properties
                   </Button>
 
-                  {portfolio.membership_role === 'owner' && (
+                  {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
                     <SharePortfolioDialog
                       portfolio={portfolio}
                       trigger={
@@ -501,6 +519,12 @@ export default function PortfoliosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Portfolio Modal */}
+      <CreatePortfolioModal
+        open={createPortfolioModalOpen}
+        onOpenChange={setCreatePortfolioModalOpen}
+      />
     </div>
   )
 }

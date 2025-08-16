@@ -1,25 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCreatePortfolio } from '@/hooks/use-portfolios'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { BuildingIcon, ArrowLeftIcon } from 'lucide-react'
-import Link from 'next/link'
+import { BuildingIcon } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { useCreatePortfolio } from '@/hooks/use-portfolios'
 
-export default function NewPortfolioPage() {
+interface CreatePortfolioModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function CreatePortfolioModal({ 
+  open, 
+  onOpenChange
+}: CreatePortfolioModalProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [formData, setFormData] = useState({
     name: '',
     description: ''
   })
+  const [isRedirecting, setIsRedirecting] = useState(false)
   
   const createPortfolioMutation = useCreatePortfolio()
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: '',
+        description: ''
+      })
+      setIsRedirecting(false)
+    }
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,11 +48,26 @@ export default function NewPortfolioPage() {
     try {
       const result = await createPortfolioMutation.mutateAsync(formData)
       
-      // Redirect to the new portfolio with success indication
+      // Set redirecting state to show loading during redirect
+      setIsRedirecting(true)
+
+      // Invalidate portfolios cache for real-time updates
+      await queryClient.invalidateQueries({ 
+        queryKey: ['portfolios'] 
+      })
+
+      // Close modal
+      onOpenChange(false)
+      
+      // Redirect to the new portfolio - toast will be shown after redirect
       router.push(`/dashboard?portfolio_id=${result.portfolio.id}&created=true`)
     } catch (error) {
       console.error('Error creating portfolio:', error)
-      // Error is handled by the mutation
+      toast.error('Failed to create portfolio', {
+        description: error instanceof Error ? error.message : 'An unexpected error occurred'
+      })
+      // Reset redirecting state on error
+      setIsRedirecting(false)
     }
   }
 
@@ -43,46 +79,25 @@ export default function NewPortfolioPage() {
   }
 
   const isValid = formData.name.trim().length > 0
-  const loading = createPortfolioMutation.isPending
-  const error = createPortfolioMutation.error?.message || null
+  const loading = createPortfolioMutation.isPending || isRedirecting
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/portfolios">
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Portfolios
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Create Portfolio</h1>
-          <p className="text-muted-foreground">
-            Create a new portfolio to organize your properties
-          </p>
-        </div>
-      </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <BuildingIcon className="h-5 w-5" />
-            Portfolio Details
-          </CardTitle>
-          <CardDescription>
-            Give your portfolio a name and optional description
-          </CardDescription>
-        </CardHeader>
+            Create Portfolio
+          </DialogTitle>
+        </DialogHeader>
 
-        <CardContent>
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Create a new portfolio to organize your properties
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Portfolio Name *</Label>
@@ -121,12 +136,12 @@ export default function NewPortfolioPage() {
               <Button
                 type="submit"
                 disabled={!isValid || loading}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-1"
               >
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                    Creating Portfolio...
+                    {isRedirecting ? 'Redirecting...' : 'Creating Portfolio...'}
                   </>
                 ) : (
                   <>
@@ -136,15 +151,18 @@ export default function NewPortfolioPage() {
                 )}
               </Button>
 
-              <Link href="/dashboard/portfolios">
-                <Button type="button" variant="outline" disabled={loading}>
-                  Cancel
-                </Button>
-              </Link>
+              <Button 
+                type="button" 
+                variant="outline" 
+                disabled={loading}
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
