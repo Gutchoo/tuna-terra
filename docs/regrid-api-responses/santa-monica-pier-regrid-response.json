@@ -1,0 +1,249 @@
+{
+  "parcels": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -118.496764,
+                34.008823
+              ],
+              [
+                -118.4969495,
+                34.0088965
+              ],
+              [
+                -118.4974315,
+                34.0091975
+              ],
+              [
+                -118.4975935,
+                34.0092985
+              ],
+              [
+                -118.49807,
+                34.008915
+              ],
+              [
+                -118.498142,
+                34.0088565
+              ],
+              [
+                -118.49896,
+                34.008198
+              ],
+              [
+                -118.498979,
+                34.0082145
+              ],
+              [
+                -118.4990435,
+                34.0081625
+              ],
+              [
+                -118.4990215,
+                34.0081455
+              ],
+              [
+                -118.4991485,
+                34.0080455
+              ],
+              [
+                -118.4991735,
+                34.0080625
+              ],
+              [
+                -118.49922,
+                34.008025
+              ],
+              [
+                -118.499243,
+                34.0080435
+              ],
+              [
+                -118.4994,
+                34.0079175
+              ],
+              [
+                -118.4993525,
+                34.0078745
+              ],
+              [
+                -118.4995255,
+                34.00774
+              ],
+              [
+                -118.4996875,
+                34.007878
+              ],
+              [
+                -118.4998465,
+                34.0077455
+              ],
+              [
+                -118.499927,
+                34.00781
+              ],
+              [
+                -118.5001875,
+                34.0075985
+              ],
+              [
+                -118.4999135,
+                34.007361
+              ],
+              [
+                -118.4998765,
+                34.0073915
+              ],
+              [
+                -118.499854,
+                34.007392
+              ],
+              [
+                -118.4997215,
+                34.0072795
+              ],
+              [
+                -118.4993455,
+                34.0075905
+              ],
+              [
+                -118.4994375,
+                34.00767
+              ],
+              [
+                -118.4994125,
+                34.007692
+              ],
+              [
+                -118.499391,
+                34.007675
+              ],
+              [
+                -118.4993275,
+                34.007727
+              ],
+              [
+                -118.4993475,
+                34.007744
+              ],
+              [
+                -118.499271,
+                34.007806
+              ],
+              [
+                -118.4992475,
+                34.0077855
+              ],
+              [
+                -118.4992025,
+                34.0078245
+              ],
+              [
+                -118.499179,
+                34.0078055
+              ],
+              [
+                -118.4990185,
+                34.007934
+              ],
+              [
+                -118.4990655,
+                34.0079705
+              ],
+              [
+                -118.498534,
+                34.008402
+              ],
+              [
+                -118.4979155,
+                34.007885
+              ],
+              [
+                -118.4973195,
+                34.0083705
+              ],
+              [
+                -118.496764,
+                34.008823
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "headline": "200 Santa Monica Pier",
+          "path": "/us/ca/los-angeles/santa-monica/2407634",
+          "fields": {
+            "ogc_fid": 2407634,
+            "geoid": "06037",
+            "parcelnumb": "4290-023-903",
+            "parcelnumb_no_formatting": "4290023903",
+            "zoning": "OF",
+            "zoning_description": "Oceanfront",
+            "numstories": 0,
+            "numunits": 0,
+            "numrooms": 0,
+            "parvaltype": "GROSS ASSESSED",
+            "improvval": 0,
+            "landval": 0,
+            "parval": 0,
+            "saleprice": 0,
+            "saledate": "2017-01-02",
+            "taxyear": "2025",
+            "owntype": "3",
+            "owner": "SANTA MONICA CITY",
+            "mailadd": "PO BOX 2200",
+            "mail_address2": "0",
+            "mail_addno": "2200",
+            "mail_addstr": "PO BOX",
+            "mail_city": "SANTA MONICA",
+            "mail_state2": "CA",
+            "mail_zip": "90407-2200",
+            "original_mailing_address": "{\"mailadd\":\"00000 PO BOX 2200\",\"mail_addno\":\"00000\",\"mail_addstr\":\"PO BOX 2200\",\"mail_city\":\"SANTA MONICA\",\"mail_state2\":\"CA\",\"mail_zip\":\"904070000\"}",
+            "address": "200 SANTA MONICA PIER",
+            "saddno": "200",
+            "saddstr": "SANTA MONICA PIER",
+            "scity": "SANTA MONICA",
+            "original_address": "{\"address\":\"00200 SANTA MONICA PIER\",\"saddno\":\"00200\",\"saddstr\":\"SANTA MONICA PIER\",\"scity\":\"SANTA MONICA\",\"szip\":\"904010000\"}",
+            "city": "santa-monica",
+            "county": "los-angeles",
+            "state2": "CA",
+            "szip": "90401-3126",
+            "szip5": "90401",
+            "address_source": "county;cass",
+            "legaldesc": "FOR DESC SEE ASSESSOR'S MAPS SANTA MONICA PIER",
+            "lat": "34.008393",
+            "lon": "-118.498174",
+            "qoz": "No",
+            "census_tract": "06037701902",
+            "census_block": "060377019023020",
+            "census_blockgroup": "060377019023",
+            "census_zcta": "90405",
+            "ll_last_refresh": "2025-06-10",
+            "recrdareano": 0,
+            "ll_gisacre": 4.20946,
+            "ll_gissqft": 183368,
+            "path": "/us/ca/los-angeles/santa-monica/2407634",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "486b5c26-b001-4306-836a-ceb96550d440",
+            "ll_updated_at": "2025-08-11 08:45:12 -0400"
+          },
+          "context": {
+            "headline": "Santa Monica, CA",
+            "name": "Santa Monica, CA",
+            "path": "/us/ca/los-angeles/santa-monica",
+            "active": true
+          },
+          "ll_uuid": "486b5c26-b001-4306-836a-ceb96550d440",
+          "score": 100
+        },
+        "id": 2407634
+      }
+    ]
+  }
+}
