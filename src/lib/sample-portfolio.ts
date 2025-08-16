@@ -12,7 +12,7 @@ export const VIRTUAL_SAMPLE_PORTFOLIO: PortfolioWithMembership = {
   updated_at: '2024-01-01T00:00:00.000Z',
   membership_role: 'viewer', // Users can only view, not edit
   member_count: 1,
-  property_count: 1, // UC Berkeley sample property
+  property_count: 2, // UC Berkeley and LAX sample properties
 }
 
 // Virtual sample property - UC Berkeley from real Regrid API data
@@ -254,6 +254,179 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
           ll_gisacre: 407.0038,
           ll_gissqft: 17729455,
           ll_uuid: '177dc861-03a4-477f-bdf2-63dc4a338cb2'
+        }
+      }
+    },
+    
+    // User fields
+    user_notes: null,
+    tags: null,
+    insurance_provider: null,
+    maintenance_history: null,
+    is_sample: true,
+    portfolio_id: 'sample-portfolio-virtual',
+    created_at: '2024-01-01T00:00:00.000Z',
+    updated_at: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'sample-property-lax-airport',
+    user_id: 'virtual-sample-owner',
+    regrid_id: '2404201',
+    apn: '4129-027-902',
+    address: '1 WORLD WAY',
+    city: 'LOS ANGELES',
+    state: 'CA',
+    zip_code: '90045',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [-118.3967015, 33.931129],
+          [-118.3964635, 33.931128],
+          [-118.396396, 33.9311665],
+          [-118.396396, 33.9312335],
+          [-118.396396, 33.931264],
+          [-118.396396, 33.9313605],
+          [-118.3963955, 33.9315465],
+          [-118.3963955, 33.93162],
+          [-118.396445, 33.9316205],
+          [-118.3964665, 33.9315835],
+          [-118.396491, 33.9315475],
+          [-118.396543, 33.931486],
+          [-118.3966045, 33.9314305],
+          [-118.3966275, 33.9314125],
+          [-118.3966515, 33.9313955],
+          [-118.396699, 33.931364],
+          [-118.3968395, 33.9312695],
+          [-118.396885, 33.9312385],
+          [-118.396928, 33.93121],
+          [-118.396982, 33.931174],
+          [-118.3970025, 33.93116],
+          [-118.397013, 33.931154],
+          [-118.3970235, 33.9311465],
+          [-118.3968285, 33.9311315],
+          [-118.3967015, 33.931129]
+        ]
+      ]
+    },
+    lat: 33.938393,
+    lng: -118.405078,
+    
+    // Rich property data from Regrid API
+    year_built: 1983,
+    owner: 'L A CITY',
+    last_sale_price: 0,
+    sale_date: '1969-05-01',
+    county: 'los-angeles',
+    qoz_status: 'No',
+    improvement_value: 0,
+    land_value: 33797215,
+    assessed_value: 33797215,
+    
+    // Extended property details
+    use_code: '8862',
+    use_description: 'Government - Government Parcel',
+    zoning: 'LAX',
+    zoning_description: 'Los Angeles International Airport Specific Plan',
+    num_stories: 2,
+    num_units: 0,
+    num_rooms: 0,
+    subdivision: null,
+    lot_size_acres: 594.37101,
+    lot_size_sqft: 25891340,
+    
+    // Financial & tax data
+    tax_year: '2025',
+    parcel_value_type: 'GROSS ASSESSED',
+    
+    // Location data
+    census_tract: '06037980028',
+    census_block: '060379800281018',
+    qoz_tract: null,
+    
+    // Data freshness tracking
+    last_refresh_date: '2025-06-10',
+    regrid_updated_at: '2025-08-11 08:45:12 -0400',
+    
+    // Owner mailing address
+    owner_mailing_address: '400 S MAIN ST',
+    owner_mail_city: 'LOS ANGELES',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '90013',
+    
+    // Stored property data (full Regrid response for reference)
+    property_data: {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [-118.3967015, 33.931129],
+              [-118.3964635, 33.931128],
+              [-118.396396, 33.9311665],
+              [-118.396396, 33.9312335],
+              [-118.396396, 33.931264],
+              [-118.396396, 33.9313605],
+              [-118.3963955, 33.9315465],
+              [-118.3963955, 33.93162],
+              [-118.396445, 33.9316205],
+              [-118.3964665, 33.9315835],
+              [-118.396491, 33.9315475],
+              [-118.396543, 33.931486],
+              [-118.3966045, 33.9314305],
+              [-118.3966275, 33.9314125],
+              [-118.3966515, 33.9313955],
+              [-118.396699, 33.931364],
+              [-118.3968395, 33.9312695],
+              [-118.396885, 33.9312385],
+              [-118.396928, 33.93121],
+              [-118.396982, 33.931174],
+              [-118.3970025, 33.93116],
+              [-118.397013, 33.931154],
+              [-118.3970235, 33.9311465],
+              [-118.3968285, 33.9311315],
+              [-118.3967015, 33.931129]
+            ]
+          ]
+        ]
+      },
+      properties: {
+        headline: '1 World Way',
+        path: '/us/ca/los-angeles/los-angeles/2404201',
+        fields: {
+          ogc_fid: 2404201,
+          geoid: '06037',
+          parcelnumb: '4129-027-902',
+          parcelnumb_no_formatting: '4129027902',
+          usecode: '8862',
+          usedesc: 'Government - Government Parcel',
+          zoning: 'LAX',
+          zoning_description: 'Los Angeles International Airport Specific Plan',
+          yearbuilt: 1983,
+          numstories: 2.0,
+          numunits: 0,
+          numrooms: 0.0,
+          parvaltype: 'GROSS ASSESSED',
+          improvval: 0.0,
+          landval: 33797215.0,
+          parval: 33797215.0,
+          saleprice: 0.0,
+          saledate: '1969-05-01',
+          taxyear: '2025',
+          owner: 'L A CITY',
+          mailadd: '400 S MAIN ST',
+          address: '1 WORLD WAY',
+          scity: 'LOS ANGELES',
+          state2: 'CA',
+          szip5: '90045',
+          lat: '33.938393',
+          lon: '-118.405078',
+          qoz: 'No',
+          census_tract: '06037980028',
+          ll_gisacre: 594.37101,
+          ll_gissqft: 25891340,
+          ll_uuid: '7be96dc2-4bac-49b7-a34a-9fb30d6f497b'
         }
       }
     },

@@ -28,6 +28,7 @@ function DashboardPageContent() {
   const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
   const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   const [showCreatePortfolioModal, setShowCreatePortfolioModal] = useState(false)
+  const [modalInitialMethod, setModalInitialMethod] = useState<'csv' | 'apn' | 'address' | undefined>(undefined)
   
   // Use refs to prevent unnecessary effect re-runs and track state
   const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
@@ -239,7 +240,10 @@ function DashboardPageContent() {
       return (
         <EmptyPropertiesState 
           portfolioId={currentPortfolioId}
-          onAddProperties={() => setShowAddPropertiesModal(true)}
+          onAddProperties={(method) => {
+            setModalInitialMethod(method)
+            setShowAddPropertiesModal(true)
+          }}
         />
       )
     }
@@ -284,8 +288,15 @@ function DashboardPageContent() {
 
       <AddPropertiesModal
         open={showAddPropertiesModal}
-        onOpenChange={setShowAddPropertiesModal}
+        onOpenChange={(open) => {
+          setShowAddPropertiesModal(open)
+          // Reset the initial method when modal is closed
+          if (!open) {
+            setModalInitialMethod(undefined)
+          }
+        }}
         portfolioId={currentPortfolioId}
+        initialMethod={modalInitialMethod}
       />
       <CreatePortfolioModal
         open={showCreatePortfolioModal}

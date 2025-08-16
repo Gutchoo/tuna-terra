@@ -84,6 +84,32 @@ export function usePrefetchProperties() {
   }
 }
 
+// Delete single property mutation
+export function useDeleteProperty() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (propertyId: string) => {
+      // Filter out any virtual sample properties
+      if (isVirtualSampleProperty(propertyId)) {
+        throw new Error('Cannot delete sample properties')
+      }
+      
+      const response = await fetch(`/api/user-properties/${propertyId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete property')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      // Invalidate all properties cache to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
+    },
+  })
+}
+
 // Delete properties mutation
 export function useDeleteProperties() {
   const queryClient = useQueryClient()
@@ -109,6 +135,32 @@ export function useDeleteProperties() {
     },
     onSuccess: () => {
       // Invalidate all properties cache to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['properties'] })
+    },
+  })
+}
+
+// Refresh single property mutation
+export function useRefreshProperty() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (propertyId: string) => {
+      // Filter out any virtual sample properties
+      if (isVirtualSampleProperty(propertyId)) {
+        throw new Error('Cannot refresh sample properties')
+      }
+      
+      const response = await fetch(`/api/user-properties/${propertyId}/refresh`, {
+        method: 'POST',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to refresh property')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      // Invalidate all properties cache to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })

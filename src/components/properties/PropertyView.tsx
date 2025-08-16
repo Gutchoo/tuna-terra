@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
+import { useDeleteProperty, useDeleteProperties, useRefreshProperty } from '@/hooks/use-properties'
+import { toast } from 'sonner'
 
 type ViewMode = 'cards' | 'table'
 
@@ -28,6 +30,10 @@ interface PropertyViewProps {
 }
 
 export function PropertyView({ properties, onPropertiesChange, onError }: PropertyViewProps) {
+  // React Query mutations for property operations
+  const deleteProperty = useDeleteProperty()
+  const deleteProperties = useDeleteProperties()
+  const refreshProperty = useRefreshProperty()
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
@@ -150,32 +156,17 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   // Single property refresh
   const handleRefreshClick = async (property: Property) => {
     if (!property.apn) {
-      onError('Cannot refresh property: No APN available')
+      toast.error('Cannot refresh property: No APN available')
       return
     }
 
     setRefreshingPropertyId(property.id)
-
+    
     try {
-      const response = await fetch(`/api/user-properties/${property.id}/refresh`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to refresh property')
-      }
-
-      const result = await response.json()
-      
-      // Update the property in the list
-      const updatedProperties = properties.map(p => 
-        p.id === property.id ? result.property : p
-      )
-      onPropertiesChange(updatedProperties)
-
+      await refreshProperty.mutateAsync(property.id)
+      toast.success('Property data refreshed successfully')
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Failed to refresh property data')
+      toast.error(err instanceof Error ? err.message : 'Failed to refresh property data')
     } finally {
       setRefreshingPropertyId(null)
     }
@@ -192,17 +183,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
     setIsDeleting(true)
     try {
-      const response = await fetch(`/api/user-properties/${propertyToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete property')
-      }
-
-      // Remove the property from the list
-      const updatedProperties = properties.filter(p => p.id !== propertyToDelete.id)
-      onPropertiesChange(updatedProperties)
+      await deleteProperty.mutateAsync(propertyToDelete.id)
       
       // Remove from selections
       const newSelected = new Set(selectedRows)
@@ -211,8 +192,9 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
       
       setDeleteDialogOpen(false)
       setPropertyToDelete(null)
+      toast.success('Property deleted successfully')
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Failed to delete property')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete property')
     } finally {
       setIsDeleting(false)
     }
@@ -258,26 +240,13 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
     const selectedIds = Array.from(selectedRows).filter(id => !isVirtualSampleProperty(id))
 
     try {
-      const deletePromises = selectedIds.map(id =>
-        fetch(`/api/user-properties/${id}`, { method: 'DELETE' })
-      )
-
-      const results = await Promise.allSettled(deletePromises)
-      const successful = results.filter(r => r.status === 'fulfilled').length
-      const failed = results.length - successful
-
-      // Remove successfully deleted properties from all properties
-      const updatedProperties = properties.filter(p => !selectedIds.includes(p.id))
-      onPropertiesChange(updatedProperties)
+      await deleteProperties.mutateAsync(selectedIds)
       
       setSelectedRows(new Set())
       setBulkDeleteDialogOpen(false)
-
-      if (failed > 0) {
-        onError(`Deleted ${successful} properties, ${failed} failed`)
-      }
-    } catch {
-      onError('Failed to delete properties')
+      toast.success(`Successfully deleted ${selectedIds.length} properties`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete properties')
     } finally {
       setBulkProcessing(false)
     }

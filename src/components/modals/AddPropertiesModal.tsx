@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
-  UploadIcon, 
+  Sheet, 
   FileTextIcon, 
   MapPinIcon, 
   ArrowLeftIcon,
@@ -47,6 +47,7 @@ interface AddPropertiesModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   portfolioId: string | null
+  initialMethod?: UploadMethod
 }
 
 interface MethodOption {
@@ -62,7 +63,7 @@ const uploadMethods: MethodOption[] = [
     id: 'csv',
     title: 'CSV Upload',
     description: 'Upload multiple properties from a CSV file',
-    icon: UploadIcon,
+    icon: Sheet,
     example: 'Bulk import from spreadsheet'
   },
   {
@@ -84,7 +85,8 @@ const uploadMethods: MethodOption[] = [
 export function AddPropertiesModal({ 
   open, 
   onOpenChange, 
-  portfolioId
+  portfolioId,
+  initialMethod
 }: AddPropertiesModalProps) {
   const [currentStep, setCurrentStep] = useState<'method' | 'form' | 'success'>('method')
   const [selectedMethod, setSelectedMethod] = useState<UploadMethod | null>(null)
@@ -93,10 +95,17 @@ export function AddPropertiesModal({
   // Reset modal state when opened
   useEffect(() => {
     if (open) {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        // Skip method selection and go directly to form
+        setCurrentStep('form')
+        setSelectedMethod(initialMethod)
+      } else {
+        // Normal flow - start with method selection
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     }
-  }, [open])
+  }, [open, initialMethod])
 
   const handleMethodSelect = (method: UploadMethod) => {
     setSelectedMethod(method)
@@ -105,11 +114,22 @@ export function AddPropertiesModal({
 
   const handleBack = () => {
     if (currentStep === 'form') {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        // If we started with a specific method, close the modal instead of going back to method selection
+        onOpenChange(false)
+      } else {
+        // Normal flow - go back to method selection
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     } else if (currentStep === 'success') {
-      setCurrentStep('method')
-      setSelectedMethod(null)
+      if (initialMethod) {
+        setCurrentStep('form')
+        setSelectedMethod(initialMethod)
+      } else {
+        setCurrentStep('method')
+        setSelectedMethod(null)
+      }
     }
   }
 
@@ -129,9 +149,14 @@ export function AddPropertiesModal({
       })
     }
 
-    // Reset to method selection for next upload
-    setCurrentStep('method')
-    setSelectedMethod(null)
+    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
+    if (initialMethod) {
+      setCurrentStep('form')
+      setSelectedMethod(initialMethod)
+    } else {
+      setCurrentStep('method')
+      setSelectedMethod(null)
+    }
   }
 
   const handleCsvSuccess = async (result: unknown) => {
@@ -151,9 +176,14 @@ export function AddPropertiesModal({
       })
     }
 
-    // Reset to method selection for next upload
-    setCurrentStep('method')
-    setSelectedMethod(null)
+    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
+    if (initialMethod) {
+      setCurrentStep('form')
+      setSelectedMethod(initialMethod)
+    } else {
+      setCurrentStep('method')
+      setSelectedMethod(null)
+    }
   }
 
   const handleError = (error: string) => {
