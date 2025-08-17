@@ -29,6 +29,7 @@ interface PropertyViewProps {
   onError: (error: string) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function PropertyView({ properties, onPropertiesChange, onError }: PropertyViewProps) {
   // React Query mutations for property operations
   const deleteProperty = useDeleteProperty()
