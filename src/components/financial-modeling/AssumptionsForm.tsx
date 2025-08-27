@@ -157,12 +157,6 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
 }) {
   return (
     <div className="space-y-6">
-      {/* Hold Period Selector - First and Prominent */}
-      <HoldPeriodSelector 
-        value={assumptions.holdPeriodYears || 5}
-        onChange={(value) => updateAssumption('holdPeriodYears', value)}
-      />
-      
       {/* Property Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -170,6 +164,10 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
             <CardTitle>Basic Property Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <HoldPeriodSelector 
+              value={assumptions.holdPeriodYears || 5}
+              onChange={(value) => updateAssumption('holdPeriodYears', value)}
+            />
             <TooltipInput
               id="purchase-price"
               label="Purchase Price"

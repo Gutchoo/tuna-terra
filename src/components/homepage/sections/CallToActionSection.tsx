@@ -1,12 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { AnimatedButton } from '../ui/AnimatedButton'
 import { ScrollReveal } from '../ui/ScrollReveal'
+import { AuthModal } from '@/components/modals/AuthModal'
 
 export function CallToActionSection() {
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'sign-in' | 'sign-up'>('sign-up')
   return (
     <section className="py-20 lg:py-24 bg-muted/20">
       <div className="container mx-auto px-4">
@@ -47,44 +50,35 @@ export function CallToActionSection() {
                 size="lg" 
                 className="w-full sm:w-auto text-base px-8 py-3 gap-2"
                 premium
-                asChild
+                onClick={() => {
+                  setAuthMode('sign-up')
+                  setAuthModalOpen(true)
+                }}
               >
-                <Link href="/sign-up">
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                Get Started Free
+                <ArrowRight className="w-4 h-4" />
               </AnimatedButton>
               
               <AnimatedButton 
                 variant="outline" 
                 size="lg" 
                 className="w-full sm:w-auto text-base px-8 py-3"
-                asChild
+                onClick={() => {
+                  setAuthMode('sign-in')
+                  setAuthModalOpen(true)
+                }}
               >
-                <Link href="/sign-in">Sign In</Link>
+                Sign In
               </AnimatedButton>
-            </div>
-            
-            <div className="pt-6">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  <span>Free forever plan</span>
-                </div>
-                <div className="hidden sm:block w-1 h-1 bg-muted-foreground/30 rounded-full" />
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                  <span>No setup fees</span>
-                </div>
-                <div className="hidden sm:block w-1 h-1 bg-muted-foreground/30 rounded-full" />
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                  <span>Cancel anytime</span>
-                </div>
-              </div>
             </div>
           </div>
         </ScrollReveal>
+        
+        <AuthModal 
+          open={authModalOpen}
+          onOpenChange={setAuthModalOpen}
+          defaultMode={authMode}
+        />
         
         {/* Background Pattern */}
         <motion.div

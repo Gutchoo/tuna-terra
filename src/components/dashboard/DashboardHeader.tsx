@@ -147,13 +147,13 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   if (loading) {
     return (
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="px-fluid-md py-fluid-md">
+          <div className="flex items-center justify-between gap-fluid-sm">
+            <div className="flex items-center gap-fluid-md">
               <div className="h-10 w-48 bg-muted rounded animate-pulse" />
               <div className="h-6 w-24 bg-muted rounded animate-pulse" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-fluid-sm">
               <div className="h-9 w-32 bg-muted rounded animate-pulse" />
               <div className="h-9 w-28 bg-muted rounded animate-pulse" />
             </div>
@@ -166,9 +166,9 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   return (
     <TooltipProvider>
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-4 sm:px-6 py-4">
+        <div className="px-fluid-sm py-fluid-md">
           {/* Mobile Layout */}
-          <div className="flex flex-col gap-4 md:hidden">
+          <div className="flex flex-col gap-fluid-md md:hidden">
             {/* Top Row - Portfolio Selector */}
             <div className="flex items-center gap-2">
               <Select value={currentPortfolio || ''} onValueChange={handlePortfolioChange}>

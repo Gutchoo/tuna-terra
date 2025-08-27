@@ -6,6 +6,7 @@ import { PropertyCardView } from './PropertyCardView'
 import { PropertyTableView } from './PropertyTableView'
 import { BulkActionBar } from './BulkActionBar'
 import { SearchBar } from './SearchBar'
+import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,11 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   const [searchQuery, setSearchQuery] = useState('')
   const previousSearchQuery = useRef('')
   
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property>>(() => {
+    return new Set(AVAILABLE_COLUMNS.filter(col => col.defaultVisible).map(col => col.key))
+  })
+  
   // Action states
   const [refreshingPropertyId, setRefreshingPropertyId] = useState<string | null>(null)
   const [bulkProcessing, setBulkProcessing] = useState(false)
@@ -61,6 +67,24 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
       setViewMode(savedView)
     }
   }, [])
+
+  // Load saved column preferences
+  useEffect(() => {
+    const saved = localStorage.getItem('propertyTableColumns')
+    if (saved) {
+      try {
+        const savedColumns = JSON.parse(saved)
+        setVisibleColumns(new Set(savedColumns))
+      } catch (error) {
+        console.warn('Failed to load saved column preferences:', error)
+      }
+    }
+  }, [])
+
+  // Save column preferences
+  useEffect(() => {
+    localStorage.setItem('propertyTableColumns', JSON.stringify(Array.from(visibleColumns)))
+  }, [visibleColumns])
 
   // Save view preference
   const handleViewChange = (view: ViewMode) => {
@@ -258,7 +282,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Search Bar */}
       <SearchBar
         onSearchChange={handleSearchChange}
@@ -266,24 +290,32 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
         totalCount={properties.length}
       />
 
-      {/* View Toggle */}
-      <div className="flex justify-between items-center">
+      {/* View Toggle and Controls */}
+      <div className="flex justify-between items-center gap-4">
         <PropertyViewToggle currentView={viewMode} onViewChange={handleViewChange} />
-        {viewMode === 'table' && selectedRows.size > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {selectedRows.size} of {filteredProperties.length} selected
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {viewMode === 'table' && selectedRows.size > 0 && (
+            <div className="text-sm text-muted-foreground">
+              {selectedRows.size} of {filteredProperties.length} selected
+            </div>
+          )}
+          {viewMode === 'table' && (
+            <ColumnSelector 
+              visibleColumns={visibleColumns} 
+              onColumnsChange={setVisibleColumns} 
+            />
+          )}
+        </div>
       </div>
 
       {/* Content */}
       {filteredProperties.length === 0 && searchQuery.trim().length > 0 ? (
-        <div className="text-center py-12">
-          <div className="mx-auto h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-4">
-            <span className="text-2xl">🔍</span>
+        <div className="text-center py-fluid-xl">
+          <div className="mx-auto w-fluid-xl h-fluid-xl rounded-full bg-muted flex items-center justify-center mb-fluid-md">
+            <span className="text-fluid-2xl">🔍</span>
           </div>
-          <h3 className="text-lg font-medium mb-2">No properties found</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-fluid-lg font-medium mb-fluid-sm">No properties found</h3>
+          <p className="text-fluid-base text-muted-foreground px-fluid-md">
             Try adjusting your search terms or{' '}
             <button 
               onClick={() => handleSearchChange('')}
@@ -312,6 +344,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
           onRefresh={handleRefreshClick}
           onDelete={handleDeleteClick}
           refreshingPropertyId={refreshingPropertyId}
+          visibleColumns={visibleColumns}
         />
       )}
 

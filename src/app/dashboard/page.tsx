@@ -279,7 +279,7 @@ function DashboardPageContent() {
       ) : (
         <div className="p-6">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               {renderContent()}
             </CardContent>
           </Card>

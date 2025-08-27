@@ -27,7 +27,7 @@ import {
   TrashIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
-import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
+import { AVAILABLE_COLUMNS } from './ColumnSelector'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 
 type SortField = keyof Property
@@ -46,6 +46,7 @@ interface PropertyTableViewProps {
   onRefresh: (property: Property) => void
   onDelete: (property: Property) => void
   refreshingPropertyId: string | null
+  visibleColumns: Set<keyof Property>
 }
 
 export function PropertyTableView({
@@ -55,31 +56,10 @@ export function PropertyTableView({
   onSelectAll,
   onRefresh,
   onDelete,
-  refreshingPropertyId
+  refreshingPropertyId,
+  visibleColumns
 }: PropertyTableViewProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, direction: null })
-  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property>>(() => {
-    // Initialize with default columns
-    return new Set(AVAILABLE_COLUMNS.filter(col => col.defaultVisible).map(col => col.key))
-  })
-
-  // Load saved column preferences from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('propertyTableColumns')
-    if (saved) {
-      try {
-        const savedColumns = JSON.parse(saved)
-        setVisibleColumns(new Set(savedColumns))
-      } catch (error) {
-        console.warn('Failed to load saved column preferences:', error)
-      }
-    }
-  }, [])
-
-  // Save column preferences to localStorage
-  useEffect(() => {
-    localStorage.setItem('propertyTableColumns', JSON.stringify(Array.from(visibleColumns)))
-  }, [visibleColumns])
 
   const formatCurrency = (value: number | null) => {
     if (!value) return '-'
@@ -225,14 +205,7 @@ export function PropertyTableView({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <ColumnSelector 
-          visibleColumns={visibleColumns} 
-          onColumnsChange={setVisibleColumns} 
-        />
-      </div>
-      
+    <div className="space-y-3">
       {/* Mobile Card View */}
       <div className="block md:hidden space-y-3">
         {sortedProperties.map((property) => (
