@@ -18,10 +18,19 @@ A focused industrial/CRE web app where users create portfolios, enrich propertie
 - **Theme Support**: Light/dark mode with Sonner toast notifications
 - **Real-time Collaboration**: Email-based portfolio sharing with permission levels
 
+### ✅ Recently Completed
+- **Slice A - Financial Modeling Promotion** (Completed Dec 2024):
+  - Added to primary navigation for both authenticated and public users
+  - Created `/modeling` route alias for cleaner URLs
+  - Added CTAs to dashboard empty states
+
 ### 🚧 In Progress (v2-financial-modeling branch)
-- **Financial Modeling Promotion**: Moving from `/tools` to primary navigation
-- **Route Optimization**: Creating `/modeling` alias for cleaner URLs
-- **Dashboard Integration**: Adding prominent CTAs in empty states and quick actions
+- **Slice B - DCF Engine & Spreadsheet Inputs**:
+  - Moving hold period selector to beginning of form for dynamic column control
+  - Enhancing income spreadsheet with "Other Income" row
+  - Creating detailed expense categories spreadsheet (taxes, insurance, maintenance, etc.)
+  - Improving financing UX with clear DSCR/LTV/Cash selection tabs
+  - Adding live calculation previews and interest-only period support
 
 > **Note**: "Pro Lookups" terminology retained for now - users understand the value proposition
 
