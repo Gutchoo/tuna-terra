@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { BuildingIcon, PlusIcon } from 'lucide-react'
+import { BuildingIcon, PlusIcon, TrendingUpIcon } from 'lucide-react'
+import Link from 'next/link'
 
 interface WelcomeEmptyStateProps {
   onCreatePortfolio: () => void
@@ -20,24 +21,38 @@ export function WelcomeEmptyState({ onCreatePortfolio }: WelcomeEmptyStateProps)
       {/* Clean Typography */}
       <div className="space-y-4 mb-8">
         <h1 className="text-2xl font-semibold text-foreground">
-          Create your first portfolio
+          Welcome to Tuna Terra
         </h1>
         
         <p className="text-muted-foreground leading-relaxed">
           Organize and manage your real estate properties in one place. 
-          Get started by creating your first portfolio.
+          Get started by creating your first portfolio or explore our financial modeling tools.
         </p>
       </div>
 
-      {/* Single CTA */}
-      <Button 
-        onClick={onCreatePortfolio}
-        size="lg"
-        className="w-full max-w-xs h-12 flex items-center justify-center gap-2"
-      >
-        <PlusIcon className="h-4 w-4" />
-        Create Portfolio
-      </Button>
+      {/* Primary CTAs */}
+      <div className="space-y-3 w-full max-w-xs">
+        <Button 
+          onClick={onCreatePortfolio}
+          size="lg"
+          className="w-full h-12 flex items-center justify-center gap-2"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Create Portfolio
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="lg"
+          asChild
+          className="w-full h-12 flex items-center justify-center gap-2"
+        >
+          <Link href="/modeling">
+            <TrendingUpIcon className="h-4 w-4" />
+            Financial Modeling
+          </Link>
+        </Button>
+      </div>
     </div>
   )
 }

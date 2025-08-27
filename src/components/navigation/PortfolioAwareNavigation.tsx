@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { MapIcon, TableIcon, BuildingIcon, MenuIcon } from 'lucide-react'
+import { MapIcon, TableIcon, BuildingIcon, MenuIcon, TrendingUpIcon } from 'lucide-react'
 import { createPortfolioAwareNavigation } from '@/lib/navigation'
 
 function NavigationContent() {
@@ -40,6 +40,11 @@ function NavigationContent() {
       icon: MapIcon
     },
     {
+      href: '/modeling',
+      label: 'Financial Modeling',
+      icon: TrendingUpIcon
+    },
+    {
       href: navigation.portfolios,
       label: 'Portfolios',
       icon: BuildingIcon
@@ -51,14 +56,14 @@ function NavigationContent() {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex items-center gap-1">
+      <nav className="hidden md:flex items-center gap-fluid-xs">
         {navItems.map((item) => {
           const Icon = item.icon
           return (
             <Button key={item.href} variant="ghost" size="sm" asChild>
-              <Link href={item.href} className="flex items-center gap-2">
-                <Icon className="h-4 w-4" />
-                {item.label}
+              <Link href={item.href} className="flex items-center gap-fluid-sm">
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span className="text-fluid-sm">{item.label}</span>
               </Link>
             </Button>
           )
@@ -73,11 +78,11 @@ function NavigationContent() {
             <span className="sr-only">Open navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+        <SheetContent side="left" className="w-[clamp(280px,80vw,400px)]">
           <SheetHeader>
-            <SheetTitle>Navigation</SheetTitle>
+            <SheetTitle className="text-fluid-lg">Navigation</SheetTitle>
           </SheetHeader>
-          <nav className="flex flex-col gap-4 mt-6">
+          <nav className="flex flex-col gap-fluid-sm mt-fluid-md">
             {navItems.map((item) => {
               const Icon = item.icon
               return (
@@ -85,12 +90,12 @@ function NavigationContent() {
                   key={item.href}
                   variant="ghost"
                   asChild
-                  className="justify-start h-12 text-left"
+                  className="justify-start h-fluid-md text-left"
                   onClick={closeSheet}
                 >
-                  <Link href={item.href} className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <span className="text-base">{item.label}</span>
+                  <Link href={item.href} className="flex items-center gap-fluid-sm">
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-fluid-base">{item.label}</span>
                   </Link>
                 </Button>
               )
@@ -137,10 +142,10 @@ function HomeButtonContent({ className }: PortfolioAwareHomeButtonProps) {
 
   return (
     <Link href={navigation.home} className={className}>
-      <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
-        <span className="text-primary-foreground font-bold text-sm">TT</span>
+      <div className="w-fluid-sm h-fluid-sm bg-primary rounded-md flex items-center justify-center flex-shrink-0">
+        <span className="text-primary-foreground font-bold text-fluid-sm">TT</span>
       </div>
-      <span className="font-semibold text-lg hidden sm:block truncate">Tuna Terra</span>
+      <span className="font-semibold text-fluid-lg hidden sm:block truncate">Tuna Terra</span>
     </Link>
   )
 }
