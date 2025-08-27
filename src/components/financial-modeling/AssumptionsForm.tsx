@@ -13,7 +13,6 @@ import { SectionNavigationCards } from './SectionNavigationCards'
 import { AnimatedTabContent } from './AnimatedTabContent'
 import { IncomeSpreadsheet } from './IncomeSpreadsheet'
 import { FinancingCard } from './FinancingCard'
-import { HoldPeriodSelector } from './HoldPeriodSelector'
 import { 
   type PropertyAssumptions, 
   validateAssumptions 
@@ -164,10 +163,6 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
             <CardTitle>Basic Property Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <HoldPeriodSelector 
-              value={assumptions.holdPeriodYears || 5}
-              onChange={(value) => updateAssumption('holdPeriodYears', value)}
-            />
             <TooltipInput
               id="purchase-price"
               label="Purchase Price"
@@ -177,19 +172,36 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
               type="number"
               prefix="$"
             />
-            <ComboInput
-              id="acquisition-costs"
-              label="Acquisition Costs"
-              tooltip={financialTooltips.acquisitionCosts}
-              percentageLabel="% of Purchase Price"
-              dollarLabel="Fixed Amount"
-              defaultMode={assumptions.acquisitionCostType}
-              value={assumptions.acquisitionCosts > 0 ? assumptions.acquisitionCosts.toString() : ''}
-              onValueChange={(value, mode) => {
-                updateAssumption('acquisitionCosts', parseFloat(value) || 0)
-                updateAssumption('acquisitionCostType', mode)
-              }}
-            />
+            <div className="flex gap-4">
+              <div className="flex-[7]">
+                <ComboInput
+                  id="acquisition-costs"
+                  label="Acquisition Costs"
+                  tooltip={financialTooltips.acquisitionCosts}
+                  percentageLabel="% of Purchase"
+                  dollarLabel="Fixed Amount"
+                  defaultMode={assumptions.acquisitionCostType}
+                  value={assumptions.acquisitionCosts > 0 ? assumptions.acquisitionCosts.toString() : ''}
+                  onValueChange={(value, mode) => {
+                    updateAssumption('acquisitionCosts', parseFloat(value) || 0)
+                    updateAssumption('acquisitionCostType', mode)
+                  }}
+                />
+              </div>
+              <div className="flex-[3]">
+                <TooltipInput
+                  id="hold-period"
+                  label="Hold Period"
+                  tooltip="Number of years you plan to hold the property before selling at the projected exit value."
+                  value={assumptions.holdPeriodYears}
+                  onChange={(value) => updateAssumption('holdPeriodYears', parseInt(value) || 5)}
+                  type="number"
+                  suffix="years"
+                  min={1}
+                  max={30}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
