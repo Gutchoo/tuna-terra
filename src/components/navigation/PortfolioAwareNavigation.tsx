@@ -40,7 +40,7 @@ function NavigationContent() {
       icon: MapIcon
     },
     {
-      href: '/modeling',
+      href: '/financial-modeling',
       label: 'Financial Modeling',
       icon: TrendingUpIcon
     },

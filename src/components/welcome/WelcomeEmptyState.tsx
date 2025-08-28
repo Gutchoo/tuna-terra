@@ -47,7 +47,7 @@ export function WelcomeEmptyState({ onCreatePortfolio }: WelcomeEmptyStateProps)
           asChild
           className="w-full h-12 flex items-center justify-center gap-2"
         >
-          <Link href="/modeling">
+          <Link href="/financial-modeling">
             <TrendingUpIcon className="h-4 w-4" />
             Financial Modeling
           </Link>

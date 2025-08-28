@@ -35,7 +35,8 @@ export interface PropertyAssumptions {
   loanTermYears: number
   amortizationYears: number
   paymentsPerYear: number // 1, 2, 4, 12 (annual, semi-annual, quarterly, monthly)
-  loanCosts: number // as percentage of loan amount
+  loanCosts: number // loan costs amount (depending on loanCostType)
+  loanCostType: 'percentage' | 'dollar' | '' // whether loan costs are percentage or dollar amount
   
   // DSCR-specific fields
   targetDSCR?: number // Debt Service Coverage Ratio target
@@ -48,13 +49,26 @@ export interface PropertyAssumptions {
   depreciationYears: number
   landPercentage: number // 0-100
   improvementsPercentage: number // 0-100 (must sum to 100 with landPercentage)
-  taxRate: number // combined federal + state rate
+  
+  // Detailed Tax Rates
+  ordinaryIncomeTaxRate: number // 10%-37% - used for depreciation recapture calculation
+  capitalGainsTaxRate: number // 0%, 15%, or 20% - for capital gains portion
+  depreciationRecaptureRate: number // up to 25% max - actual recapture rate applied
   
   // Exit Strategy
   holdPeriodYears: number
-  exitCapRate?: number
-  salePrice?: number
-  sellingCosts: number // percentage of sale price
+  dispositionPriceType: 'dollar' | 'caprate' | '' // Method for determining sale price
+  dispositionPrice: number // Direct dollar amount when dispositionPriceType is 'dollar'
+  dispositionCapRate: number // Cap rate when dispositionPriceType is 'caprate'
+  costOfSaleType: 'percentage' | 'dollar' | '' // Method for determining selling costs
+  costOfSaleAmount: number // Direct dollar amount when costOfSaleType is 'dollar'
+  costOfSalePercentage: number // Percentage when costOfSaleType is 'percentage'
+  
+  // Legacy fields (backward compatibility)
+  taxRate: number // combined federal + state rate (deprecated, use specific rates above)
+  exitCapRate?: number // deprecated, use dispositionCapRate
+  salePrice?: number // deprecated, use dispositionPrice
+  sellingCosts: number // deprecated, use costOfSale fields
 }
 
 export interface AnnualCashflow {
@@ -231,41 +245,79 @@ export class ProFormaCalculator {
     this.assumptions = assumptions
   }
 
+  // Safe number conversion helpers
+  private safeNumber(value: any): number {
+    const num = Number(value)
+    return isNaN(num) || !isFinite(num) ? 0 : num
+  }
+
+  private safePercentage(value: any): number {
+    const num = this.safeNumber(value)
+    return Math.max(0, Math.min(1, num))
+  }
+
+  private safeArray(array: any[], length: number = 30): number[] {
+    if (!Array.isArray(array)) return new Array(length).fill(0)
+    return array.slice(0, length).map(val => this.safeNumber(val))
+      .concat(new Array(Math.max(0, length - array.length)).fill(0))
+  }
+
   calculate(): ProFormaResults {
-    const {
-      purchasePrice,
-      acquisitionCosts,
-      potentialRentalIncome,
-      vacancyRates,
-      operatingExpenses,
-      operatingExpenseType,
-      loanAmount,
-      interestRate,
-      amortizationYears,
-      paymentsPerYear,
-      loanCosts,
-      propertyType,
-      depreciationYears,
-      taxRate,
-      holdPeriodYears,
-      exitCapRate,
-      salePrice,
-      sellingCosts,
-      // Legacy fields for fallback
-      year1NOI,
-      noiGrowthRate,
-    } = this.assumptions
+    try {
+      const {
+        purchasePrice: rawPurchasePrice,
+        acquisitionCosts: rawAcquisitionCosts,
+        potentialRentalIncome: rawPotentialRentalIncome,
+        vacancyRates: rawVacancyRates,
+        operatingExpenses: rawOperatingExpenses,
+        operatingExpenseType,
+        loanAmount: rawLoanAmount,
+        interestRate: rawInterestRate,
+        amortizationYears: rawAmortizationYears,
+        paymentsPerYear: rawPaymentsPerYear,
+        loanCosts: rawLoanCosts,
+        propertyType,
+        depreciationYears: rawDepreciationYears,
+        taxRate: rawTaxRate,
+        holdPeriodYears: rawHoldPeriodYears,
+        exitCapRate: rawExitCapRate,
+        salePrice: rawSalePrice,
+        sellingCosts: rawSellingCosts,
+        // Legacy fields for fallback
+        year1NOI: rawYear1NOI,
+        noiGrowthRate: rawNoiGrowthRate,
+      } = this.assumptions
 
-    // Calculate acquisition costs based on type
-    const actualAcquisitionCosts = this.assumptions.acquisitionCostType === 'percentage' 
-      ? purchasePrice * (acquisitionCosts / 100)
-      : acquisitionCosts
+      // Safely convert all values
+      const purchasePrice = this.safeNumber(rawPurchasePrice)
+      const acquisitionCosts = this.safeNumber(rawAcquisitionCosts)
+      const potentialRentalIncome = this.safeArray(rawPotentialRentalIncome)
+      const vacancyRates = this.safeArray(rawVacancyRates).map(rate => this.safePercentage(rate))
+      const operatingExpenses = this.safeArray(rawOperatingExpenses)
+      const loanAmount = this.safeNumber(rawLoanAmount)
+      const interestRate = this.safePercentage(rawInterestRate)
+      const amortizationYears = Math.max(1, this.safeNumber(rawAmortizationYears) || 30)
+      const paymentsPerYear = Math.max(1, this.safeNumber(rawPaymentsPerYear) || 12)
+      const loanCosts = this.safePercentage(rawLoanCosts)
+      const depreciationYears = Math.max(1, this.safeNumber(rawDepreciationYears) || (propertyType === 'residential' ? 27.5 : 39))
+      const taxRate = this.safePercentage(rawTaxRate)
+      const holdPeriodYears = Math.max(1, Math.min(50, this.safeNumber(rawHoldPeriodYears) || 5))
+      const exitCapRate = this.safePercentage(rawExitCapRate)
+      const salePrice = this.safeNumber(rawSalePrice)
+      const sellingCosts = this.safePercentage(rawSellingCosts)
+      const year1NOI = this.safeNumber(rawYear1NOI)
+      const noiGrowthRate = this.safePercentage(rawNoiGrowthRate)
 
-    // Calculate loan costs
-    const actualLoanCosts = loanAmount > 0 ? (loanCosts / 100) * loanAmount : 0
+      // Calculate acquisition costs based on type
+      const actualAcquisitionCosts = this.assumptions.acquisitionCostType === 'percentage' 
+        ? purchasePrice * (acquisitionCosts / 100)
+        : acquisitionCosts
+
+      // Calculate loan costs
+      const actualLoanCosts = loanAmount > 0 ? (loanCosts / 100) * loanAmount : 0
     
-    // Calculate equity invested (includes loan costs)
-    const totalEquityInvested = purchasePrice + actualAcquisitionCosts + actualLoanCosts - loanAmount
+      // Calculate equity invested (includes loan costs)
+      const totalEquityInvested = purchasePrice + actualAcquisitionCosts + actualLoanCosts - loanAmount
 
     // Calculate annual debt service using the specified payment frequency
     const periodicPayment = calculatePeriodicPayment(loanAmount, interestRate, amortizationYears, paymentsPerYear || 12)
@@ -387,16 +439,56 @@ export class ProFormaCalculator {
     const averageCashOnCash = (totalAfterTaxCashflows / holdPeriodYears) / totalEquityInvested
     const totalTaxSavings = annualCashflows.reduce((sum, cf) => sum + Math.max(0, -cf.taxes), 0)
 
-    return {
-      totalEquityInvested,
-      annualCashflows,
-      saleProceeds,
-      totalCashReturned,
-      netProfit,
-      irr,
-      equityMultiple,
-      averageCashOnCash,
-      totalTaxSavings,
+      return {
+        totalEquityInvested,
+        annualCashflows,
+        saleProceeds,
+        totalCashReturned,
+        netProfit,
+        irr,
+        equityMultiple,
+        averageCashOnCash,
+        totalTaxSavings,
+      }
+    } catch (error) {
+      console.debug('ProForma calculation error:', error)
+      
+      // Return minimal safe results when calculation fails
+      const safeHoldPeriod = Math.max(1, this.safeNumber(this.assumptions.holdPeriodYears) || 5)
+      const safePurchasePrice = this.safeNumber(this.assumptions.purchasePrice)
+      const safeEquity = Math.max(0, safePurchasePrice - this.safeNumber(this.assumptions.loanAmount))
+      
+      return {
+        totalEquityInvested: safeEquity,
+        annualCashflows: Array(safeHoldPeriod).fill(0).map((_, index) => ({
+          year: index + 1,
+          noi: 0,
+          debtService: 0,
+          beforeTaxCashflow: 0,
+          depreciation: 0,
+          taxableIncome: 0,
+          taxes: 0,
+          afterTaxCashflow: 0,
+          loanBalance: 0,
+        })),
+        saleProceeds: {
+          salePrice: safePurchasePrice,
+          sellingCosts: 0,
+          netSaleProceeds: safePurchasePrice,
+          loanBalance: 0,
+          beforeTaxSaleProceeds: safePurchasePrice,
+          capitalGains: 0,
+          deprecationRecapture: 0,
+          taxesOnSale: 0,
+          afterTaxSaleProceeds: safePurchasePrice,
+        },
+        totalCashReturned: safeEquity,
+        netProfit: 0,
+        irr: null,
+        equityMultiple: safeEquity > 0 ? 1 : 0,
+        averageCashOnCash: 0,
+        totalTaxSavings: 0,
+      }
     }
   }
 
@@ -448,6 +540,7 @@ export function generateSampleAssumptions(): PropertyAssumptions {
     amortizationYears: 30,
     paymentsPerYear: 12, // Monthly payments
     loanCosts: 2.0, // 2% loan costs
+    loanCostType: 'percentage' as const,
     targetLTV: 70, // 70% LTV target
     propertyType: 'commercial',
     depreciationYears: 39, // Commercial real estate

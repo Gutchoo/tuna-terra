@@ -137,7 +137,7 @@ export function EmptyPropertiesState({ portfolioId, onAddProperties }: EmptyProp
                   </div>
                 </div>
                 <Button variant="default" asChild>
-                  <Link href="/modeling">
+                  <Link href="/financial-modeling">
                     Open Modeling Tool
                   </Link>
                 </Button>
