@@ -3,7 +3,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { DollarSign, TrendingUp, Calendar } from 'lucide-react'
 import { type PropertyAssumptions } from '@/lib/financial-modeling/proforma'
-import { motion } from 'framer-motion'
 
 interface InputSummaryCardsProps {
   assumptions: PropertyAssumptions
@@ -153,31 +152,24 @@ export function InputSummaryCards({ assumptions }: InputSummaryCardsProps) {
         const staticKeys = ['investment-basis', 'financing', 'hold-period']
         
         return (
-          <motion.div
-            key={staticKeys[index]}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <p className="text-base font-medium text-muted-foreground">
-                    {card.title}
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight">
-                    {card.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {card.subtitle}
-                  </p>
-                </div>
-                
-                {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-              </CardContent>
-            </Card>
-          </motion.div>
+          <Card key={staticKeys[index]} className="relative overflow-hidden">
+            <CardContent className="p-3">
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {card.title}
+                </p>
+                <p className="text-2xl font-bold tracking-tight">
+                  {card.value}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {card.subtitle}
+                </p>
+              </div>
+              
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+            </CardContent>
+          </Card>
         )
       })}
     </div>

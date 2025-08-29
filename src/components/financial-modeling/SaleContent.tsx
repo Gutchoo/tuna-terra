@@ -109,89 +109,80 @@ export function SaleContent() {
   return (
     <div className="space-y-6">
 
-      {/* Top Summary Cards */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Projected Sale Price Calculation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Proforma NOI Card */}
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <p className="text-base font-medium text-muted-foreground">
-                    Year {holdYears + 1} Proforma NOI
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight">
-                    {formatCurrency(sale.yearAfterHoldNOI)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Projected net operating income
-                  </p>
-                </div>
-                
-                {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-              </CardContent>
-            </Card>
+      {/* Top Summary Cards - matches InputSheet layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Proforma NOI Card */}
+        <Card className="relative overflow-hidden">
+          <CardContent className="p-3">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-muted-foreground">
+                Year {holdYears + 1} Proforma NOI
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {formatCurrency(sale.yearAfterHoldNOI)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Projected net operating income
+              </p>
+            </div>
+            
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+          </CardContent>
+        </Card>
 
-            {/* Exit Cap Rate Card */}
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <p className="text-base font-medium text-muted-foreground">
-                    Exit Cap Rate
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight">
-                    {formatPercentage(sale.exitCapRate * 100)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {assumptions.dispositionPriceType === 'dollar' ? 'Implied from price' : 'Applied cap rate'}
-                  </p>
-                </div>
-                
-                {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-              </CardContent>
-            </Card>
+        {/* Exit Cap Rate Card */}
+        <Card className="relative overflow-hidden">
+          <CardContent className="p-3">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-muted-foreground">
+                Exit Cap Rate
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {formatPercentage(sale.exitCapRate * 100)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {assumptions.dispositionPriceType === 'dollar' ? 'Implied from price' : 'Applied cap rate'}
+              </p>
+            </div>
+            
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+          </CardContent>
+        </Card>
 
-            {/* Calculated Sale Price Card */}
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <p className="text-base font-medium text-muted-foreground">
-                    Sale Price
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight">
-                    {formatCurrency(sale.salePrice)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {assumptions.dispositionPriceType === 'dollar' 
-                      ? 'User-specified price'
-                      : 'NOI ÷ Cap Rate'}
-                  </p>
-                </div>
-                
-                {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-              </CardContent>
-            </Card>
-          </div>
+        {/* Calculated Sale Price Card */}
+        <Card className="relative overflow-hidden">
+          <CardContent className="p-3">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-muted-foreground">
+                Sale Price
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {formatCurrency(sale.salePrice)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {assumptions.dispositionPriceType === 'dollar' 
+                  ? 'User-specified price'
+                  : 'NOI ÷ Cap Rate'}
+              </p>
+            </div>
+            
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+          </CardContent>
+        </Card>
+      </div>
 
-          <Alert className="mt-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {assumptions.dispositionPriceType === 'dollar' 
-                ? `Using custom sale price of ${formatCurrency(sale.salePrice)} (implies ${formatPercentage(sale.exitCapRate * 100)} cap rate)`
-                : `Sale price calculated as: ${formatCurrency(sale.yearAfterHoldNOI)} ÷ ${formatPercentage(sale.exitCapRate * 100)} = ${formatCurrency(sale.salePrice)}`}
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+      {/* Info Alert */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          {assumptions.dispositionPriceType === 'dollar' 
+            ? `Using custom sale price of ${formatCurrency(sale.salePrice)} (implies ${formatPercentage(sale.exitCapRate * 100)} cap rate)`
+            : `Sale price calculated as: ${formatCurrency(sale.yearAfterHoldNOI)} ÷ ${formatPercentage(sale.exitCapRate * 100)} = ${formatCurrency(sale.salePrice)}`}
+        </AlertDescription>
+      </Alert>
 
       {/* Sheet 1: Adjusted Basis Calculation */}
       <Card className="overflow-hidden">
