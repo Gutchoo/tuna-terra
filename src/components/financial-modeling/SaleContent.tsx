@@ -33,18 +33,6 @@ export function SaleContent() {
   if (!results || !results.saleProceeds) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <DollarSign className="h-6 w-6" />
-              Sale Analysis & Exit Strategy
-            </h2>
-            <p className="text-muted-foreground">
-              Calculate sale proceeds, tax implications, and after-tax returns
-            </p>
-          </div>
-        </div>
-        
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -120,22 +108,6 @@ export function SaleContent() {
   
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <DollarSign className="h-6 w-6" />
-            Sale Analysis & Exit Strategy
-          </h2>
-          <p className="text-muted-foreground">
-            Detailed breakdown of sale proceeds and tax implications
-          </p>
-        </div>
-        <Button variant="outline" onClick={exportSaleAnalysis}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
-      </div>
 
       {/* Top Summary Cards */}
       <Card>

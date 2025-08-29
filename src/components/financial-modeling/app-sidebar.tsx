@@ -62,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Analysis Sections</SidebarGroupLabel>
+          <SidebarGroupLabel>Financial Modeling</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {sections.map((section) => (

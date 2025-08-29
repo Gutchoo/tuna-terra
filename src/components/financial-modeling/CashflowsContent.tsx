@@ -194,28 +194,6 @@ export function CashflowsContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="h-6 w-6" />
-            Annual Cashflow Analysis
-          </h2>
-          <p className="text-muted-foreground">
-            Professional-grade cashflow projections following commercial real estate industry standards
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={calculateResults} disabled={isCalculating}>
-            <Calculator className="h-4 w-4 mr-2" />
-            {isCalculating ? 'Calculating...' : 'Recalculate'}
-          </Button>
-          <Button variant="outline" onClick={exportToCsv}>
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
-        </div>
-      </div>
 
       {/* Detailed Income Statement */}
       <Card className="overflow-hidden">
