@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Calculator, FileSpreadsheet, TrendingUp, DollarSign, Building2, ChevronRight } from "lucide-react"
+import { Calculator, FileSpreadsheet, TrendingUp, DollarSign, ChevronRight } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -42,25 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   
   return (
     <Sidebar {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="/financial-modeling">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Building2 className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Financial Modeling</span>
-                  <span className="text-xs text-muted-foreground">Real Estate Analysis</span>
-                </div>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      
-      <SidebarContent>
+      <SidebarContent className="pt-16">
         <SidebarGroup>
           <SidebarGroupLabel>Financial Modeling</SidebarGroupLabel>
           <SidebarGroupContent>

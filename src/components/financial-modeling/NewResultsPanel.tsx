@@ -113,26 +113,14 @@ export function NewResultsPanel() {
 
 
   return (
-    <div className="h-full border-l bg-muted/20">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg">{getSectionTitle()}</h3>
-            {results && (
-              <Button size="sm" variant="outline" onClick={exportResults}>
-                <Download className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">Export</span>
-              </Button>
-            )}
+    <Card className="h-full">
+      <CardContent className="p-6 space-y-6">
+        {isCalculating && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calculator className="h-3 w-3 animate-spin" />
+            <span>Updating analysis...</span>
           </div>
-          {isCalculating && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calculator className="h-3 w-3 animate-spin" />
-              <span>Updating analysis...</span>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Results Content */}
         {isCalculating && (
@@ -319,7 +307,7 @@ export function NewResultsPanel() {
 
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

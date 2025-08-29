@@ -49,14 +49,10 @@ export function LoanCostsInput({
     }
 
     if (type === 'percentage') {
-      const dollarAmount = loanAmount > 0 && value > 0 
-        ? ` ($${((loanAmount * value) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })})`
-        : ''
-      
       return {
         placeholder: '2.0',
         prefix: '',
-        suffix: `%${dollarAmount}`
+        suffix: '%'
       }
     } else {
       return {
