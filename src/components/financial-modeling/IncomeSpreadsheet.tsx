@@ -351,12 +351,12 @@ export function IncomeSpreadsheet({
         {/* Spreadsheet Table */}
         <div className="rounded-lg border overflow-hidden">
           <div className="overflow-x-auto">
-            <Table className="min-w-full">
+            <Table className="min-w-full bg-background">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-48 sticky left-0 bg-background z-10">Income Item</TableHead>
+                <TableHead className="w-48 sticky left-0 bg-muted text-muted-foreground font-semibold z-10 border-r">Income Item</TableHead>
                 {Array.from({ length: displayYears }, (_, i) => (
-                  <TableHead key={i} className="text-center min-w-32 whitespace-nowrap">
+                  <TableHead key={i} className="text-center min-w-32 whitespace-nowrap bg-muted text-muted-foreground font-semibold">
                     Year {i + 1}
                   </TableHead>
                 ))}
@@ -366,7 +366,7 @@ export function IncomeSpreadsheet({
               
               {/* Potential Rental Income Row */}
               <TableRow>
-                <TableCell className="font-medium sticky left-0 bg-background z-10">
+                <TableCell className="font-medium sticky left-0 bg-muted z-10 border-r">
                   <div className="flex items-center gap-2">
                     <span>Potential Rental Income</span>
                     <TooltipProvider>
@@ -395,7 +395,7 @@ export function IncomeSpreadsheet({
 
               {/* Other Income Row */}
               <TableRow>
-                <TableCell className="font-medium sticky left-0 bg-background z-10">
+                <TableCell className="font-medium sticky left-0 bg-muted z-10 border-r">
                   <div className="flex items-center gap-2">
                     <span>Other Income</span>
                     <TooltipProvider>
@@ -424,7 +424,7 @@ export function IncomeSpreadsheet({
 
               {/* Vacancy Rate Row */}
               <TableRow>
-                <TableCell className="font-medium sticky left-0 bg-background z-10">
+                <TableCell className="font-medium sticky left-0 bg-muted z-10 border-r">
                   <div className="flex items-center gap-2">
                     <span>Vacancy Rate (%)</span>
                     <TooltipProvider>
@@ -456,7 +456,7 @@ export function IncomeSpreadsheet({
 
               {/* Operating Expenses Row */}
               <TableRow>
-                <TableCell className="font-medium sticky left-0 bg-background z-10">
+                <TableCell className="font-medium sticky left-0 bg-muted z-10 border-r">
                   <div className="flex items-center gap-2">
                     <span>Operating Expenses</span>
                     {assumptions.operatingExpenseType === 'percentage' && <Percent className="w-3 h-3" />}
@@ -492,8 +492,8 @@ export function IncomeSpreadsheet({
               </TableRow>
 
               {/* Calculated NOI Row (Read-only) */}
-              <TableRow className="bg-muted/30">
-                <TableCell className="font-semibold sticky left-0 bg-muted/30 z-10">
+              <TableRow className="bg-muted/50">
+                <TableCell className="font-semibold sticky left-0 bg-muted/50 z-10 border-r">
                   <div className="flex items-center gap-2">
                     <span>Net Operating Income</span>
                     <Badge variant="secondary" className="text-xs">Calculated</Badge>
@@ -512,7 +512,7 @@ export function IncomeSpreadsheet({
 
         {/* Summary Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="text-center p-3 bg-muted/30 rounded-lg">
+          <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-sm text-muted-foreground">Average NOI</div>
             <div className="text-lg font-semibold">
               ${Math.round(Array.from({ length: displayYears }, (_, i) => calculateNOI(i))
@@ -520,13 +520,13 @@ export function IncomeSpreadsheet({
                 .toLocaleString()}
             </div>
           </div>
-          <div className="text-center p-3 bg-muted/30 rounded-lg">
+          <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-sm text-muted-foreground">Year 1 NOI</div>
             <div className="text-lg font-semibold">
               ${calculateNOI(0).toLocaleString()}
             </div>
           </div>
-          <div className="text-center p-3 bg-muted/30 rounded-lg">
+          <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-sm text-muted-foreground">Final Year NOI</div>
             <div className="text-lg font-semibold">
               ${calculateNOI(displayYears - 1).toLocaleString()}

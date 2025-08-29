@@ -56,6 +56,7 @@ export interface PropertyAssumptions {
   depreciationYears: number
   landPercentage: number // 0-100
   improvementsPercentage: number // 0-100 (must sum to 100 with landPercentage)
+  acquisitionMonth: number // 1-12 (1 = January, 12 = December) for mid-month convention
   
   // Capital Improvements (future feature)
   capitalImprovements?: CapitalImprovement[] // Future feature for mid-stream capital expenditures
@@ -192,23 +193,44 @@ export function calculateLoanBalance(
 }
 
 /**
- * Calculate depreciation for a given year (legacy single-schedule function)
+ * Calculate mid-month convention factor for first year depreciation
+ * @param acquisitionMonth - Month of acquisition (1-12)
+ * @returns First year depreciation factor (0-1)
+ */
+export function calculateMidMonthFactor(acquisitionMonth: number): number {
+  // Mid-month convention: property placed in service in middle of month
+  // Formula: (12 - acquisitionMonth + 0.5) / 12
+  // Example: February (month 2) = (12 - 2 + 0.5) / 12 = 10.5/12 = 0.875
+  const monthsOfService = 12 - acquisitionMonth + 0.5
+  return monthsOfService / 12
+}
+
+/**
+ * Calculate depreciation for a given year with mid-month convention
  */
 export function calculateDepreciation(
   depreciableBasis: number,
   propertyType: string,
   depreciationYears: number,
-  year: number
+  year: number,
+  acquisitionMonth: number = 1 // Default to January if not specified
 ): number {
   if (year > depreciationYears) return 0
   
-  // Simple straight-line depreciation
-  // In reality, real estate uses MACRS with half-year convention, but this simplifies
-  return depreciableBasis / depreciationYears
+  const annualDepreciation = depreciableBasis / depreciationYears
+  
+  // Apply mid-month convention for first year
+  if (year === 1) {
+    const midMonthFactor = calculateMidMonthFactor(acquisitionMonth)
+    return annualDepreciation * midMonthFactor
+  }
+  
+  // Full depreciation for middle years
+  return annualDepreciation
 }
 
 /**
- * Calculate multi-schedule depreciation including capital improvements
+ * Calculate multi-schedule depreciation including capital improvements with mid-month convention
  * Each capital improvement gets its own full recovery period starting from placement year
  */
 export function calculateMultiScheduleDepreciation(
@@ -216,16 +238,28 @@ export function calculateMultiScheduleDepreciation(
   capitalImprovements: CapitalImprovement[],
   propertyType: string,
   depreciationYears: number,
-  currentYear: number
+  currentYear: number,
+  acquisitionMonth: number = 1 // Default to January if not specified
 ): number {
   let totalDepreciation = 0
   
-  // Original basis depreciation (Years 1-39 for commercial, 1-27.5 for residential)
+  // Original basis depreciation with mid-month convention for year 1
   if (currentYear <= depreciationYears) {
-    totalDepreciation += originalBasis / depreciationYears
+    const annualDepreciation = originalBasis / depreciationYears
+    
+    if (currentYear === 1) {
+      // Apply mid-month convention for first year
+      const midMonthFactor = calculateMidMonthFactor(acquisitionMonth)
+      totalDepreciation += annualDepreciation * midMonthFactor
+    } else {
+      // Full depreciation for subsequent years
+      totalDepreciation += annualDepreciation
+    }
   }
   
   // Add depreciation for each capital improvement
+  // Note: Capital improvements typically use mid-month convention based on when placed in service
+  // For simplicity, we assume they're placed in service in January of their placement year
   if (capitalImprovements && capitalImprovements.length > 0) {
     capitalImprovements.forEach(improvement => {
       const improvementStartYear = improvement.year
@@ -233,9 +267,16 @@ export function calculateMultiScheduleDepreciation(
       const improvementEndYear = improvementStartYear + improvementRecoveryPeriod - 1
       
       // Only depreciate if current year is within this improvement's schedule
-      // Example: Roof placed in Year 3, depreciates Years 3-41 for 39-year recovery
       if (currentYear >= improvementStartYear && currentYear <= improvementEndYear) {
-        totalDepreciation += improvement.amount / improvementRecoveryPeriod
+        const annualImprovementDepreciation = improvement.amount / improvementRecoveryPeriod
+        
+        // Apply mid-month convention for first year of improvement (assuming January placement)
+        if (currentYear === improvementStartYear) {
+          const improvementMidMonthFactor = calculateMidMonthFactor(1) // Assume January for improvements
+          totalDepreciation += annualImprovementDepreciation * improvementMidMonthFactor
+        } else {
+          totalDepreciation += annualImprovementDepreciation
+        }
       }
     })
   }
@@ -500,13 +541,14 @@ export class ProFormaCalculator {
       // Before-tax cash flow
       const beforeTaxCashflow = noi - annualDebtService
       
-      // Depreciation using multi-schedule approach (supports future capital improvements)
+      // Depreciation using multi-schedule approach with mid-month convention
       const depreciation = calculateMultiScheduleDepreciation(
         depreciableBasis, 
         this.assumptions.capitalImprovements || [], 
         propertyType, 
         depreciationYears, 
-        year
+        year,
+        this.assumptions.acquisitionMonth || 1 // Default to January if not specified
       )
       cumulativeDepreciation += depreciation
       
@@ -754,6 +796,7 @@ export function generateSampleAssumptions(): PropertyAssumptions {
     depreciationYears: 39, // Commercial real estate
     landPercentage: 20, // 20% land value
     improvementsPercentage: 80, // 80% improvements value
+    acquisitionMonth: 1, // January (default)
     // Enhanced tax fields
     ordinaryIncomeTaxRate: 0.35, // 35% ordinary income tax rate
     capitalGainsTaxRate: 0.20, // 20% long-term capital gains

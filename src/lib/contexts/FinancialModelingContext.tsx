@@ -57,6 +57,7 @@ const defaultAssumptions: PropertyAssumptions = {
   depreciationYears: 0,
   landPercentage: 0,
   improvementsPercentage: 0,
+  acquisitionMonth: 1, // Default to January
   ordinaryIncomeTaxRate: 0,
   capitalGainsTaxRate: 0,
   depreciationRecaptureRate: 0,
@@ -110,6 +111,7 @@ function sanitizeAssumptions(assumptions: PropertyAssumptions): PropertyAssumpti
     holdPeriodYears: assumptions.holdPeriodYears === 0 ? 0 : Math.max(1, Math.min(10, Number(assumptions.holdPeriodYears) || 5)),
     landPercentage: Math.max(0, Math.min(100, Number(assumptions.landPercentage) || 0)),
     improvementsPercentage: Math.max(0, Math.min(100, Number(assumptions.improvementsPercentage) || 0)),
+    acquisitionMonth: Math.max(1, Math.min(12, Number(assumptions.acquisitionMonth) || 1)),
     dispositionPrice: Math.max(0, Number(assumptions.dispositionPrice) || 0),
     dispositionCapRate: Math.max(0, Math.min(1, Number(assumptions.dispositionCapRate) || 0)),
     costOfSaleAmount: Math.max(0, Number(assumptions.costOfSaleAmount) || 0),

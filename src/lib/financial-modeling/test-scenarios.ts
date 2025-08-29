@@ -50,6 +50,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 39,
       landPercentage: 20,
       improvementsPercentage: 80,
+      acquisitionMonth: 1, // January (default)
       // Tax assumptions
       ordinaryIncomeTaxRate: 0.35,
       capitalGainsTaxRate: 0.20,
@@ -110,6 +111,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 27.5,
       landPercentage: 15,
       improvementsPercentage: 85,
+      acquisitionMonth: 3, // March - testing different month
       // Tax assumptions
       ordinaryIncomeTaxRate: 0.37, // Higher tax bracket
       capitalGainsTaxRate: 0.20,
@@ -170,6 +172,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 39,
       landPercentage: 25, // Higher land value for retail
       improvementsPercentage: 75,
+      acquisitionMonth: 1, // January (default)
       // Tax assumptions
       ordinaryIncomeTaxRate: 0.32,
       capitalGainsTaxRate: 0.15, // Lower bracket
@@ -230,6 +233,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 39,
       landPercentage: 30, // Higher land component
       improvementsPercentage: 70,
+      acquisitionMonth: 6, // June - mid-year acquisition
       // Tax assumptions
       ordinaryIncomeTaxRate: 0.37,
       capitalGainsTaxRate: 0.20,
@@ -290,6 +294,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 39,
       landPercentage: 15,
       improvementsPercentage: 85,
+      acquisitionMonth: 9, // September - late year acquisition
       // Tax assumptions
       ordinaryIncomeTaxRate: 0.35,
       capitalGainsTaxRate: 0.20,
@@ -348,6 +353,7 @@ export const testScenarios: TestScenario[] = [
       depreciationYears: 39,
       landPercentage: 10, // Lower land value
       improvementsPercentage: 90,
+      acquisitionMonth: 1, // January (default)
       // Tax assumptions - short-term gains
       ordinaryIncomeTaxRate: 0.37, // Short-term gains taxed as ordinary
       capitalGainsTaxRate: 0.37, // No long-term treatment

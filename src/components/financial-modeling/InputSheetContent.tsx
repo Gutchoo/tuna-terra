@@ -324,6 +324,39 @@ export function InputSheetContent() {
             {/* Tax & Exit Section */}
             {activeSection === 'assumptions' && (
               <div className="space-y-6">
+                {/* Depreciation Settings Section */}
+                <Card className="border-2">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg">Depreciation Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <TooltipSelect
+                        id="acquisition-month"
+                        label="Acquisition Month"
+                        value={assumptions.acquisitionMonth?.toString() || '1'}
+                        onValueChange={(value) => updateAssumption('acquisitionMonth', parseInt(value))}
+                        tooltip={financialTooltips.acquisitionMonth}
+                        placeholder="Select month"
+                        className="w-full"
+                      >
+                        <SelectItem value="1">January</SelectItem>
+                        <SelectItem value="2">February</SelectItem>
+                        <SelectItem value="3">March</SelectItem>
+                        <SelectItem value="4">April</SelectItem>
+                        <SelectItem value="5">May</SelectItem>
+                        <SelectItem value="6">June</SelectItem>
+                        <SelectItem value="7">July</SelectItem>
+                        <SelectItem value="8">August</SelectItem>
+                        <SelectItem value="9">September</SelectItem>
+                        <SelectItem value="10">October</SelectItem>
+                        <SelectItem value="11">November</SelectItem>
+                        <SelectItem value="12">December</SelectItem>
+                      </TooltipSelect>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Tax Rates Section */}
                 <Card className="border-2">
                   <CardHeader className="pb-4">

@@ -225,16 +225,17 @@ export function CashflowsContent() {
             Detailed breakdown of income, expenses, and taxable income by year
           </p>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-auto max-h-[600px]">
-            <Table className="[&_tr]:bg-transparent [&_tr:hover]:bg-transparent">
-              <TableHeader className="sticky top-0 bg-background z-10">
+        <CardContent className="p-6">
+          <div className="rounded-lg border overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table className="min-w-full bg-background">
+              <TableHeader className="sticky top-0 bg-muted z-10">
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background font-semibold min-w-[200px] border-r">
+                  <TableHead className="sticky left-0 bg-muted text-muted-foreground font-semibold w-48 z-10 border-r">
                     Line Item
                   </TableHead>
                   {Array(years).fill(0).map((_, i) => (
-                    <TableHead key={i} className="text-center min-w-[120px] font-semibold">
+                    <TableHead key={i} className="text-center min-w-32 whitespace-nowrap font-semibold bg-muted text-muted-foreground">
                       Year {i + 1}
                     </TableHead>
                   ))}
@@ -243,7 +244,7 @@ export function CashflowsContent() {
               <TableBody>
                 {/* Income Section */}
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Potential Rental Income
                   </TableCell>
                   {cashflowData.potentialRentalIncome.map((value, i) => (
@@ -254,7 +255,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Vacancy & Credit Loss
                   </TableCell>
                   {cashflowData.vacancyAndCreditLoss.map((value, i) => (
@@ -265,7 +266,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Effective Rental Income
                   </TableCell>
                   {cashflowData.effectiveRentalIncome.map((value, i) => (
@@ -276,7 +277,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Other Income
                   </TableCell>
                   {cashflowData.otherIncome.map((value, i) => (
@@ -287,7 +288,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow className="border-t-2">
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Gross Operating Income
                   </TableCell>
                   {cashflowData.grossOperatingIncome.map((value, i) => (
@@ -299,7 +300,7 @@ export function CashflowsContent() {
                 
                 {/* Expenses Section */}
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Total Operating Expenses
                   </TableCell>
                   {cashflowData.totalOperatingExpenses.map((value, i) => (
@@ -309,8 +310,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
                 
-                <TableRow className="border-t-2 border-b-2">
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="sticky left-0 bg-muted/50 font-semibold z-10 border-r">
                     Net Operating Income
                   </TableCell>
                   {cashflowData.netOperatingIncome.map((value, i) => (
@@ -322,7 +323,7 @@ export function CashflowsContent() {
                 
                 {/* Tax Calculations */}
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Interest Expense
                   </TableCell>
                   {cashflowData.interestExpense.map((value, i) => (
@@ -333,7 +334,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Cost Recovery (Depreciation)
                   </TableCell>
                   {cashflowData.depreciation.map((value, i) => (
@@ -344,7 +345,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">
                     Loan Costs Amortization
                   </TableCell>
                   {cashflowData.loanCostsAmortization.map((value, i) => (
@@ -354,8 +355,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
                 
-                <TableRow className="border-t-2">
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                <TableRow className="border-t-2 bg-muted/50">
+                  <TableCell className="sticky left-0 bg-muted/50 font-semibold z-10 border-r">
                     Real Estate Taxable Income
                   </TableCell>
                   {cashflowData.realEstateTaxableIncome.map((value, i) => (
@@ -366,7 +367,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -379,14 +381,15 @@ export function CashflowsContent() {
             Simplified view of cash flows to the investor
           </p>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-auto">
-            <Table className="[&_tr]:bg-transparent [&_tr:hover]:bg-transparent">
-              <TableHeader className="sticky top-0 bg-background z-10">
+        <CardContent className="p-6">
+          <div className="rounded-lg border overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table className="min-w-full bg-background">
+              <TableHeader className="sticky top-0 bg-muted z-10">
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background font-semibold min-w-[200px] border-r">Cash Flow Item</TableHead>
+                  <TableHead className="sticky left-0 bg-muted text-muted-foreground font-semibold w-48 z-10 border-r">Cash Flow Item</TableHead>
                   {Array(years).fill(0).map((_, i) => (
-                    <TableHead key={i} className="text-center min-w-[120px] font-semibold">
+                    <TableHead key={i} className="text-center min-w-32 whitespace-nowrap font-semibold bg-muted text-muted-foreground">
                       Year {i + 1}
                     </TableHead>
                   ))}
@@ -394,7 +397,7 @@ export function CashflowsContent() {
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Net Operating Income</TableCell>
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">Net Operating Income</TableCell>
                   {cashflowData.netOperatingIncome.map((value, i) => (
                     <TableCell key={i} className="text-center font-mono text-sm font-semibold">
                       {formatValue(value)}
@@ -403,7 +406,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Annual Debt Service</TableCell>
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">Annual Debt Service</TableCell>
                   {cashflowData.annualDebtService.map((value, i) => (
                     <TableCell key={i} className="text-center font-mono text-sm">
                       {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
@@ -411,8 +414,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
                 
-                <TableRow className="border-t">
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Cash Flow Before Taxes</TableCell>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="sticky left-0 bg-muted/50 font-semibold z-10 border-r">Cash Flow Before Taxes</TableCell>
                   {cashflowData.cashFlowBeforeTaxes.map((value, i) => (
                     <TableCell key={i} className={cn("text-center font-mono text-sm font-semibold",
                       value < 0 ? "text-red-600" : "")}>
@@ -422,7 +425,7 @@ export function CashflowsContent() {
                 </TableRow>
                 
                 <TableRow>
-                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Tax Liability</TableCell>
+                  <TableCell className="sticky left-0 bg-muted font-semibold z-10 border-r">Tax Liability</TableCell>
                   {cashflowData.taxLiability.map((value, i) => (
                     <TableCell key={i} className={cn("text-center font-mono text-sm",
                       value > 0.01 ? "text-red-600" : "")}>
@@ -431,8 +434,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
                 
-                <TableRow className="border-t-2 border-b-2">
-                  <TableCell className="sticky left-0 bg-background font-bold border-r">Cash Flow After Taxes</TableCell>
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="sticky left-0 bg-muted/50 font-bold z-10 border-r">Cash Flow After Taxes</TableCell>
                   {cashflowData.cashFlowAfterTaxes.map((value, i) => (
                     <TableCell key={i} className={cn("text-center font-mono text-sm font-bold",
                       value < 0 ? "text-red-600" : "")}>
@@ -441,7 +444,8 @@ export function CashflowsContent() {
                   ))}
                 </TableRow>
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>

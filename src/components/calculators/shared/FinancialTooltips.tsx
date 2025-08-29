@@ -18,6 +18,8 @@ export const financialTooltips = {
   landPercentage: "The percentage of the property's value attributed to land. Land cannot be depreciated for tax purposes, so this helps determine what portion of your investment can be used for depreciation deductions.",
   
   improvementsPercentage: "The percentage of the property's value attributed to buildings and improvements. This portion can be depreciated for tax purposes over the applicable recovery period (27.5 years for residential, 39 years for commercial).",
+  
+  acquisitionMonth: "The month in which the property is acquired (January by default). This determines the first-year depreciation amount using IRS mid-month convention. For example, a February acquisition allows 10.5 months of depreciation in year one (87.5% of full-year amount). All dispositions are assumed to occur in December.",
 
   // Income Assumptions
   monthlyRent: "The gross rental income collected per month before any expenses. This should reflect market rates and actual or expected rental income.",
