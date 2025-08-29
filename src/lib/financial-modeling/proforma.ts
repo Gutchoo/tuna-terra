@@ -1,3 +1,10 @@
+export interface CapitalImprovement {
+  year: number           // Year placed in service (e.g., 3)
+  amount: number         // Cost of improvement
+  description?: string   // "Roof replacement", "HVAC upgrade", etc.
+  recoveryPeriod?: number // Optional override, defaults to property type depreciation years
+}
+
 export interface PropertyAssumptions {
   // Property Details
   purchasePrice: number
@@ -49,6 +56,9 @@ export interface PropertyAssumptions {
   depreciationYears: number
   landPercentage: number // 0-100
   improvementsPercentage: number // 0-100 (must sum to 100 with landPercentage)
+  
+  // Capital Improvements (future feature)
+  capitalImprovements?: CapitalImprovement[] // Future feature for mid-stream capital expenditures
   
   // Detailed Tax Rates
   ordinaryIncomeTaxRate: number // 10%-37% - used for depreciation recapture calculation
@@ -182,7 +192,7 @@ export function calculateLoanBalance(
 }
 
 /**
- * Calculate depreciation for a given year
+ * Calculate depreciation for a given year (legacy single-schedule function)
  */
 export function calculateDepreciation(
   depreciableBasis: number,
@@ -195,6 +205,42 @@ export function calculateDepreciation(
   // Simple straight-line depreciation
   // In reality, real estate uses MACRS with half-year convention, but this simplifies
   return depreciableBasis / depreciationYears
+}
+
+/**
+ * Calculate multi-schedule depreciation including capital improvements
+ * Each capital improvement gets its own full recovery period starting from placement year
+ */
+export function calculateMultiScheduleDepreciation(
+  originalBasis: number,
+  capitalImprovements: CapitalImprovement[],
+  propertyType: string,
+  depreciationYears: number,
+  currentYear: number
+): number {
+  let totalDepreciation = 0
+  
+  // Original basis depreciation (Years 1-39 for commercial, 1-27.5 for residential)
+  if (currentYear <= depreciationYears) {
+    totalDepreciation += originalBasis / depreciationYears
+  }
+  
+  // Add depreciation for each capital improvement
+  if (capitalImprovements && capitalImprovements.length > 0) {
+    capitalImprovements.forEach(improvement => {
+      const improvementStartYear = improvement.year
+      const improvementRecoveryPeriod = improvement.recoveryPeriod || depreciationYears
+      const improvementEndYear = improvementStartYear + improvementRecoveryPeriod - 1
+      
+      // Only depreciate if current year is within this improvement's schedule
+      // Example: Roof placed in Year 3, depreciates Years 3-41 for 39-year recovery
+      if (currentYear >= improvementStartYear && currentYear <= improvementEndYear) {
+        totalDepreciation += improvement.amount / improvementRecoveryPeriod
+      }
+    })
+  }
+  
+  return totalDepreciation
 }
 
 /**
@@ -414,8 +460,8 @@ export class ProFormaCalculator {
     const periodicPayment = calculatePeriodicPayment(loanAmount, interestRate, amortizationYears, paymentsPerYear || 12)
     const annualDebtService = periodicPayment * (paymentsPerYear || 12)
 
-    // Depreciable basis (property value excluding land - uses improvements percentage)
-    const depreciableBasis = purchasePrice * (this.assumptions.improvementsPercentage / 100)
+    // Depreciable basis (property value + acquisition costs, excluding land - uses improvements percentage)
+    const depreciableBasis = (purchasePrice + actualAcquisitionCosts) * (this.assumptions.improvementsPercentage / 100)
 
     // Generate annual cashflows
     const annualCashflows: AnnualCashflow[] = []
@@ -454,8 +500,14 @@ export class ProFormaCalculator {
       // Before-tax cash flow
       const beforeTaxCashflow = noi - annualDebtService
       
-      // Depreciation
-      const depreciation = calculateDepreciation(depreciableBasis, propertyType, depreciationYears, year)
+      // Depreciation using multi-schedule approach (supports future capital improvements)
+      const depreciation = calculateMultiScheduleDepreciation(
+        depreciableBasis, 
+        this.assumptions.capitalImprovements || [], 
+        propertyType, 
+        depreciationYears, 
+        year
+      )
       cumulativeDepreciation += depreciation
       
       // Calculate loan costs amortization (spread over loan term only)
