@@ -205,93 +205,102 @@ export function InputSheetContent() {
                     <CardTitle className="text-lg">Property Details</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {/* Single row with all 6 fields - responsive breakpoints */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                      <TooltipInput
-                        label="Purchase Price"
-                        id="purchase-price"
-                        type="number"
-                        value={assumptions.purchasePrice}
-                        onChange={(value) => updateAssumption('purchasePrice', parseFloat(value) || 0)}
-                        tooltip={financialTooltips.purchasePrice}
-                        placeholder="$0"
-                      />
-                      
-                      <AcquisitionCostsInput
-                        label="Acquisition Costs"
-                        value={assumptions.acquisitionCosts}
-                        type={assumptions.acquisitionCostType}
-                        onValueChange={(value) => updateAssumption('acquisitionCosts', value)}
-                        onTypeChange={(type) => updateAssumption('acquisitionCostType', type)}
-                        tooltip={financialTooltips.acquisitionCosts}
-                        purchasePrice={assumptions.purchasePrice}
-                      />
+                    {/* Responsive grid layout - better handling for mixed input types */}
+                    <div className="space-y-4">
+                      {/* Row 1: Core Property Info - these work well together */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <TooltipInput
+                          label="Purchase Price"
+                          id="purchase-price"
+                          type="number"
+                          value={assumptions.purchasePrice}
+                          onChange={(value) => updateAssumption('purchasePrice', parseFloat(value) || 0)}
+                          tooltip={financialTooltips.purchasePrice}
+                          placeholder="$0"
+                        />
+                        
+                        <div className="md:col-span-1 lg:col-span-1">
+                          <AcquisitionCostsInput
+                            label="Acquisition Costs"
+                            value={assumptions.acquisitionCosts}
+                            type={assumptions.acquisitionCostType}
+                            onValueChange={(value) => updateAssumption('acquisitionCosts', value)}
+                            onTypeChange={(type) => updateAssumption('acquisitionCostType', type)}
+                            tooltip={financialTooltips.acquisitionCosts}
+                            purchasePrice={assumptions.purchasePrice}
+                            className="min-w-0"
+                          />
+                        </div>
 
-                      <TooltipSelect
-                        id="property-type"
-                        label="Property Type"
-                        value={assumptions.propertyType}
-                        onValueChange={handlePropertyTypeChange}
-                        tooltip="Classification of the property which determines the depreciation schedule for tax purposes. Residential properties depreciate over 27.5 years, while commercial properties depreciate over 39 years."
-                        placeholder="Select property type"
-                        className="w-full"
-                      >
-                        <SelectItem value="residential">Residential</SelectItem>
-                        <SelectItem value="commercial">Commercial</SelectItem>
-                      </TooltipSelect>
+                        <TooltipSelect
+                          id="property-type"
+                          label="Property Type"
+                          value={assumptions.propertyType}
+                          onValueChange={handlePropertyTypeChange}
+                          tooltip="Classification of the property which determines the depreciation schedule for tax purposes. Residential properties depreciate over 27.5 years, while commercial properties depreciate over 39 years."
+                          placeholder="Select property type"
+                          className="w-full"
+                        >
+                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="commercial">Commercial</SelectItem>
+                        </TooltipSelect>
+                      </div>
 
-                      <TooltipInput
-                        label="Land (%)"
-                        id="land-percentage"
-                        type="percentage"
-                        value={assumptions.landPercentage}
-                        onChange={(value) => {
-                          const numValue = parseFloat(value) || 0
-                          const cappedValue = Math.min(Math.max(numValue, 0), 100)
-                          updateAssumption('landPercentage', cappedValue)
-                          updateAssumption('improvementsPercentage', 100 - cappedValue)
-                        }}
-                        placeholder="20%"
-                        min={0}
-                        max={100}
-                      />
+                      {/* Row 2: Property Allocation & Timeline - simpler inputs */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <TooltipInput
+                          label="Land (%)"
+                          id="land-percentage"
+                          type="percentage"
+                          value={assumptions.landPercentage}
+                          onChange={(value) => {
+                            const numValue = parseFloat(value) || 0
+                            const cappedValue = Math.min(Math.max(numValue, 0), 100)
+                            updateAssumption('landPercentage', cappedValue)
+                            updateAssumption('improvementsPercentage', 100 - cappedValue)
+                          }}
+                          placeholder="20%"
+                          min={0}
+                          max={100}
+                        />
 
-                      <TooltipInput
-                        label="Improvements (%)"
-                        id="improvements-percentage"
-                        type="percentage"
-                        value={assumptions.improvementsPercentage}
-                        onChange={(value) => {
-                          const numValue = parseFloat(value) || 0
-                          const cappedValue = Math.min(Math.max(numValue, 0), 100)
-                          updateAssumption('improvementsPercentage', cappedValue)
-                          updateAssumption('landPercentage', 100 - cappedValue)
-                        }}
-                        tooltip={financialTooltips.improvementsPercentage}
-                        placeholder="80%"
-                        min={0}
-                        max={100}
-                      />
+                        <TooltipInput
+                          label="Improvements (%)"
+                          id="improvements-percentage"
+                          type="percentage"
+                          value={assumptions.improvementsPercentage}
+                          onChange={(value) => {
+                            const numValue = parseFloat(value) || 0
+                            const cappedValue = Math.min(Math.max(numValue, 0), 100)
+                            updateAssumption('improvementsPercentage', cappedValue)
+                            updateAssumption('landPercentage', 100 - cappedValue)
+                          }}
+                          tooltip={financialTooltips.improvementsPercentage}
+                          placeholder="80%"
+                          min={0}
+                          max={100}
+                        />
 
-                      <TooltipInput
-                        label="Hold Period (Years)"
-                        id="hold-period"
-                        type="number"
-                        value={assumptions.holdPeriodYears === 0 ? '' : assumptions.holdPeriodYears}
-                        onChange={(value) => {
-                          if (value === '' || value === null || value === undefined) {
-                            updateAssumption('holdPeriodYears', 0)
-                            return
-                          }
-                          const numValue = parseFloat(value) || 0
-                          const cappedValue = Math.min(Math.max(numValue, 0), 10) // Cap at 10 years, minimum 0
-                          updateAssumption('holdPeriodYears', cappedValue)
-                        }}
-                        tooltip={`${financialTooltips.holdPeriod} Maximum 10 years for optimal analysis.`}
-                        placeholder="Enter years"
-                        min={1}
-                        max={10}
-                      />
+                        <TooltipInput
+                          label="Hold Period (Years)"
+                          id="hold-period"
+                          type="number"
+                          value={assumptions.holdPeriodYears === 0 ? '' : assumptions.holdPeriodYears}
+                          onChange={(value) => {
+                            if (value === '' || value === null || value === undefined) {
+                              updateAssumption('holdPeriodYears', 0)
+                              return
+                            }
+                            const numValue = parseFloat(value) || 0
+                            const cappedValue = Math.min(Math.max(numValue, 0), 10) // Cap at 10 years, minimum 0
+                            updateAssumption('holdPeriodYears', cappedValue)
+                          }}
+                          tooltip={`${financialTooltips.holdPeriod} Maximum 10 years for optimal analysis.`}
+                          placeholder="Enter years"
+                          min={1}
+                          max={10}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
