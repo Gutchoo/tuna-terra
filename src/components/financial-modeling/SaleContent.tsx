@@ -59,11 +59,14 @@ export function SaleContent() {
       const accumulatedDepreciation = results.annualCashflows.reduce((sum, cf) => sum + cf.depreciation, 0)
       const adjustedBasis = totalBasis - accumulatedDepreciation
       
-      const capitalGain = Math.max(0, salePrice - totalBasis)
-      const deprecationRecapture = Math.min(accumulatedDepreciation, Math.max(0, salePrice - adjustedBasis))
+      // Use proper industry-standard calculation methodology
+      const totalGain = Math.max(0, salePrice - sellingCosts - adjustedBasis)
+      const deprecationRecapture = Math.min(accumulatedDepreciation, totalGain)
+      const capitalGain = Math.max(0, totalGain - deprecationRecapture)
       
-      const capitalGainsTaxRate = 0.20 // 20% for long-term capital gains
-      const deprecationRecaptureTaxRate = 0.25 // 25% for depreciation recapture
+      // Use user's actual tax rate inputs
+      const capitalGainsTaxRate = assumptions.capitalGainsTaxRate || 0.20
+      const deprecationRecaptureTaxRate = assumptions.depreciationRecaptureRate || 0.25
       
       const capitalGainsTax = capitalGain * capitalGainsTaxRate
       const deprecationRecaptureTax = deprecationRecapture * deprecationRecaptureTaxRate
@@ -110,8 +113,8 @@ export function SaleContent() {
       ['Adjusted Basis', formatCurrency(saleAnalysis.adjustedBasis)],
       ['Capital Gain', formatCurrency(saleAnalysis.capitalGain)],
       ['Depreciation Recapture', formatCurrency(saleAnalysis.deprecationRecapture)],
-      ['Capital Gains Tax (20%)', formatCurrency(saleAnalysis.capitalGainsTax)],
-      ['Depreciation Recapture Tax (25%)', formatCurrency(saleAnalysis.deprecationRecaptureTax)],
+      [`Capital Gains Tax (${formatPercentage((assumptions.capitalGainsTaxRate || 0.20) * 100)})`, formatCurrency(saleAnalysis.capitalGainsTax)],
+      [`Depreciation Recapture Tax (${formatPercentage((assumptions.depreciationRecaptureRate || 0.25) * 100)})`, formatCurrency(saleAnalysis.deprecationRecaptureTax)],
       ['Total Taxes on Sale', formatCurrency(saleAnalysis.totalTaxes)],
       ['After-Tax Sale Proceeds', formatCurrency(saleAnalysis.afterTaxSaleProceeds)],
     ]
@@ -300,13 +303,13 @@ export function SaleContent() {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Capital Gains Tax (20%)</span>
+                    <span className="text-sm">Capital Gains Tax ({formatPercentage((assumptions.capitalGainsTaxRate || 0.20) * 100)})</span>
                     <span className="font-mono text-red-600">
                       {formatCurrency(saleAnalysis.capitalGainsTax)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Depreciation Recapture Tax (25%)</span>
+                    <span className="text-sm">Depreciation Recapture Tax ({formatPercentage((assumptions.depreciationRecaptureRate || 0.25) * 100)})</span>
                     <span className="font-mono text-red-600">
                       {formatCurrency(saleAnalysis.deprecationRecaptureTax)}
                     </span>

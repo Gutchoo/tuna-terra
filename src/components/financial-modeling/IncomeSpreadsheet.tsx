@@ -284,63 +284,67 @@ export function IncomeSpreadsheet({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            {assumptions.operatingExpenseType === 'percentage' ? (
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="40"
-                      value={assumptions.defaultOperatingExpenseRate || ''}
-                      onChange={(e) => onAssumptionsChange({
-                        ...assumptions,
-                        defaultOperatingExpenseRate: parseFloat(e.target.value) || undefined
-                      })}
-                      className="pr-8"
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <span className="text-muted-foreground text-sm">%</span>
+            <div className="space-y-2">
+              {/* Always show the selector */}
+              <Select
+                value={assumptions.operatingExpenseType}
+                onValueChange={(value: 'percentage' | 'dollar') => onAssumptionsChange({
+                  ...assumptions,
+                  operatingExpenseType: value,
+                  // Clear the default rate when switching types
+                  defaultOperatingExpenseRate: undefined
+                })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select calculation method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">% of Effective Gross Income</SelectItem>
+                  <SelectItem value="dollar">Fixed Dollar Amounts</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Show percentage input and apply button when percentage is selected */}
+              {assumptions.operatingExpenseType === 'percentage' && (
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder="40"
+                        value={assumptions.defaultOperatingExpenseRate || ''}
+                        onChange={(e) => onAssumptionsChange({
+                          ...assumptions,
+                          defaultOperatingExpenseRate: parseFloat(e.target.value) || undefined
+                        })}
+                        className="pr-8"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-muted-foreground text-sm">%</span>
+                      </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Applies percentage to effective gross income for all years
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Applies percentage to effective gross income for all years
-                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={autoPopulateOperatingExpenses}
+                    disabled={assumptions.defaultOperatingExpenseRate === undefined}
+                  >
+                    Apply
+                  </Button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={autoPopulateOperatingExpenses}
-                  disabled={assumptions.defaultOperatingExpenseRate === undefined}
-                >
-                  Apply
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Select
-                  value={assumptions.operatingExpenseType}
-                  onValueChange={(value: 'percentage' | 'dollar') => onAssumptionsChange({
-                    ...assumptions,
-                    operatingExpenseType: value,
-                    // Clear the default rate when switching types
-                    defaultOperatingExpenseRate: undefined
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select calculation method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">% of Effective Gross Income</SelectItem>
-                    <SelectItem value="dollar">Fixed Dollar Amounts</SelectItem>
-                  </SelectContent>
-                </Select>
-                {assumptions.operatingExpenseType === 'dollar' && (
-                  <p className="text-xs text-muted-foreground">
-                    Enter dollar amounts directly in the spreadsheet below
-                  </p>
-                )}
-              </div>
-            )}
+              )}
+              
+              {/* Show help text when dollar is selected */}
+              {assumptions.operatingExpenseType === 'dollar' && (
+                <p className="text-xs text-muted-foreground">
+                  Enter dollar amounts directly in the spreadsheet below
+                </p>
+              )}
+            </div>
           </div>
         </div>
 

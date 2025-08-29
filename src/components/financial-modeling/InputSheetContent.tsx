@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { SelectItem } from '@/components/ui/select'
-import { Building, DollarSign, Calculator } from 'lucide-react'
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Building, DollarSign, Calculator, TestTube, RotateCcw } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { TooltipInput, TooltipSelect, financialTooltips } from '@/components/calculators/shared'
 import { HorizontalSectionNav } from './HorizontalSectionNav'
@@ -15,11 +18,31 @@ import { AcquisitionCostsInput } from './AcquisitionCostsInput'
 import { DispositionPriceInput } from './DispositionPriceInput'
 import { CostOfSaleInput } from './CostOfSaleInput'
 import { useFinancialModeling } from '@/lib/contexts/FinancialModelingContext'
+import { getScenarioNames, getTestScenario, randomizeScenario } from '@/lib/financial-modeling/test-scenarios'
 
 export function InputSheetContent() {
   const { state, updateAssumption, dispatch } = useFinancialModeling()
   const { assumptions } = state
   const [activeSection, setActiveSection] = useState('property-income')
+  const [isDevelopment, setIsDevelopment] = useState(false)
+
+  // Check if we're in development mode
+  useEffect(() => {
+    // DEBUG: Show what variables we're checking
+    console.log('=== TEST PANEL DEBUG ===')
+    console.log('NODE_ENV:', process.env.NODE_ENV)
+    console.log('NEXT_PUBLIC_ENABLE_TEST_DATA:', process.env.NEXT_PUBLIC_ENABLE_TEST_DATA)
+    console.log('Will show test panel:', 
+      process.env.NODE_ENV === 'development' && 
+      process.env.NEXT_PUBLIC_ENABLE_TEST_DATA !== 'false'
+    )
+    console.log('========================')
+    
+    setIsDevelopment(
+      process.env.NODE_ENV === 'development' && 
+      process.env.NEXT_PUBLIC_ENABLE_TEST_DATA !== 'false'
+    )
+  }, [])
 
   const handleAssumptionsChange = (newAssumptions: typeof assumptions) => {
     dispatch({ type: 'UPDATE_ASSUMPTIONS', payload: newAssumptions })
@@ -32,11 +55,117 @@ export function InputSheetContent() {
     updateAssumption('depreciationYears', depreciationYears)
   }
 
+  // Load test scenario
+  const loadTestScenario = useCallback((scenarioId: string) => {
+    if (scenarioId === 'clear') {
+      // Clear all data
+      dispatch({ type: 'UPDATE_ASSUMPTIONS', payload: {
+        purchasePrice: 0,
+        acquisitionCosts: 0,
+        potentialRentalIncome: Array(30).fill(0),
+        vacancyRates: Array(30).fill(0),
+        operatingExpenses: Array(30).fill(0),
+        loanAmount: 0,
+        interestRate: 0,
+        holdPeriodYears: 0,
+        dispositionPrice: 0,
+        dispositionCapRate: 0,
+        ordinaryIncomeTaxRate: 0,
+        capitalGainsTaxRate: 0,
+        depreciationRecaptureRate: 0,
+      }})
+      toast.success('All fields cleared')
+      return
+    }
+
+    const scenario = getTestScenario(scenarioId)
+    if (scenario) {
+      dispatch({ type: 'UPDATE_ASSUMPTIONS', payload: scenario.assumptions })
+      toast.success(`Loaded: ${scenario.name}`, {
+        description: scenario.description
+      })
+    }
+  }, [dispatch])
+
+  // Randomize current scenario
+  const randomizeData = useCallback(() => {
+    const randomized = randomizeScenario(assumptions)
+    dispatch({ type: 'UPDATE_ASSUMPTIONS', payload: randomized })
+    toast.success('Data randomized for testing')
+  }, [assumptions, dispatch])
+
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === 'T') {
+        event.preventDefault()
+        // Load the standard scenario as default
+        loadTestScenario('standard')
+      }
+    }
+
+    if (isDevelopment) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isDevelopment, loadTestScenario])
+
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <InputSummaryCards assumptions={assumptions} />
+
+      {/* Development Controls */}
+      {isDevelopment && (
+        <Card className="border-dashed border-orange-200 bg-orange-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <TestTube className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-800">Development Mode</span>
+                <Badge variant="outline" className="text-orange-600 border-orange-200">
+                  Press Cmd+Shift+T for quick test data
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select onValueChange={loadTestScenario}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Load test scenario..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getScenarioNames().map(scenario => (
+                      <SelectItem key={scenario.id} value={scenario.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{scenario.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {scenario.description}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="clear">
+                      <div className="flex items-center gap-2">
+                        <RotateCcw className="h-3 w-3" />
+                        Clear All Data
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={randomizeData}
+                  className="text-orange-600 border-orange-200 hover:bg-orange-100"
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Randomize
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Horizontal Section Navigation */}
       <HorizontalSectionNav 

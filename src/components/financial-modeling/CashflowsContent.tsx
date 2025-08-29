@@ -9,119 +9,162 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Download, Calculator, TrendingUp } from "lucide-react"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
 import { formatCurrency, cn } from "@/lib/utils"
 
-interface YearlyData {
-  year: number
-  grossRent: number
-  vacancy: number
-  effectiveRent: number
-  operatingExpenses: number
-  noi: number
-  debtService: number
-  beforeTaxCashflow: number
-  depreciation: number
-  taxableIncome: number
-  taxes: number
-  afterTaxCashflow: number
-  loanBalance: number
+interface CashflowData {
+  potentialRentalIncome: number[]
+  vacancyAndCreditLoss: number[]
+  effectiveRentalIncome: number[]
+  otherIncome: number[]
+  grossOperatingIncome: number[]
+  totalOperatingExpenses: number[]
+  netOperatingIncome: number[]
+  interestExpense: number[]
+  depreciation: number[]
+  loanCostsAmortization: number[]
+  realEstateTaxableIncome: number[]
+  // Simplified summary
+  annualDebtService: number[]
+  cashFlowBeforeTaxes: number[]
+  taxLiability: number[]
+  cashFlowAfterTaxes: number[]
 }
 
 export function CashflowsContent() {
-  const { state, updateAssumption, calculateResults } = useFinancialModeling()
+  const { state, calculateResults } = useFinancialModeling()
   const { assumptions, results, isCalculating } = state
-  const [localData, setLocalData] = useState<YearlyData[]>([])
+  const [cashflowData, setCashflowData] = useState<CashflowData | null>(null)
 
-  // Initialize cashflow data from results or create sample data
+  // Calculate cashflow data from assumptions and results
   useEffect(() => {
-    if (results?.annualCashflows) {
-      const data = results.annualCashflows.map(cf => ({
-        year: cf.year,
-        grossRent: assumptions.potentialRentalIncome[cf.year - 1] || 0,
-        vacancy: (assumptions.potentialRentalIncome[cf.year - 1] || 0) * (assumptions.vacancyRates[cf.year - 1] || 0),
-        effectiveRent: (assumptions.potentialRentalIncome[cf.year - 1] || 0) * (1 - (assumptions.vacancyRates[cf.year - 1] || 0)),
-        operatingExpenses: assumptions.operatingExpenses[cf.year - 1] || 0,
-        noi: cf.noi,
-        debtService: cf.debtService,
-        beforeTaxCashflow: cf.beforeTaxCashflow,
-        depreciation: cf.depreciation,
-        taxableIncome: cf.taxableIncome,
-        taxes: cf.taxes,
-        afterTaxCashflow: cf.afterTaxCashflow,
-        loanBalance: cf.loanBalance
-      }))
-      setLocalData(data)
+    const holdPeriod = assumptions.holdPeriodYears || 5
+    const years = Math.min(holdPeriod, 30)
+    
+    if (results?.annualCashflows && assumptions) {
+      // Use real calculation results
+      const data: CashflowData = {
+        potentialRentalIncome: [],
+        vacancyAndCreditLoss: [],
+        effectiveRentalIncome: [],
+        otherIncome: [],
+        grossOperatingIncome: [],
+        totalOperatingExpenses: [],
+        netOperatingIncome: [],
+        interestExpense: [],
+        depreciation: [],
+        loanCostsAmortization: [],
+        realEstateTaxableIncome: [],
+        annualDebtService: [],
+        cashFlowBeforeTaxes: [],
+        taxLiability: [],
+        cashFlowAfterTaxes: []
+      }
+      
+      for (let i = 0; i < years; i++) {
+        const cf = results.annualCashflows[i]
+        const rentalIncome = assumptions.potentialRentalIncome[i] || 0
+        const otherIncome = assumptions.otherIncome?.[i] || 0
+        const vacancyRate = assumptions.vacancyRates[i] || 0
+        const vacancyLoss = -rentalIncome * vacancyRate // Negative value
+        const effectiveRental = rentalIncome + vacancyLoss
+        const grossIncome = effectiveRental + otherIncome
+        
+        let operatingExpenses = 0
+        if (assumptions.operatingExpenseType === 'percentage') {
+          operatingExpenses = grossIncome * ((assumptions.operatingExpenses[i] || 0) / 100)
+        } else {
+          operatingExpenses = assumptions.operatingExpenses[i] || 0
+        }
+        
+        // Use loan costs amortization from calculation results
+        const loanCostsAmortization = cf?.loanCostsAmortization || 0
+        
+        // Debug logging for UI display (only for year 1)
+        if (i === 0) {
+          console.log('=== UI DISPLAY DEBUG (Year 1) ===')
+          console.log('cf object:', cf)
+          console.log('loanCostsAmortization from cf:', cf?.loanCostsAmortization)
+          console.log('loanCostsAmortization used in UI:', loanCostsAmortization)
+          console.log('Value pushed to array (negated):', -loanCostsAmortization)
+          console.log('==================================')
+        }
+        
+        data.potentialRentalIncome.push(rentalIncome)
+        data.vacancyAndCreditLoss.push(vacancyLoss)
+        data.effectiveRentalIncome.push(effectiveRental)
+        data.otherIncome.push(otherIncome)
+        data.grossOperatingIncome.push(grossIncome)
+        data.totalOperatingExpenses.push(-operatingExpenses) // Negative for expense
+        data.netOperatingIncome.push(cf?.noi || 0)
+        data.interestExpense.push(-(cf?.interestExpense || 0)) // Negative for expense
+        data.depreciation.push(-(cf?.depreciation || 0)) // Negative for tax purposes
+        data.loanCostsAmortization.push(-loanCostsAmortization) // Negative for amortization
+        data.realEstateTaxableIncome.push(cf?.taxableIncome || 0)
+        data.annualDebtService.push(-(cf?.debtService || 0)) // Negative for cash outflow
+        data.cashFlowBeforeTaxes.push(cf?.beforeTaxCashflow || 0)
+        data.taxLiability.push(-(cf?.taxes || 0)) // Negative if tax owed
+        data.cashFlowAfterTaxes.push(cf?.afterTaxCashflow || 0)
+      }
+      
+      setCashflowData(data)
     } else {
-      // Create sample data for the hold period
-      const years = assumptions.holdPeriodYears || 5
-      const sampleData = Array.from({ length: years }, (_, i) => ({
-        year: i + 1,
-        grossRent: 120000 * Math.pow(1.03, i),
-        vacancy: 6000 * Math.pow(1.03, i),
-        effectiveRent: 114000 * Math.pow(1.03, i),
-        operatingExpenses: 45000 * Math.pow(1.025, i),
-        noi: 69000 * Math.pow(1.04, i),
-        debtService: 55000,
-        beforeTaxCashflow: 14000 * Math.pow(1.06, i),
-        depreciation: 20000,
-        taxableIncome: -6000 * Math.pow(1.1, i),
-        taxes: -1500 * Math.pow(1.1, i),
-        afterTaxCashflow: 15500 * Math.pow(1.08, i),
-        loanBalance: 750000 * Math.pow(0.985, i)
-      }))
-      setLocalData(sampleData)
+      // Create placeholder data showing structure
+      const data: CashflowData = {
+        potentialRentalIncome: Array(years).fill(0),
+        vacancyAndCreditLoss: Array(years).fill(0),
+        effectiveRentalIncome: Array(years).fill(0),
+        otherIncome: Array(years).fill(0),
+        grossOperatingIncome: Array(years).fill(0),
+        totalOperatingExpenses: Array(years).fill(0),
+        netOperatingIncome: Array(years).fill(0),
+        interestExpense: Array(years).fill(0),
+        depreciation: Array(years).fill(0),
+        loanCostsAmortization: Array(years).fill(0),
+        realEstateTaxableIncome: Array(years).fill(0),
+        annualDebtService: Array(years).fill(0),
+        cashFlowBeforeTaxes: Array(years).fill(0),
+        taxLiability: Array(years).fill(0),
+        cashFlowAfterTaxes: Array(years).fill(0)
+      }
+      setCashflowData(data)
     }
   }, [results, assumptions])
 
-  const updateField = (index: number, field: keyof YearlyData, value: number) => {
-    setLocalData(prev => {
-      const newData = [...prev]
-      newData[index] = { ...newData[index], [field]: value }
-      
-      // Recalculate dependent fields
-      const row = newData[index]
-      if (field === 'grossRent' || field === 'vacancy') {
-        row.effectiveRent = row.grossRent - row.vacancy
-        row.noi = row.effectiveRent - row.operatingExpenses
-        row.beforeTaxCashflow = row.noi - row.debtService
-        row.taxableIncome = row.beforeTaxCashflow - row.depreciation
-        row.taxes = row.taxableIncome * (assumptions.taxRate / 100)
-        row.afterTaxCashflow = row.beforeTaxCashflow - row.taxes
-      } else if (field === 'operatingExpenses') {
-        row.noi = row.effectiveRent - row.operatingExpenses
-        row.beforeTaxCashflow = row.noi - row.debtService
-        row.taxableIncome = row.beforeTaxCashflow - row.depreciation
-        row.taxes = row.taxableIncome * (assumptions.taxRate / 100)
-        row.afterTaxCashflow = row.beforeTaxCashflow - row.taxes
-      }
-      
-      return newData
-    })
-  }
-
   const exportToCsv = () => {
-    const headers = [
-      'Year', 'Gross Rent', 'Vacancy', 'Effective Rent', 'Operating Expenses', 
-      'NOI', 'Debt Service', 'Before-Tax Cash Flow', 'Depreciation', 
-      'Taxable Income', 'Taxes', 'After-Tax Cash Flow', 'Loan Balance'
+    if (!cashflowData) return
+    
+    const years = cashflowData.potentialRentalIncome.length
+    const headers = ['Line Item', ...Array(years).fill(0).map((_, i) => `Year ${i + 1}`)]
+    
+    const detailedRows = [
+      ['Potential Rental Income', ...cashflowData.potentialRentalIncome],
+      ['Vacancy & Credit Loss', ...cashflowData.vacancyAndCreditLoss],
+      ['Effective Rental Income', ...cashflowData.effectiveRentalIncome],
+      ['Other Income', ...cashflowData.otherIncome],
+      ['Gross Operating Income', ...cashflowData.grossOperatingIncome],
+      ['Total Operating Expenses', ...cashflowData.totalOperatingExpenses],
+      ['Net Operating Income', ...cashflowData.netOperatingIncome],
+      ['Interest Expense', ...cashflowData.interestExpense],
+      ['Cost Recovery (Depreciation)', ...cashflowData.depreciation],
+      ['Loan Costs Amortization', ...cashflowData.loanCostsAmortization],
+      ['Real Estate Taxable Income', ...cashflowData.realEstateTaxableIncome]
     ]
     
-    const csvContent = [
-      headers,
-      ...localData.map(row => [
-        row.year, row.grossRent, row.vacancy, row.effectiveRent, 
-        row.operatingExpenses, row.noi, row.debtService, row.beforeTaxCashflow,
-        row.depreciation, row.taxableIncome, row.taxes, row.afterTaxCashflow, 
-        row.loanBalance
-      ])
+    const summaryRows = [
+      ['', ...Array(years).fill('')], // Empty separator row
+      ['CASH FLOW SUMMARY', ...Array(years).fill('')],
+      ['Net Operating Income', ...cashflowData.netOperatingIncome],
+      ['Annual Debt Service', ...cashflowData.annualDebtService],
+      ['Cash Flow Before Taxes', ...cashflowData.cashFlowBeforeTaxes],
+      ['Tax Liability', ...cashflowData.taxLiability],
+      ['Cash Flow After Taxes', ...cashflowData.cashFlowAfterTaxes]
     ]
     
+    const csvContent = [headers, ...detailedRows, ...summaryRows]
     const csvString = csvContent.map(row => row.join(',')).join('\n')
     const blob = new Blob([csvString], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -132,12 +175,22 @@ export function CashflowsContent() {
     window.URL.revokeObjectURL(url)
   }
 
-  const totals = localData.reduce((acc, row) => ({
-    noi: acc.noi + row.noi,
-    beforeTaxCashflow: acc.beforeTaxCashflow + row.beforeTaxCashflow,
-    taxes: acc.taxes + row.taxes,
-    afterTaxCashflow: acc.afterTaxCashflow + row.afterTaxCashflow
-  }), { noi: 0, beforeTaxCashflow: 0, taxes: 0, afterTaxCashflow: 0 })
+  const formatValue = (value: number) => {
+    return formatCurrency(Math.round(value * 100) / 100) // Round to 2 decimal places
+  }
+
+  const years = cashflowData?.potentialRentalIncome.length || 0
+
+  if (!cashflowData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Calculator className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-muted-foreground">Loading cashflow projections...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -146,10 +199,10 @@ export function CashflowsContent() {
         <div className="space-y-1">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <TrendingUp className="h-6 w-6" />
-            Annual Cashflow Projections
+            Annual Cashflow Analysis
           </h2>
           <p className="text-muted-foreground">
-            Edit the input fields to see real-time calculations across all years
+            Professional-grade cashflow projections following commercial real estate industry standards
           </p>
         </div>
         <div className="flex gap-2">
@@ -164,140 +217,229 @@ export function CashflowsContent() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground">Total NOI</div>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totals.noi)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground">Before-Tax Cash Flow</div>
-            <div className="text-2xl font-bold">{formatCurrency(totals.beforeTaxCashflow)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground">Total Tax Impact</div>
-            <div className={cn("text-2xl font-bold", totals.taxes < 0 ? "text-green-600" : "text-red-600")}>
-              {formatCurrency(totals.taxes)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium text-muted-foreground">After-Tax Cash Flow</div>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(totals.afterTaxCashflow)}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Cashflow Table */}
+      {/* Detailed Income Statement */}
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle>Detailed Annual Cashflows</CardTitle>
+          <CardTitle>Operating Income Statement</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Detailed breakdown of income, expenses, and taxable income by year
+          </p>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-auto max-h-[600px]">
-            <Table>
+            <Table className="[&_tr]:bg-transparent [&_tr:hover]:bg-transparent">
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background font-semibold min-w-[60px]">Year</TableHead>
-                  <TableHead className="text-center min-w-[120px]">Gross Rent</TableHead>
-                  <TableHead className="text-center min-w-[100px]">Vacancy</TableHead>
-                  <TableHead className="text-center min-w-[120px] bg-blue-50 font-semibold">Effective Rent</TableHead>
-                  <TableHead className="text-center min-w-[140px]">Operating Expenses</TableHead>
-                  <TableHead className="text-center min-w-[100px] bg-blue-50 font-semibold">NOI</TableHead>
-                  <TableHead className="text-center min-w-[120px]">Debt Service</TableHead>
-                  <TableHead className="text-center min-w-[140px] bg-green-50 font-semibold">Before-Tax CF</TableHead>
-                  <TableHead className="text-center min-w-[120px]">Depreciation</TableHead>
-                  <TableHead className="text-center min-w-[130px]">Taxable Income</TableHead>
-                  <TableHead className="text-center min-w-[100px]">Taxes</TableHead>
-                  <TableHead className="text-center min-w-[140px] bg-green-50 font-semibold">After-Tax CF</TableHead>
-                  <TableHead className="text-center min-w-[120px]">Loan Balance</TableHead>
+                  <TableHead className="sticky left-0 bg-background font-semibold min-w-[200px] border-r">
+                    Line Item
+                  </TableHead>
+                  {Array(years).fill(0).map((_, i) => (
+                    <TableHead key={i} className="text-center min-w-[120px] font-semibold">
+                      Year {i + 1}
+                    </TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {localData.map((yearData, index) => (
-                  <TableRow key={yearData.year} className="hover:bg-muted/50">
-                    <TableCell className="sticky left-0 bg-background font-medium border-r">
-                      <Badge variant="outline">Year {yearData.year}</Badge>
+                {/* Income Section */}
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Potential Rental Income
+                  </TableCell>
+                  {cashflowData.potentialRentalIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={yearData.grossRent}
-                        onChange={(e) => updateField(index, 'grossRent', parseFloat(e.target.value) || 0)}
-                        className="w-full font-mono text-sm border-none bg-transparent focus:bg-muted text-center"
-                      />
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Vacancy & Credit Loss
+                  </TableCell>
+                  {cashflowData.vacancyAndCreditLoss.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={yearData.vacancy}
-                        onChange={(e) => updateField(index, 'vacancy', parseFloat(e.target.value) || 0)}
-                        className="w-full font-mono text-sm border-none bg-transparent focus:bg-muted text-center"
-                      />
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Effective Rental Income
+                  </TableCell>
+                  {cashflowData.effectiveRentalIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell className="bg-blue-50/50">
-                      <div className="font-mono text-sm text-center font-medium text-blue-700">
-                        {formatCurrency(yearData.effectiveRent)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Other Income
+                  </TableCell>
+                  {cashflowData.otherIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={yearData.operatingExpenses}
-                        onChange={(e) => updateField(index, 'operatingExpenses', parseFloat(e.target.value) || 0)}
-                        className="w-full font-mono text-sm border-none bg-transparent focus:bg-muted text-center"
-                      />
+                  ))}
+                </TableRow>
+                
+                <TableRow className="border-t-2">
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Gross Operating Income
+                  </TableCell>
+                  {cashflowData.grossOperatingIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm font-semibold">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell className="bg-blue-50/50">
-                      <div className="font-mono text-sm text-center font-semibold text-blue-700">
-                        {formatCurrency(yearData.noi)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                {/* Expenses Section */}
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Total Operating Expenses
+                  </TableCell>
+                  {cashflowData.totalOperatingExpenses.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm text-center">
-                        {formatCurrency(yearData.debtService)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow className="border-t-2 border-b-2">
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Net Operating Income
+                  </TableCell>
+                  {cashflowData.netOperatingIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm font-bold">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell className="bg-green-50/50">
-                      <div className="font-mono text-sm text-center font-semibold text-green-700">
-                        {formatCurrency(yearData.beforeTaxCashflow)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                {/* Tax Calculations */}
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Interest Expense
+                  </TableCell>
+                  {cashflowData.interestExpense.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm text-center">
-                        {formatCurrency(yearData.depreciation)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Cost Recovery (Depreciation)
+                  </TableCell>
+                  {cashflowData.depreciation.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <div className={cn("font-mono text-sm text-center", 
-                        yearData.taxableIncome < 0 ? "text-red-600" : "text-foreground")}>
-                        {formatCurrency(yearData.taxableIncome)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Loan Costs Amortization
+                  </TableCell>
+                  {cashflowData.loanCostsAmortization.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <div className={cn("font-mono text-sm text-center",
-                        yearData.taxes < 0 ? "text-green-600" : "text-red-600")}>
-                        {formatCurrency(yearData.taxes)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow className="border-t-2">
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">
+                    Real Estate Taxable Income
+                  </TableCell>
+                  {cashflowData.realEstateTaxableIncome.map((value, i) => (
+                    <TableCell key={i} className={cn("text-center font-mono text-sm font-semibold", 
+                      value < 0 ? "text-red-600" : "")}>
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                    <TableCell className="bg-green-50/50">
-                      <div className="font-mono text-sm text-center font-bold text-green-700">
-                        {formatCurrency(yearData.afterTaxCashflow)}
-                      </div>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Simplified Cashflow Summary */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle>Cashflow Summary</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Simplified view of cash flows to the investor
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-auto">
+            <Table className="[&_tr]:bg-transparent [&_tr:hover]:bg-transparent">
+              <TableHeader className="sticky top-0 bg-background z-10">
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-background font-semibold min-w-[200px] border-r">Cash Flow Item</TableHead>
+                  {Array(years).fill(0).map((_, i) => (
+                    <TableHead key={i} className="text-center min-w-[120px] font-semibold">
+                      Year {i + 1}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Net Operating Income</TableCell>
+                  {cashflowData.netOperatingIncome.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm font-semibold">
+                      {formatValue(value)}
                     </TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm text-center text-muted-foreground">
-                        {formatCurrency(yearData.loanBalance)}
-                      </div>
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Annual Debt Service</TableCell>
+                  {cashflowData.annualDebtService.map((value, i) => (
+                    <TableCell key={i} className="text-center font-mono text-sm">
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
                     </TableCell>
-                  </TableRow>
-                ))}
+                  ))}
+                </TableRow>
+                
+                <TableRow className="border-t">
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Cash Flow Before Taxes</TableCell>
+                  {cashflowData.cashFlowBeforeTaxes.map((value, i) => (
+                    <TableCell key={i} className={cn("text-center font-mono text-sm font-semibold",
+                      value < 0 ? "text-red-600" : "")}>
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="sticky left-0 bg-background font-semibold border-r">Tax Liability</TableCell>
+                  {cashflowData.taxLiability.map((value, i) => (
+                    <TableCell key={i} className={cn("text-center font-mono text-sm",
+                      value > 0.01 ? "text-red-600" : "")}>
+                      {Math.abs(value) > 0.01 ? (value > 0 ? formatValue(value) : `(${formatValue(Math.abs(value))})`) : formatValue(0)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                
+                <TableRow className="border-t-2 border-b-2">
+                  <TableCell className="sticky left-0 bg-background font-bold border-r">Cash Flow After Taxes</TableCell>
+                  {cashflowData.cashFlowAfterTaxes.map((value, i) => (
+                    <TableCell key={i} className={cn("text-center font-mono text-sm font-bold",
+                      value < 0 ? "text-red-600" : "")}>
+                      {value < 0 ? `(${formatValue(Math.abs(value))})` : formatValue(value)}
+                    </TableCell>
+                  ))}
+                </TableRow>
               </TableBody>
             </Table>
           </div>

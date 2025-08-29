@@ -51,11 +51,11 @@ export const financialTooltips = {
   holdPeriod: "The number of years you plan to own the property before selling. This affects the total return calculation and tax implications.",
   
   // Tax Rate Fields
-  ordinaryIncomeTaxRate: "Your marginal ordinary income tax rate (10%-37%). Used for calculating depreciation recapture up to the 25% maximum. This rate also affects the actual recapture rate applied.",
+  ordinaryIncomeTaxRate: "Your marginal ordinary income tax rate. Used for calculating depreciation recapture and affects the actual recapture rate applied.",
   
-  capitalGainsTaxRate: "Your long-term capital gains tax rate (0%, 15%, or 20% based on income). Applied to the capital appreciation portion of the gain after depreciation recapture.",
+  capitalGainsTaxRate: "Your long-term capital gains tax rate. Applied to the capital appreciation portion of the gain after depreciation recapture.",
   
-  depreciationRecaptureRate: "The actual tax rate applied to depreciation recapture (up to 25% maximum). This is typically 25% but may be limited by your ordinary income tax rate if it's lower.",
+  depreciationRecaptureRate: "The tax rate applied to depreciation recapture. May be limited by your ordinary income tax rate if it's lower.",
   
   // Disposition Price Fields
   dispositionPrice: "The expected sale price of the property when using direct dollar amount method.",
@@ -65,18 +65,18 @@ export const financialTooltips = {
   // Cost of Sale Fields
   costOfSaleAmount: "Fixed dollar amount for total costs to sell the property, including broker commissions, legal fees, title insurance, and other transaction costs.",
   
-  costOfSalePercentage: "Percentage of sale price for total selling costs, including broker commissions, legal fees, title insurance, and other transaction costs. Typically 6-8% of sale price.",
+  costOfSalePercentage: "Percentage of sale price for total selling costs, including broker commissions, legal fees, title insurance, and other transaction costs.",
   
   // Legacy fields
   exitCapRate: "The capitalization rate assumed when selling the property. This, combined with the final year NOI, determines the estimated sale price.",
   
-  sellingCosts: "Total costs to sell the property, including broker commissions, legal fees, title insurance, and other transaction costs. Typically 6-8% of sale price.",
+  sellingCosts: "Total costs to sell the property, including broker commissions, legal fees, title insurance, and other transaction costs.",
   
-  capitalGainsRate: "The tax rate applied to capital gains upon sale. This varies based on holding period, income level, and tax jurisdiction.",
+  capitalGainsRate: "The tax rate applied to capital gains upon sale based on holding period, income level, and tax jurisdiction.",
   
-  depreciationRecapture: "The tax rate applied to depreciation claimed during ownership. In the US, this is typically 25% for real estate depreciation.",
+  depreciationRecapture: "The tax rate applied to depreciation claimed during ownership for real estate depreciation.",
   
-  stateTaxRate: "Additional state income tax rate applied to capital gains and depreciation recapture. Varies significantly by state.",
+  stateTaxRate: "Additional state income tax rate applied to capital gains and depreciation recapture.",
   
   taxRate: "Combined federal and state tax rate (deprecated - use specific tax rate fields for more accurate calculations).",
 

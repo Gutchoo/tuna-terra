@@ -81,25 +81,34 @@ export function InputSummaryCards({ assumptions }: InputSummaryCardsProps) {
     if (assumptions.financingType === 'cash') {
       return {
         label: 'All Cash Purchase',
-        value: 'No Financing'
+        value: 'No Financing',
+        subtitle: 'No debt service'
       }
-    } else if (assumptions.financingType === 'dscr' && assumptions.targetDSCR) {
+    } else if (assumptions.financingType === 'dscr') {
       const calculatedLoanAmount = calculateDSCRLoanAmount()
-      const displayAmount = calculatedLoanAmount > 0 ? formatCurrency(calculatedLoanAmount) : 'Not calculated'
+      const loanAmount = calculatedLoanAmount > 0 ? calculatedLoanAmount : assumptions.loanAmount || 0
+      const dscrText = assumptions.targetDSCR ? `${assumptions.targetDSCR.toFixed(2)}x DSCR` : 'DSCR not set'
+      
       return {
         label: 'DSCR Financing',
-        value: `${displayAmount} loan`
+        value: loanAmount > 0 ? formatCurrency(loanAmount) : 'Not calculated',
+        subtitle: dscrText
       }
     } else if (assumptions.financingType === 'ltv') {
-      const ltv = assumptions.targetLTV || (assumptions.purchasePrice > 0 ? (assumptions.loanAmount / assumptions.purchasePrice * 100) : 0)
+      const loanAmount = assumptions.loanAmount || 0
+      const ltv = assumptions.targetLTV || (assumptions.purchasePrice > 0 ? (loanAmount / assumptions.purchasePrice * 100) : 0)
+      const ltvText = ltv > 0 ? `${ltv.toFixed(1)}% LTV` : 'LTV not set'
+      
       return {
         label: 'LTV Financing',
-        value: `${ltv.toFixed(0)}% LTV`
+        value: loanAmount > 0 ? formatCurrency(loanAmount) : 'Not calculated',
+        subtitle: ltvText
       }
     }
     return {
       label: 'Financing',
-      value: 'Not configured'
+      value: 'Not configured',
+      subtitle: 'Select financing method'
     }
   }
 
@@ -122,7 +131,7 @@ export function InputSummaryCards({ assumptions }: InputSummaryCardsProps) {
       icon: TrendingUp,
       title: financingStrategy.label,
       value: financingStrategy.value,
-      subtitle: assumptions.loanAmount > 0 ? `${formatCurrency(assumptions.loanAmount)} loan` : 'Configure financing',
+      subtitle: financingStrategy.subtitle,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
@@ -140,10 +149,12 @@ export function InputSummaryCards({ assumptions }: InputSummaryCardsProps) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon
+        // Use static keys based on position to prevent re-mounting
+        const staticKeys = ['investment-basis', 'financing', 'hold-period']
         
         return (
           <motion.div
-            key={card.title}
+            key={staticKeys[index]}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}

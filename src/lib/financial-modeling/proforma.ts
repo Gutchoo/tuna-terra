@@ -75,8 +75,11 @@ export interface AnnualCashflow {
   year: number
   noi: number
   debtService: number
+  interestExpense: number
+  principalPayment: number
   beforeTaxCashflow: number
   depreciation: number
+  loanCostsAmortization: number
   taxableIncome: number
   taxes: number
   afterTaxCashflow: number
@@ -89,8 +92,12 @@ export interface SaleProceeds {
   netSaleProceeds: number
   loanBalance: number
   beforeTaxSaleProceeds: number
+  adjustedBasis: number
+  totalGain: number
   capitalGains: number
   deprecationRecapture: number
+  capitalGainsTax: number
+  depreciationRecaptureTax: number
   taxesOnSale: number
   afterTaxSaleProceeds: number
 }
@@ -165,9 +172,13 @@ export function calculateLoanBalance(
   const periodicPayment = calculatePeriodicPayment(originalAmount, annualRate, amortizationYears, paymentsPerYear)
 
   if (paymentsMade >= totalPayments) return 0
+  if (paymentsMade === 0) return originalAmount
 
-  const factor = Math.pow(1 + periodicRate, totalPayments - paymentsMade)
-  return originalAmount * factor - periodicPayment * (factor - 1) / periodicRate
+  // Correct amortization formula: remaining balance is the present value of remaining payments
+  const remainingPayments = totalPayments - paymentsMade
+  const remainingBalance = periodicPayment * (1 - Math.pow(1 + periodicRate, -remainingPayments)) / periodicRate
+  
+  return Math.max(0, remainingBalance)
 }
 
 /**
@@ -184,6 +195,49 @@ export function calculateDepreciation(
   // Simple straight-line depreciation
   // In reality, real estate uses MACRS with half-year convention, but this simplifies
   return depreciableBasis / depreciationYears
+}
+
+/**
+ * Calculate interest portion of a payment for a given period
+ */
+export function calculateInterestForPeriod(
+  remainingBalance: number,
+  annualRate: number,
+  paymentsPerYear: number = 12
+): number {
+  return remainingBalance * (annualRate / paymentsPerYear)
+}
+
+/**
+ * Calculate principal portion of a payment for a given period
+ */
+export function calculatePrincipalForPeriod(
+  totalPayment: number,
+  interestPayment: number
+): number {
+  return totalPayment - interestPayment
+}
+
+/**
+ * Calculate annual interest expense for tax purposes
+ */
+export function calculateAnnualInterestExpense(
+  loanAmount: number,
+  annualRate: number,
+  amortizationYears: number,
+  year: number,
+  paymentsPerYear: number = 12
+): number {
+  let totalInterest = 0
+  
+  for (let month = 1; month <= paymentsPerYear; month++) {
+    const paymentNumber = (year - 1) * paymentsPerYear + month
+    const remainingBalance = calculateLoanBalance(loanAmount, annualRate, amortizationYears, paymentNumber - 1, paymentsPerYear)
+    const interestPayment = calculateInterestForPeriod(remainingBalance, annualRate, paymentsPerYear)
+    totalInterest += interestPayment
+  }
+  
+  return totalInterest
 }
 
 /**
@@ -246,17 +300,17 @@ export class ProFormaCalculator {
   }
 
   // Safe number conversion helpers
-  private safeNumber(value: any): number {
+  private safeNumber(value: unknown): number {
     const num = Number(value)
     return isNaN(num) || !isFinite(num) ? 0 : num
   }
 
-  private safePercentage(value: any): number {
+  private safePercentage(value: unknown): number {
     const num = this.safeNumber(value)
     return Math.max(0, Math.min(1, num))
   }
 
-  private safeArray(array: any[], length: number = 30): number[] {
+  private safeArray(array: unknown[], length: number = 30): number[] {
     if (!Array.isArray(array)) return new Array(length).fill(0)
     return array.slice(0, length).map(val => this.safeNumber(val))
       .concat(new Array(Math.max(0, length - array.length)).fill(0))
@@ -278,12 +332,23 @@ export class ProFormaCalculator {
         loanCosts: rawLoanCosts,
         propertyType,
         depreciationYears: rawDepreciationYears,
-        taxRate: rawTaxRate,
+        // Updated tax fields
+        ordinaryIncomeTaxRate: rawOrdinaryIncomeTaxRate,
+        capitalGainsTaxRate: rawCapitalGainsTaxRate,
+        depreciationRecaptureRate: rawDepreciationRecaptureRate,
+        taxRate: rawTaxRate, // Keep for legacy fallback
         holdPeriodYears: rawHoldPeriodYears,
+        // Updated disposition fields
+        dispositionPriceType,
+        dispositionPrice: rawDispositionPrice,
+        dispositionCapRate: rawDispositionCapRate,
+        costOfSaleType,
+        costOfSaleAmount: rawCostOfSaleAmount,
+        costOfSalePercentage: rawCostOfSalePercentage,
+        // Legacy fields for fallback
         exitCapRate: rawExitCapRate,
         salePrice: rawSalePrice,
         sellingCosts: rawSellingCosts,
-        // Legacy fields for fallback
         year1NOI: rawYear1NOI,
         noiGrowthRate: rawNoiGrowthRate,
       } = this.assumptions
@@ -298,13 +363,26 @@ export class ProFormaCalculator {
       const interestRate = this.safePercentage(rawInterestRate)
       const amortizationYears = Math.max(1, this.safeNumber(rawAmortizationYears) || 30)
       const paymentsPerYear = Math.max(1, this.safeNumber(rawPaymentsPerYear) || 12)
-      const loanCosts = this.safePercentage(rawLoanCosts)
+      const loanCosts = this.safeNumber(rawLoanCosts)
       const depreciationYears = Math.max(1, this.safeNumber(rawDepreciationYears) || (propertyType === 'residential' ? 27.5 : 39))
-      const taxRate = this.safePercentage(rawTaxRate)
+      
+      // Enhanced tax rates with fallback to legacy
+      const ordinaryIncomeTaxRate = this.safePercentage(rawOrdinaryIncomeTaxRate) || this.safePercentage(rawTaxRate)
+      const capitalGainsTaxRate = this.safePercentage(rawCapitalGainsTaxRate) || this.safePercentage(rawTaxRate) * 0.6
+      const depreciationRecaptureRate = this.safePercentage(rawDepreciationRecaptureRate) || Math.min(0.25, ordinaryIncomeTaxRate)
+      
       const holdPeriodYears = Math.max(1, Math.min(50, this.safeNumber(rawHoldPeriodYears) || 5))
-      const exitCapRate = this.safePercentage(rawExitCapRate)
-      const salePrice = this.safeNumber(rawSalePrice)
-      const sellingCosts = this.safePercentage(rawSellingCosts)
+      
+      // Enhanced disposition pricing
+      const dispositionPrice = this.safeNumber(rawDispositionPrice)
+      const dispositionCapRate = this.safePercentage(rawDispositionCapRate)
+      const costOfSaleAmount = this.safeNumber(rawCostOfSaleAmount)
+      const costOfSalePercentage = this.safePercentage(rawCostOfSalePercentage)
+      
+      // Legacy fields
+      const exitCapRate = this.safePercentage(rawExitCapRate) || dispositionCapRate
+      const salePrice = this.safeNumber(rawSalePrice) || dispositionPrice
+      const sellingCosts = this.safePercentage(rawSellingCosts) || costOfSalePercentage
       const year1NOI = this.safeNumber(rawYear1NOI)
       const noiGrowthRate = this.safePercentage(rawNoiGrowthRate)
 
@@ -314,7 +392,20 @@ export class ProFormaCalculator {
         : acquisitionCosts
 
       // Calculate loan costs
-      const actualLoanCosts = loanAmount > 0 ? (loanCosts / 100) * loanAmount : 0
+      const actualLoanCosts = loanAmount > 0 
+        ? (this.assumptions.loanCostType === 'percentage' 
+          ? loanAmount * (loanCosts / 100) 
+          : loanCosts)
+        : 0
+    
+      // Debug logging for loan costs
+      console.log('=== LOAN COSTS DEBUG (Initial Calculation) ===')
+      console.log('loanAmount:', loanAmount)
+      console.log('loanCosts input:', loanCosts)
+      console.log('loanCostType:', this.assumptions.loanCostType)
+      console.log('actualLoanCosts calculated:', actualLoanCosts)
+      console.log('Expected (if percentage):', loanAmount * (loanCosts / 100))
+      console.log('===============================================')
     
       // Calculate equity invested (includes loan costs)
       const totalEquityInvested = purchasePrice + actualAcquisitionCosts + actualLoanCosts - loanAmount
@@ -356,6 +447,10 @@ export class ProFormaCalculator {
         noi = (year1NOI || 0) * Math.pow(1 + (noiGrowthRate || 0), year - 1)
       }
       
+      // Calculate interest expense for proper tax treatment
+      const interestExpense = calculateAnnualInterestExpense(loanAmount, interestRate, amortizationYears, year, paymentsPerYear || 12)
+      const principalPayment = annualDebtService - interestExpense
+      
       // Before-tax cash flow
       const beforeTaxCashflow = noi - annualDebtService
       
@@ -363,11 +458,34 @@ export class ProFormaCalculator {
       const depreciation = calculateDepreciation(depreciableBasis, propertyType, depreciationYears, year)
       cumulativeDepreciation += depreciation
       
-      // Taxable income (could be negative)
-      const taxableIncome = beforeTaxCashflow - depreciation
+      // Calculate loan costs amortization (spread over loan term only)
+      // Use the same logic as actualLoanCosts calculation, respecting loanCostType
+      const totalLoanCosts = this.assumptions.loanCostType === 'percentage' 
+        ? loanAmount * (loanCosts / 100)
+        : loanCosts
+      const loanCostsAmortization = loanAmount > 0 && this.assumptions.loanTermYears > 0 && year <= this.assumptions.loanTermYears
+        ? totalLoanCosts / this.assumptions.loanTermYears
+        : 0
       
-      // Taxes (negative if tax shield)
-      const taxes = taxableIncome * taxRate
+      // Debug logging for loan costs amortization (only for year 1)
+      if (year === 1) {
+        console.log('=== LOAN COSTS AMORTIZATION DEBUG (Year 1) ===')
+        console.log('Year:', year)
+        console.log('loanAmount:', loanAmount)
+        console.log('loanCosts input:', loanCosts)
+        console.log('loanCostType:', this.assumptions.loanCostType)
+        console.log('loanTermYears:', this.assumptions.loanTermYears)
+        console.log('totalLoanCosts calculated:', totalLoanCosts)
+        console.log('loanCostsAmortization per year:', loanCostsAmortization)
+        console.log('Expected amortization:', totalLoanCosts, '/', this.assumptions.loanTermYears, '=', totalLoanCosts / this.assumptions.loanTermYears)
+        console.log('===============================================')
+      }
+      
+      // Proper taxable income calculation with all tax-deductible expenses
+      const taxableIncome = noi - depreciation - interestExpense - loanCostsAmortization
+      
+      // Taxes (negative if tax shield) - use ordinary income tax rate
+      const taxes = taxableIncome * ordinaryIncomeTaxRate
       
       // After-tax cash flow
       const afterTaxCashflow = beforeTaxCashflow - taxes
@@ -380,8 +498,11 @@ export class ProFormaCalculator {
         year,
         noi,
         debtService: annualDebtService,
+        interestExpense,
+        principalPayment,
         beforeTaxCashflow,
         depreciation,
+        loanCostsAmortization,
         taxableIncome,
         taxes,
         afterTaxCashflow,
@@ -393,19 +514,43 @@ export class ProFormaCalculator {
     const finalYearNOI = annualCashflows[annualCashflows.length - 1].noi
     const finalLoanBalance = annualCashflows[annualCashflows.length - 1].loanBalance
     
-    const estimatedSalePrice = salePrice || (exitCapRate ? estimateSalePrice(finalYearNOI, exitCapRate) : purchasePrice)
-    const sellingCostsAmount = estimatedSalePrice * sellingCosts
+    // Determine sale price using enhanced disposition logic
+    let estimatedSalePrice: number
+    if (dispositionPriceType === 'dollar' && dispositionPrice > 0) {
+      estimatedSalePrice = dispositionPrice
+    } else if (dispositionPriceType === 'caprate' && dispositionCapRate > 0) {
+      estimatedSalePrice = estimateSalePrice(finalYearNOI, dispositionCapRate)
+    } else {
+      // Fallback to legacy fields
+      estimatedSalePrice = salePrice || (exitCapRate ? estimateSalePrice(finalYearNOI, exitCapRate) : purchasePrice)
+    }
+    
+    // Determine selling costs using enhanced logic
+    let sellingCostsAmount: number
+    if (costOfSaleType === 'dollar' && costOfSaleAmount > 0) {
+      sellingCostsAmount = costOfSaleAmount
+    } else if (costOfSaleType === 'percentage' && costOfSalePercentage > 0) {
+      sellingCostsAmount = estimatedSalePrice * costOfSalePercentage
+    } else {
+      // Fallback to legacy
+      sellingCostsAmount = estimatedSalePrice * sellingCosts
+    }
+    
     const netSaleProceeds = estimatedSalePrice - sellingCostsAmount
     const beforeTaxSaleProceeds = netSaleProceeds - finalLoanBalance
     
-    // Capital gains and depreciation recapture
-    const capitalGains = Math.max(0, estimatedSalePrice - purchasePrice - cumulativeDepreciation)
-    const depreciationRecapture = Math.min(cumulativeDepreciation, Math.max(0, estimatedSalePrice - purchasePrice))
+    // Industry-standard tax calculations
+    const adjustedBasis = purchasePrice + actualAcquisitionCosts - cumulativeDepreciation
+    const totalGain = Math.max(0, estimatedSalePrice - sellingCostsAmount - adjustedBasis)
     
-    // Simplified tax calculation (real world is more complex)
-    const capitalGainsTaxRate = taxRate * 0.6 // Assume 60% of ordinary rate for simplicity
-    const recaptureTaxRate = 0.25 // 25% depreciation recapture rate
-    const taxesOnSale = (capitalGains * capitalGainsTaxRate) + (depreciationRecapture * recaptureTaxRate)
+    // Split gain between depreciation recapture and capital gains
+    const depreciationRecapture = Math.min(cumulativeDepreciation, totalGain)
+    const capitalGains = Math.max(0, totalGain - depreciationRecapture)
+    
+    // Apply proper tax rates
+    const capitalGainsTax = capitalGains * capitalGainsTaxRate
+    const depreciationRecaptureTax = depreciationRecapture * depreciationRecaptureRate
+    const taxesOnSale = capitalGainsTax + depreciationRecaptureTax
     
     const afterTaxSaleProceeds = beforeTaxSaleProceeds - taxesOnSale
 
@@ -415,8 +560,12 @@ export class ProFormaCalculator {
       netSaleProceeds,
       loanBalance: finalLoanBalance,
       beforeTaxSaleProceeds,
+      adjustedBasis,
+      totalGain,
       capitalGains,
       deprecationRecapture: depreciationRecapture,
+      capitalGainsTax,
+      depreciationRecaptureTax,
       taxesOnSale,
       afterTaxSaleProceeds,
     }
@@ -464,8 +613,11 @@ export class ProFormaCalculator {
           year: index + 1,
           noi: 0,
           debtService: 0,
+          interestExpense: 0,
+          principalPayment: 0,
           beforeTaxCashflow: 0,
           depreciation: 0,
+          loanCostsAmortization: 0,
           taxableIncome: 0,
           taxes: 0,
           afterTaxCashflow: 0,
@@ -477,8 +629,12 @@ export class ProFormaCalculator {
           netSaleProceeds: safePurchasePrice,
           loanBalance: 0,
           beforeTaxSaleProceeds: safePurchasePrice,
+          adjustedBasis: safePurchasePrice,
+          totalGain: 0,
           capitalGains: 0,
           deprecationRecapture: 0,
+          capitalGainsTax: 0,
+          depreciationRecaptureTax: 0,
           taxesOnSale: 0,
           afterTaxSaleProceeds: safePurchasePrice,
         },
@@ -546,9 +702,22 @@ export function generateSampleAssumptions(): PropertyAssumptions {
     depreciationYears: 39, // Commercial real estate
     landPercentage: 20, // 20% land value
     improvementsPercentage: 80, // 80% improvements value
-    taxRate: 0.35, // Combined federal + state
+    // Enhanced tax fields
+    ordinaryIncomeTaxRate: 0.35, // 35% ordinary income tax rate
+    capitalGainsTaxRate: 0.20, // 20% long-term capital gains
+    depreciationRecaptureRate: 0.25, // 25% depreciation recapture
+    taxRate: 0.35, // Legacy field - combined federal + state
     holdPeriodYears: 10,
+    // Enhanced disposition fields
+    dispositionPriceType: 'caprate' as const,
+    dispositionPrice: 0, // Not used when using cap rate method
+    dispositionCapRate: 0.075, // 7.5% exit cap rate
+    costOfSaleType: 'percentage' as const,
+    costOfSaleAmount: 0, // Not used when using percentage method
+    costOfSalePercentage: 0.06, // 6% selling costs
+    // Legacy fields for backward compatibility
     exitCapRate: 0.075, // 7.5% exit cap rate
+    salePrice: 0, // Not used when using cap rate method
     sellingCosts: 0.06, // 6% selling costs
   }
 }

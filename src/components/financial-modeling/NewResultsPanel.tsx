@@ -14,9 +14,28 @@ export function NewResultsPanel() {
   // Calculate effective loan amount (handles DSCR dynamic calculation)
   const getEffectiveLoanAmount = () => {
     if (assumptions.financingType === 'dscr' && assumptions.targetDSCR) {
-      // Get Year 1 NOI
-      const year1NOI = assumptions.potentialRentalIncome[0] - assumptions.operatingExpenses[0] - 
-                      (assumptions.potentialRentalIncome[0] * (assumptions.vacancyRates[0] || 0))
+      // Get Year 1 NOI - use same logic as FinancingCard
+      const getYear1NOI = () => {
+        if (assumptions.potentialRentalIncome?.[0] && assumptions.potentialRentalIncome[0] > 0) {
+          const grossIncome = assumptions.potentialRentalIncome[0]
+          const vacancyAmount = grossIncome * (assumptions.vacancyRates?.[0] || 0)
+          const effectiveGrossIncome = grossIncome - vacancyAmount
+          
+          let opEx = 0
+          if (assumptions.operatingExpenses?.[0] !== undefined) {
+            if (assumptions.operatingExpenseType === 'percentage') {
+              opEx = effectiveGrossIncome * ((assumptions.operatingExpenses[0] || 0) / 100)
+            } else {
+              opEx = assumptions.operatingExpenses[0] || 0
+            }
+          }
+          
+          return effectiveGrossIncome - opEx
+        }
+        return 0
+      }
+      
+      const year1NOI = getYear1NOI()
       
       if (year1NOI > 0 && assumptions.interestRate > 0 && assumptions.amortizationYears > 0 && assumptions.targetDSCR > 0) {
         const maxAnnualDebtService = year1NOI / assumptions.targetDSCR

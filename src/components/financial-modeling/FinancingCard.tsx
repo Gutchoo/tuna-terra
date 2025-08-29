@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -101,8 +102,55 @@ export function FinancingCard({ assumptions, onAssumptionsChange }: FinancingCar
     }
   }
 
+  // Auto-update loan amount for LTV whenever relevant parameters change
+  const autoUpdateLTVLoanAmount = () => {
+    if (assumptions.financingType === 'ltv' && assumptions.targetLTV && assumptions.purchasePrice > 0) {
+      const calculatedLoanAmount = (assumptions.targetLTV / 100) * assumptions.purchasePrice
+      if (Math.abs(calculatedLoanAmount - assumptions.loanAmount) > 1) { // Only update if significantly different
+        updateAssumption('loanAmount', Math.round(calculatedLoanAmount * 100) / 100)
+      }
+    }
+  }
+
+  // Auto-update loan amounts when dependencies change
+  React.useEffect(() => {
+    if (assumptions.financingType === 'ltv') {
+      autoUpdateLTVLoanAmount()
+    } else if (assumptions.financingType === 'dscr') {
+      autoUpdateLoanAmount()
+    }
+  }, [
+    assumptions.financingType,
+    assumptions.targetLTV, 
+    assumptions.purchasePrice,
+    assumptions.targetDSCR,
+    assumptions.interestRate,
+    assumptions.amortizationYears,
+    assumptions.potentialRentalIncome?.[0],
+    assumptions.operatingExpenses?.[0],
+    assumptions.vacancyRates?.[0]
+  ])
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+
+  // Calculate periodic payment for display
+  const calculatePeriodicPayment = (loanAmount: number) => {
+    if (loanAmount <= 0 || assumptions.interestRate <= 0 || assumptions.amortizationYears <= 0) return 0
+    
+    const paymentsPerYear = assumptions.paymentsPerYear || 12
+    const periodicRate = assumptions.interestRate / paymentsPerYear
+    const totalPayments = assumptions.amortizationYears * paymentsPerYear
+    
+    if (periodicRate === 0) {
+      return loanAmount / totalPayments
+    }
+    
+    const numerator = loanAmount * periodicRate * Math.pow(1 + periodicRate, totalPayments)
+    const denominator = Math.pow(1 + periodicRate, totalPayments) - 1
+    
+    return numerator / denominator
   }
 
   // Calculate current metrics for display
@@ -220,7 +268,6 @@ export function FinancingCard({ assumptions, onAssumptionsChange }: FinancingCar
                     onChange={(e) => updateAssumption('targetDSCR', parseFloat(e.target.value) || undefined)}
                     placeholder="1.25"
                   />
-                  <p className="text-xs text-muted-foreground">Typical: 1.20x - 1.50x</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -298,30 +345,47 @@ export function FinancingCard({ assumptions, onAssumptionsChange }: FinancingCar
               </div>
             </div>
 
-            {/* Calculated Loan Amount Display */}
+            {/* Calculated Financing Display */}
             {year1NOI > 0 && assumptions.targetDSCR && assumptions.interestRate > 0 && assumptions.amortizationYears > 0 && (
-              <div className="pt-4 border-t">
-                <h4 className="text-base font-medium text-muted-foreground mb-4">Calculated Financing</h4>
-                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border">
-                    <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Calculated Loan Amount</div>
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                      ${formatCurrency(calculateLoanAmount())}
+              (() => {
+                const calculatedLoanAmount = calculateLoanAmount()
+                const annualDebtService = calculatePeriodicPayment(calculatedLoanAmount) * (assumptions.paymentsPerYear || 12)
+                const periodicPayment = calculatePeriodicPayment(calculatedLoanAmount)
+                const paymentFrequency = assumptions.paymentsPerYear === 12 ? 'Monthly' : 
+                                       assumptions.paymentsPerYear === 4 ? 'Quarterly' : 
+                                       assumptions.paymentsPerYear === 2 ? 'Semi-Annual' : 'Annual'
+
+                return (
+                  <div className="pt-4 border-t">
+                    <h4 className="text-base font-medium text-muted-foreground mb-4">Calculated Financing</h4>
+                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">Loan Amount</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(calculatedLoanAmount)}
+                        </div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">Annual Debt Service</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(annualDebtService)}
+                        </div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">{paymentFrequency} Payment</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(periodicPayment)}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border">
-                    <div className="text-sm text-green-600 dark:text-green-400 font-medium">Actual DSCR</div>
-                    <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                      {assumptions.targetDSCR?.toFixed(2) || '0.00'}x
-                    </div>
-                  </div>
-                </div>
-              </div>
+                )
+              })()
             )}
           </TabsContent>
           
           {/* LTV Content */}
-          <TabsContent value="ltv" className="space-y-4 mt-6">
+          <TabsContent value="ltv" className="space-y-6 mt-6">
             <Alert>
               <AlertDescription className="flex items-start gap-2">
                 <TooltipProvider>
@@ -340,44 +404,152 @@ export function FinancingCard({ assumptions, onAssumptionsChange }: FinancingCar
                 </TooltipProvider>
                 <div>
                   <strong>LTV-Based Financing:</strong> Loan amount calculated as a percentage of the property&apos;s purchase price.
-                  Higher LTV = less cash down but higher monthly payments.
+                  The system will calculate the loan amount based on your target LTV and purchase price.
                 </div>
               </AlertDescription>
             </Alert>
             
-            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="target-ltv">Target LTV (%)</Label>
-                <Input
-                  id="target-ltv"
-                  type="number"
-                  step="5"
-                  min="0"
-                  max="90"
-                  value={assumptions.targetLTV || ''}
-                  onChange={(e) => updateAssumption('targetLTV', parseFloat(e.target.value) || undefined)}
-                  placeholder="75"
-                />
-                <p className="text-xs text-muted-foreground">Typical range: 70% - 80%</p>
-              </div>
+            {/* Loan Parameters for LTV - Two Line Layout */}
+            <div className="space-y-4">
+              <h4 className="text-base font-medium">Loan Parameters</h4>
               
-              <div className="space-y-2">
-                <Label>Calculated Loan Amount</Label>
-                <div className="h-10 px-3 py-2 bg-muted/30 rounded-md flex items-center">
-                  <span className="font-medium">
-                    ${formatCurrency(calculateLoanAmount())}
-                  </span>
+              {/* First line: Target LTV, Interest Rate, Loan Term */}
+              <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="target-ltv" className="text-sm font-medium">Target LTV (%)</Label>
+                  <Input
+                    id="target-ltv"
+                    type="number"
+                    step="5"
+                    min="0"
+                    max="90"
+                    value={assumptions.targetLTV || ''}
+                    onChange={(e) => {
+                      const newLTV = parseFloat(e.target.value) || undefined
+                      updateAssumption('targetLTV', newLTV)
+                      
+                      // Auto-calculate loan amount when LTV changes
+                      if (newLTV && assumptions.purchasePrice > 0) {
+                        const calculatedLoanAmount = (newLTV / 100) * assumptions.purchasePrice
+                        updateAssumption('loanAmount', Math.round(calculatedLoanAmount * 100) / 100)
+                      }
+                    }}
+                    placeholder="75"
+                  />
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAutoCalculation}
-                  disabled={!assumptions.targetLTV}
-                >
-                  Update Loan Amount
-                </Button>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ltv-interest-rate" className="text-sm font-medium">Interest Rate (%)</Label>
+                  <Input
+                    id="ltv-interest-rate"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="15"
+                    value={assumptions.interestRate > 0 ? parseFloat((assumptions.interestRate * 100).toFixed(2)).toString() : ''}
+                    onChange={(e) => updateAssumption('interestRate', (parseFloat(e.target.value) || 0) / 100)}
+                    placeholder="6.5"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ltv-loan-term" className="text-sm font-medium">Loan Term (Years)</Label>
+                  <Input
+                    id="ltv-loan-term"
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={assumptions.loanTermYears || ''}
+                    onChange={(e) => updateAssumption('loanTermYears', parseFloat(e.target.value) || 0)}
+                    placeholder="10"
+                  />
+                </div>
+              </div>
+
+              {/* Second line: Amortization, Loan Costs, Payment Frequency */}
+              <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ltv-amortization" className="text-sm font-medium">Amortization (Years)</Label>
+                  <Input
+                    id="ltv-amortization"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={assumptions.amortizationYears || ''}
+                    onChange={(e) => updateAssumption('amortizationYears', parseFloat(e.target.value) || 0)}
+                    placeholder="30"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <LoanCostsInput
+                    label="Loan Costs"
+                    value={assumptions.loanCosts}
+                    type={assumptions.loanCostType}
+                    onValueChange={(value) => updateAssumption('loanCosts', value)}
+                    onTypeChange={(type) => updateAssumption('loanCostType', type)}
+                    tooltip="Loan origination fees, points, appraisal, legal, and other loan-related costs. Can be entered as a percentage of the loan amount or as a fixed dollar amount."
+                    loanAmount={calculateLoanAmount()}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ltv-payment-frequency" className="text-sm font-medium">Payment Frequency</Label>
+                  <Select
+                    value={assumptions.paymentsPerYear.toString()}
+                    onValueChange={(value) => updateAssumption('paymentsPerYear', parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12">Monthly (12/year)</SelectItem>
+                      <SelectItem value="4">Quarterly (4/year)</SelectItem>
+                      <SelectItem value="2">Semi-Annual (2/year)</SelectItem>
+                      <SelectItem value="1">Annual (1/year)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
+
+            {/* Calculated Financing Display */}
+            {assumptions.purchasePrice > 0 && assumptions.targetLTV && assumptions.interestRate > 0 && assumptions.amortizationYears > 0 && (
+              (() => {
+                const calculatedLoanAmount = calculateLoanAmount()
+                const annualDebtService = calculatePeriodicPayment(calculatedLoanAmount) * (assumptions.paymentsPerYear || 12)
+                const periodicPayment = calculatePeriodicPayment(calculatedLoanAmount)
+                const paymentFrequency = assumptions.paymentsPerYear === 12 ? 'Monthly' : 
+                                       assumptions.paymentsPerYear === 4 ? 'Quarterly' : 
+                                       assumptions.paymentsPerYear === 2 ? 'Semi-Annual' : 'Annual'
+
+                return (
+                  <div className="pt-4 border-t">
+                    <h4 className="text-base font-medium text-muted-foreground mb-4">Calculated Financing</h4>
+                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">Loan Amount</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(calculatedLoanAmount)}
+                        </div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">Annual Debt Service</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(annualDebtService)}
+                        </div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border">
+                        <div className="text-sm text-muted-foreground font-medium">{paymentFrequency} Payment</div>
+                        <div className="text-2xl font-bold">
+                          ${formatCurrency(periodicPayment)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()
+            )}
           </TabsContent>
           
           {/* Cash Content */}
@@ -401,128 +573,6 @@ export function FinancingCard({ assumptions, onAssumptionsChange }: FinancingCar
         </Tabs>
       </div>
 
-      {/* Loan Details - Only show for LTV financing */}
-      {assumptions.financingType === 'ltv' && (
-        <div className="space-y-6 pt-4 border-t">
-          <h4 className="text-base font-medium text-muted-foreground">Loan Parameters</h4>
-          
-          {/* Manual loan amount override for LTV */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="loan-amount">Loan Amount</Label>
-              <Badge variant="outline" className="text-xs">
-                Can override calculated amount
-              </Badge>
-            </div>
-            <Input
-              id="loan-amount"
-              type="number"
-              value={assumptions.loanAmount ? assumptions.loanAmount.toFixed(2) : ''}
-              onChange={(e) => updateAssumption('loanAmount', parseFloat(e.target.value) || 0)}
-              placeholder="0"
-            />
-          </div>
-
-          {/* Loan Terms for LTV */}
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="interest-rate">Interest Rate (%)</Label>
-              <Input
-                id="interest-rate"
-                type="number"
-                step="0.125"
-                min="0"
-                max="15"
-                value={assumptions.interestRate ? (assumptions.interestRate * 100).toFixed(3) : ''}
-                onChange={(e) => updateAssumption('interestRate', (parseFloat(e.target.value) || 0) / 100)}
-                placeholder="6.500"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="loan-term">Loan Term (Years)</Label>
-              <Input
-                id="loan-term"
-                type="number"
-                min="1"
-                max="30"
-                value={assumptions.loanTermYears || ''}
-                onChange={(e) => updateAssumption('loanTermYears', parseFloat(e.target.value) || 0)}
-                placeholder="10"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="amortization">Amortization (Years)</Label>
-              <Input
-                id="amortization"
-                type="number"
-                min="1"
-                max="50"
-                value={assumptions.amortizationYears || ''}
-                onChange={(e) => updateAssumption('amortizationYears', parseFloat(e.target.value) || 0)}
-                placeholder="30"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="payment-frequency">Payment Frequency</Label>
-              <Select
-                value={assumptions.paymentsPerYear.toString()}
-                onValueChange={(value) => updateAssumption('paymentsPerYear', parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="12">Monthly (12/year)</SelectItem>
-                  <SelectItem value="4">Quarterly (4/year)</SelectItem>
-                  <SelectItem value="2">Semi-Annual (2/year)</SelectItem>
-                  <SelectItem value="1">Annual (1/year)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Loan Costs for LTV */}
-          <LoanCostsInput
-            label="Loan Costs"
-            value={assumptions.loanCosts}
-            type={assumptions.loanCostType}
-            onValueChange={(value) => updateAssumption('loanCosts', value)}
-            onTypeChange={(type) => updateAssumption('loanCostType', type)}
-            tooltip="Loan origination fees, points, appraisal, legal, and other loan-related costs. Can be entered as a percentage of the loan amount or as a fixed dollar amount."
-            loanAmount={assumptions.loanAmount}
-          />
-        </div>
-      )}
-
-      {/* Current Metrics Summary - Only show for LTV mode */}
-      {assumptions.financingType === 'ltv' && assumptions.loanAmount > 0 && (
-        <div className="pt-4 border-t">
-          <h4 className="text-base font-medium text-muted-foreground mb-4">Current Financing Metrics</h4>
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-            <div className="text-center p-3 bg-muted/30 rounded-lg">
-              <div className="text-xs text-muted-foreground">Loan-to-Value</div>
-              <div className="text-lg font-semibold">{currentLTV.toFixed(1)}%</div>
-            </div>
-            <div className="text-center p-3 bg-muted/30 rounded-lg">
-              <div className="text-xs text-muted-foreground">Debt Service Coverage</div>
-              <div className="text-lg font-semibold">
-                {currentDSCR > 0 ? `${currentDSCR.toFixed(2)}x` : 'N/A'}
-              </div>
-            </div>
-            <div className="text-center p-3 bg-muted/30 rounded-lg">
-              <div className="text-xs text-muted-foreground">Annual Debt Service</div>
-              <div className="text-lg font-semibold">
-                ${formatCurrency(annualDebtService)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

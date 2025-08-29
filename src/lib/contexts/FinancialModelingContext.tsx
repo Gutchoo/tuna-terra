@@ -117,7 +117,7 @@ function sanitizeAssumptions(assumptions: PropertyAssumptions): PropertyAssumpti
     sellingCosts: Math.max(0, Math.min(1, Number(assumptions.sellingCosts) || 0)),
     depreciationYears: Number(assumptions.depreciationYears) || (assumptions.propertyType === 'residential' ? 27.5 : 39),
     paymentsPerYear: Number(assumptions.paymentsPerYear) || 12,
-    loanCosts: Math.max(0, Math.min(1, Number(assumptions.loanCosts) || 0)),
+    loanCosts: Math.max(0, Number(assumptions.loanCosts) || 0), // No max limit - can be percentage or dollar amount
     // Sanitize arrays
     potentialRentalIncome: assumptions.potentialRentalIncome.map(val => Math.max(0, Number(val) || 0)),
     otherIncome: assumptions.otherIncome.map(val => Math.max(0, Number(val) || 0)),
