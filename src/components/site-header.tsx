@@ -33,10 +33,10 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between gap-2 px-4">
-      <div className="flex items-center gap-2">
+    <header className="flex h-12 shrink-0 items-center justify-between px-4">
+      <div className="flex items-center">
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="h-4" />
+        <div className="mx-2 h-4 w-px bg-border" />
         <h1 className="text-sm font-semibold">{getCurrentSheetTitle()}</h1>
       </div>
       <UserMenu />
