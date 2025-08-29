@@ -378,7 +378,7 @@ export function CashflowsContent() {
         <CardHeader>
           <CardTitle>Cashflow Summary</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Simplified view of cash flows to the investor
+            Simplified view of cash flows
           </p>
         </CardHeader>
         <CardContent className="p-6">

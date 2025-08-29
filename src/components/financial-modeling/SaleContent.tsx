@@ -1,122 +1,111 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { DollarSign, Calculator, TrendingUp, Download, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { 
+  DollarSign, 
+  TrendingUp, 
+  Calculator, 
+  Download, 
+  AlertCircle,
+  Building,
+  Percent,
+  TrendingDown
+} from "lucide-react"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
 import { formatCurrency, formatPercentage, cn } from "@/lib/utils"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-
-interface SaleAnalysis {
-  salePrice: number
-  grossSaleProceeds: number
-  sellingCosts: number
-  netSaleProceeds: number
-  loanBalance: number
-  equityProceeds: number
-  totalBasis: number
-  accumulatedDepreciation: number
-  adjustedBasis: number
-  capitalGain: number
-  deprecationRecapture: number
-  capitalGainsTax: number
-  deprecationRecaptureTax: number
-  totalTaxes: number
-  afterTaxSaleProceeds: number
-}
 
 export function SaleContent() {
-  const { state, updateAssumption, calculateResults } = useFinancialModeling()
-  const { assumptions, results, isCalculating } = state
-  const [saleAnalysis, setSaleAnalysis] = useState<SaleAnalysis | null>(null)
-  const [exitCapRate, setExitCapRate] = useState(6.5)
-  const [customSalePrice, setCustomSalePrice] = useState<number | null>(null)
-  const [useCustomPrice, setUseCustomPrice] = useState(false)
-
-  // Calculate sale analysis whenever results change
-  useEffect(() => {
-    if (results) {
-      const finalYear = results.annualCashflows[results.annualCashflows.length - 1]
-      const salePrice = useCustomPrice && customSalePrice 
-        ? customSalePrice 
-        : finalYear ? finalYear.noi / (exitCapRate / 100) : 0
-      
-      const sellingCosts = salePrice * (assumptions.sellingCosts / 100)
-      const netSaleProceeds = salePrice - sellingCosts
-      const loanBalance = finalYear ? finalYear.loanBalance : 0
-      const equityProceeds = netSaleProceeds - loanBalance
-      
-      const totalBasis = assumptions.purchasePrice + (assumptions.acquisitionCostType === 'dollar' 
-        ? assumptions.acquisitionCosts 
-        : assumptions.purchasePrice * (assumptions.acquisitionCosts / 100))
-      
-      const depreciableBasis = totalBasis * (assumptions.improvementsPercentage / 100)
-      const accumulatedDepreciation = results.annualCashflows.reduce((sum, cf) => sum + cf.depreciation, 0)
-      const adjustedBasis = totalBasis - accumulatedDepreciation
-      
-      // Use proper industry-standard calculation methodology
-      const totalGain = Math.max(0, salePrice - sellingCosts - adjustedBasis)
-      const deprecationRecapture = Math.min(accumulatedDepreciation, totalGain)
-      const capitalGain = Math.max(0, totalGain - deprecationRecapture)
-      
-      // Use user's actual tax rate inputs
-      const capitalGainsTaxRate = assumptions.capitalGainsTaxRate || 0.20
-      const deprecationRecaptureTaxRate = assumptions.depreciationRecaptureRate || 0.25
-      
-      const capitalGainsTax = capitalGain * capitalGainsTaxRate
-      const deprecationRecaptureTax = deprecationRecapture * deprecationRecaptureTaxRate
-      const totalTaxes = capitalGainsTax + deprecationRecaptureTax
-      
-      const afterTaxSaleProceeds = equityProceeds - totalTaxes
-      
-      setSaleAnalysis({
-        salePrice,
-        grossSaleProceeds: salePrice,
-        sellingCosts,
-        netSaleProceeds,
-        loanBalance,
-        equityProceeds,
-        totalBasis,
-        accumulatedDepreciation,
-        adjustedBasis,
-        capitalGain,
-        deprecationRecapture,
-        capitalGainsTax,
-        deprecationRecaptureTax,
-        totalTaxes,
-        afterTaxSaleProceeds
-      })
+  const { state } = useFinancialModeling()
+  const { assumptions, results } = state
+  
+  // Early return if no results
+  if (!results || !results.saleProceeds) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <DollarSign className="h-6 w-6" />
+              Sale Analysis & Exit Strategy
+            </h2>
+            <p className="text-muted-foreground">
+              Calculate sale proceeds, tax implications, and after-tax returns
+            </p>
+          </div>
+        </div>
+        
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Run the financial analysis from the Input Sheet to see detailed sale calculations.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+  
+  const sale = results.saleProceeds
+  const holdYears = assumptions.holdPeriodYears
+  
+  // Helper function to format values (positive/negative styling)
+  const formatValue = (value: number, showParentheses = true) => {
+    if (value < 0 && showParentheses) {
+      return `(${formatCurrency(Math.abs(value))})`
     }
-  }, [results, exitCapRate, customSalePrice, useCustomPrice, assumptions])
-
+    return formatCurrency(value)
+  }
+  
+  // Export functionality
   const exportSaleAnalysis = () => {
-    if (!saleAnalysis) return
-    
     const data = [
       ['Sale Analysis Summary'],
       [''],
-      ['Sale Details', ''],
-      ['Gross Sale Price', formatCurrency(saleAnalysis.salePrice)],
-      ['Selling Costs', formatCurrency(saleAnalysis.sellingCosts)],
-      ['Net Sale Proceeds', formatCurrency(saleAnalysis.netSaleProceeds)],
-      ['Loan Balance', formatCurrency(saleAnalysis.loanBalance)],
-      ['Gross Equity Proceeds', formatCurrency(saleAnalysis.equityProceeds)],
+      ['PROJECTED SALE PRICE CALCULATION'],
+      [`Year ${holdYears + 1} Proforma NOI`, formatCurrency(sale.yearAfterHoldNOI)],
+      ['Exit Cap Rate', formatPercentage(sale.exitCapRate * 100)],
+      ['Calculated Sale Price', formatCurrency(sale.salePrice)],
       [''],
-      ['Tax Calculations', ''],
-      ['Original Basis', formatCurrency(saleAnalysis.totalBasis)],
-      ['Accumulated Depreciation', formatCurrency(saleAnalysis.accumulatedDepreciation)],
-      ['Adjusted Basis', formatCurrency(saleAnalysis.adjustedBasis)],
-      ['Capital Gain', formatCurrency(saleAnalysis.capitalGain)],
-      ['Depreciation Recapture', formatCurrency(saleAnalysis.deprecationRecapture)],
-      [`Capital Gains Tax (${formatPercentage((assumptions.capitalGainsTaxRate || 0.20) * 100)})`, formatCurrency(saleAnalysis.capitalGainsTax)],
-      [`Depreciation Recapture Tax (${formatPercentage((assumptions.depreciationRecaptureRate || 0.25) * 100)})`, formatCurrency(saleAnalysis.deprecationRecaptureTax)],
-      ['Total Taxes on Sale', formatCurrency(saleAnalysis.totalTaxes)],
-      ['After-Tax Sale Proceeds', formatCurrency(saleAnalysis.afterTaxSaleProceeds)],
+      ['ADJUSTED BASIS CALCULATION'],
+      ['Purchase Price', formatCurrency(assumptions.purchasePrice)],
+      ['Add: Acquisition Costs', formatCurrency(sale.originalBasis - assumptions.purchasePrice)],
+      ['Original Basis', formatCurrency(sale.originalBasis)],
+      ['Less: Accumulated Depreciation', formatCurrency(-sale.accumulatedDepreciation)],
+      ['Adjusted Basis at Sale', formatCurrency(sale.adjustedBasis)],
+      [''],
+      ['CAPITAL GAIN CALCULATION'],
+      ['Sale Price', formatCurrency(sale.salePrice)],
+      ['Less: Costs of Sale', formatCurrency(-sale.sellingCosts)],
+      ['Net Sale Proceeds', formatCurrency(sale.netSaleProceeds)],
+      ['Less: Adjusted Basis', formatCurrency(-sale.adjustedBasis)],
+      ['Total Gain (Loss)', formatCurrency(sale.totalGain)],
+      ['Depreciation Recapture (Sec 1250)', formatCurrency(sale.deprecationRecapture)],
+      ['Capital Gain from Appreciation', formatCurrency(sale.capitalGains)],
+      ['Capital Gains Tax', formatCurrency(sale.capitalGainsTax)],
+      ['Depreciation Recapture Tax', formatCurrency(sale.depreciationRecaptureTax)],
+      ['Total Tax Liability', formatCurrency(sale.taxesOnSale)],
+      [''],
+      ['SALE PROCEEDS CALCULATION'],
+      ['Gross Sale Price', formatCurrency(sale.salePrice)],
+      ['Less: Costs of Sale', formatCurrency(-sale.sellingCosts)],
+      ['Net Sale Proceeds', formatCurrency(sale.netSaleProceeds)],
+      ['Less: Loan Payoff', formatCurrency(-sale.loanBalance)],
+      ['Before-Tax Equity Proceeds', formatCurrency(sale.beforeTaxSaleProceeds)],
+      ['Less: Tax Liability', formatCurrency(-sale.taxesOnSale)],
+      ['After-Tax Sale Proceeds', formatCurrency(sale.afterTaxSaleProceeds)],
+      ['Initial Investment', formatCurrency(results.totalEquityInvested)],
+      ['Total Return', formatCurrency(sale.afterTaxSaleProceeds - results.totalEquityInvested)],
+      ['Return Multiple', `${(sale.afterTaxSaleProceeds / results.totalEquityInvested).toFixed(2)}x`],
     ]
 
     const csvString = data.map(row => row.join(',')).join('\n')
@@ -128,7 +117,7 @@ export function SaleContent() {
     a.click()
     window.URL.revokeObjectURL(url)
   }
-
+  
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -139,211 +128,365 @@ export function SaleContent() {
             Sale Analysis & Exit Strategy
           </h2>
           <p className="text-muted-foreground">
-            Calculate sale proceeds, tax implications, and after-tax returns
+            Detailed breakdown of sale proceeds and tax implications
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={calculateResults} disabled={isCalculating}>
-            <Calculator className="h-4 w-4 mr-2" />
-            {isCalculating ? 'Calculating...' : 'Recalculate'}
-          </Button>
-          <Button variant="outline" onClick={exportSaleAnalysis} disabled={!saleAnalysis}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
+        <Button variant="outline" onClick={exportSaleAnalysis}>
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
-      {/* Sale Price Configuration */}
+      {/* Top Summary Cards */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Exit Strategy Configuration
+            Projected Sale Price Calculation
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="exit-cap-rate">Exit Cap Rate (%)</Label>
-              <Input
-                id="exit-cap-rate"
-                type="number"
-                step="0.1"
-                value={exitCapRate}
-                onChange={(e) => setExitCapRate(parseFloat(e.target.value) || 0)}
-                className="font-mono"
-                disabled={useCustomPrice}
-              />
-              <p className="text-xs text-muted-foreground">
-                Cap rate for determining sale price
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="custom-sale-price">Custom Sale Price (Optional)</Label>
-              <Input
-                id="custom-sale-price"
-                type="number"
-                value={customSalePrice || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  setCustomSalePrice(isNaN(value) ? null : value)
-                  setUseCustomPrice(!!e.target.value)
-                }}
-                className="font-mono"
-                placeholder="Enter custom price"
-              />
-              <p className="text-xs text-muted-foreground">
-                Override calculated sale price
-              </p>
-            </div>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Proforma NOI Card */}
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-muted-foreground">
+                    Year {holdYears + 1} Proforma NOI
+                  </p>
+                  <p className="text-3xl font-bold tracking-tight">
+                    {formatCurrency(sale.yearAfterHoldNOI)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Projected net operating income
+                  </p>
+                </div>
+                
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+              </CardContent>
+            </Card>
 
-            <div className="space-y-2">
-              <Label>Hold Period</Label>
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-lg py-2 px-4">
-                  {assumptions.holdPeriodYears} Years
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Investment hold period
-              </p>
-            </div>
+            {/* Exit Cap Rate Card */}
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-muted-foreground">
+                    Exit Cap Rate
+                  </p>
+                  <p className="text-3xl font-bold tracking-tight">
+                    {formatPercentage(sale.exitCapRate * 100)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {assumptions.dispositionPriceType === 'dollar' ? 'Implied from price' : 'Applied cap rate'}
+                  </p>
+                </div>
+                
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+              </CardContent>
+            </Card>
+
+            {/* Calculated Sale Price Card */}
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-muted-foreground">
+                    Sale Price
+                  </p>
+                  <p className="text-3xl font-bold tracking-tight">
+                    {formatCurrency(sale.salePrice)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {assumptions.dispositionPriceType === 'dollar' 
+                      ? 'User-specified price'
+                      : 'NOI ÷ Cap Rate'}
+                  </p>
+                </div>
+                
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
+              </CardContent>
+            </Card>
           </div>
 
-          {!results && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Run the financial analysis from the Input Sheet to see detailed sale calculations.
-              </AlertDescription>
-            </Alert>
-          )}
+          <Alert className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {assumptions.dispositionPriceType === 'dollar' 
+                ? `Using custom sale price of ${formatCurrency(sale.salePrice)} (implies ${formatPercentage(sale.exitCapRate * 100)} cap rate)`
+                : `Sale price calculated as: ${formatCurrency(sale.yearAfterHoldNOI)} ÷ ${formatPercentage(sale.exitCapRate * 100)} = ${formatCurrency(sale.salePrice)}`}
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
-      {/* Sale Proceeds Analysis */}
-      {saleAnalysis && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Sale Proceeds */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Sale Proceeds</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Gross Sale Price</span>
-                  <span className="font-mono text-lg font-bold">
-                    {formatCurrency(saleAnalysis.salePrice)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-red-600">
-                  <span className="text-sm">Selling Costs ({formatPercentage(assumptions.sellingCosts)})</span>
-                  <span className="font-mono">
-                    -{formatCurrency(saleAnalysis.sellingCosts)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Net Sale Proceeds</span>
-                  <span className="font-mono text-lg font-semibold">
-                    {formatCurrency(saleAnalysis.netSaleProceeds)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-orange-600">
-                  <span className="text-sm">Less: Loan Balance</span>
-                  <span className="font-mono">
-                    -{formatCurrency(saleAnalysis.loanBalance)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Gross Equity Proceeds</span>
-                  <span className="font-mono text-xl font-bold text-blue-600">
-                    {formatCurrency(saleAnalysis.equityProceeds)}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Sheet 1: Adjusted Basis Calculation */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Adjusted Basis Calculation
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Calculation of adjusted basis for determining taxable gain or loss
+          </p>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="rounded-lg border overflow-hidden">
+            <Table className="bg-background">
+              <TableHeader className="bg-muted">
+                <TableRow>
+                  <TableHead className="font-semibold text-muted-foreground w-2/3">
+                    Line Item
+                  </TableHead>
+                  <TableHead className="text-right font-semibold text-muted-foreground">
+                    Amount
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">Purchase Price</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(assumptions.purchasePrice)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Add: Acquisition Costs</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.originalBasis - assumptions.purchasePrice)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Original Basis</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
+                    {formatValue(sale.originalBasis)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Accumulated Depreciation ({holdYears} years)</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.accumulatedDepreciation)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="font-bold">Adjusted Basis at Sale</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold">
+                    {formatValue(sale.adjustedBasis)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Tax Calculations */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tax Implications</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Original Basis</span>
-                    <div className="font-mono">{formatCurrency(saleAnalysis.totalBasis)}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Accumulated Depreciation</span>
-                    <div className="font-mono text-orange-600">
-                      {formatCurrency(saleAnalysis.accumulatedDepreciation)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Adjusted Basis</span>
-                    <div className="font-mono">{formatCurrency(saleAnalysis.adjustedBasis)}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Capital Gain</span>
-                    <div className="font-mono text-green-600">
-                      {formatCurrency(saleAnalysis.capitalGain)}
-                    </div>
-                  </div>
-                </div>
+      {/* Sheet 2: Capital Gain Calculation */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Capital Gain Calculation
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Breakdown of total gain and tax liability on sale
+          </p>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="rounded-lg border overflow-hidden">
+            <Table className="bg-background">
+              <TableHeader className="bg-muted">
+                <TableRow>
+                  <TableHead className="font-semibold text-muted-foreground w-2/3">
+                    Line Item
+                  </TableHead>
+                  <TableHead className="text-right font-semibold text-muted-foreground">
+                    Amount
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">Sale Price</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.salePrice)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Costs of Sale</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.sellingCosts)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Net Sale Proceeds</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
+                    {formatValue(sale.netSaleProceeds)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Adjusted Basis</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.adjustedBasis)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Total Gain (Loss)</TableCell>
+                  <TableCell className={cn(
+                    "text-right font-mono text-sm font-semibold",
+                    sale.totalGain > 0 ? "text-green-600" : sale.totalGain < 0 ? "text-red-600" : ""
+                  )}>
+                    {formatValue(sale.totalGain)}
+                  </TableCell>
+                </TableRow>
                 
-                <Separator />
+                <TableRow>
+                  <TableCell className="font-medium">Depreciation Recapture (Sec 1250)</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.deprecationRecapture)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Capital Gain from Appreciation</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.capitalGains)}
+                  </TableCell>
+                </TableRow>
                 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Capital Gains Tax ({formatPercentage((assumptions.capitalGainsTaxRate || 0.20) * 100)})</span>
-                    <span className="font-mono text-red-600">
-                      {formatCurrency(saleAnalysis.capitalGainsTax)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Depreciation Recapture Tax ({formatPercentage((assumptions.depreciationRecaptureRate || 0.25) * 100)})</span>
-                    <span className="font-mono text-red-600">
-                      {formatCurrency(saleAnalysis.deprecationRecaptureTax)}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Total Taxes on Sale</span>
-                    <span className="font-mono text-lg font-bold text-red-600">
-                      {formatCurrency(saleAnalysis.totalTaxes)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                <TableRow>
+                  <TableCell className="font-medium">
+                    Capital Gains Tax ({formatPercentage(sale.capitalGainsTaxRate * 100)})
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(sale.capitalGainsTax)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    Depreciation Recapture Tax ({formatPercentage(sale.depreciationRecaptureRate * 100)})
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(sale.depreciationRecaptureTax)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="font-bold">Total Tax Liability</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold text-red-600">
+                    {formatValue(sale.taxesOnSale)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Final Result */}
-      {saleAnalysis && (
-        <Card className="border-2 border-green-200 bg-green-50/50">
-          <CardContent className="p-6">
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold text-green-800">Net After-Tax Sale Proceeds</h3>
-              <div className="text-4xl font-bold text-green-700">
-                {formatCurrency(saleAnalysis.afterTaxSaleProceeds)}
-              </div>
-              <p className="text-sm text-green-600">
-                Amount you receive after paying off loan and taxes
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Sheet 3: Sale Proceeds Calculation */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Percent className="h-5 w-5" />
+            Sale Proceeds Calculation
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Final calculation of after-tax proceeds and investment returns
+          </p>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="rounded-lg border overflow-hidden">
+            <Table className="bg-background">
+              <TableHeader className="bg-muted">
+                <TableRow>
+                  <TableHead className="font-semibold text-muted-foreground w-2/3">
+                    Line Item
+                  </TableHead>
+                  <TableHead className="text-right font-semibold text-muted-foreground">
+                    Amount
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">Gross Sale Price</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.salePrice)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Costs of Sale</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.sellingCosts)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Net Sale Proceeds</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
+                    {formatValue(sale.netSaleProceeds)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Loan Payoff</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.loanBalance)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Before-Tax Equity Proceeds</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
+                    {formatValue(sale.beforeTaxSaleProceeds)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Less: Tax Liability</TableCell>
+                  <TableCell className="text-right font-mono text-sm text-red-600">
+                    {formatValue(-sale.taxesOnSale)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="font-bold">After-Tax Sale Proceeds</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold">
+                    {formatValue(sale.afterTaxSaleProceeds)}
+                  </TableCell>
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell className="font-medium">Initial Investment</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(results.totalEquityInvested)}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">After-Tax Sale Proceeds</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.afterTaxSaleProceeds)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Total Return</TableCell>
+                  <TableCell className={cn(
+                    "text-right font-mono text-sm font-semibold",
+                    sale.afterTaxSaleProceeds > results.totalEquityInvested ? "text-green-600" : "text-red-600"
+                  )}>
+                    {formatValue(sale.afterTaxSaleProceeds - results.totalEquityInvested)}
+                    {sale.afterTaxSaleProceeds > results.totalEquityInvested ? (
+                      <TrendingUp className="inline h-3 w-3 ml-1" />
+                    ) : (
+                      <TrendingDown className="inline h-3 w-3 ml-1" />
+                    )}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">Return Multiple</TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {(sale.afterTaxSaleProceeds / results.totalEquityInvested).toFixed(2)}x
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

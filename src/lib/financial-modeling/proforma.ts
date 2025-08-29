@@ -98,18 +98,37 @@ export interface AnnualCashflow {
 }
 
 export interface SaleProceeds {
+  // Sale Price Calculation
+  yearAfterHoldNOI: number // NOI for year N+1 (e.g., Year 11 if hold is 10)
+  exitCapRate: number // Cap rate used for sale price calculation
   salePrice: number
+  
+  // Sale Costs & Net Proceeds
   sellingCosts: number
   netSaleProceeds: number
+  
+  // Basis Calculations
+  originalBasis: number // Purchase price + acquisition costs
+  accumulatedDepreciation: number // Total depreciation taken
+  adjustedBasis: number // Original basis - accumulated depreciation
+  
+  // Loan & Equity
   loanBalance: number
   beforeTaxSaleProceeds: number
-  adjustedBasis: number
+  
+  // Gain/Loss Analysis
   totalGain: number
-  capitalGains: number
-  deprecationRecapture: number
+  deprecationRecapture: number // Min of accumulated depreciation and total gain
+  capitalGains: number // Gain above depreciation recapture
+  
+  // Tax Calculations
+  capitalGainsTaxRate: number // User's capital gains tax rate
+  depreciationRecaptureRate: number // User's depreciation recapture rate
   capitalGainsTax: number
   depreciationRecaptureTax: number
   taxesOnSale: number
+  
+  // Final Proceeds
   afterTaxSaleProceeds: number
 }
 
@@ -608,15 +627,49 @@ export class ProFormaCalculator {
     const finalYearNOI = annualCashflows[annualCashflows.length - 1].noi
     const finalLoanBalance = annualCashflows[annualCashflows.length - 1].loanBalance
     
-    // Determine sale price using enhanced disposition logic
+    // Calculate Year N+1 NOI (year after hold period) for sale price calculation
+    let yearAfterHoldNOI: number
+    if (potentialRentalIncome && potentialRentalIncome.length > 0 && potentialRentalIncome[holdPeriodYears - 1] > 0) {
+      // Project one more year using the growth pattern from detailed income
+      const lastYearIncome = potentialRentalIncome[holdPeriodYears - 1] || 0
+      const growthRate = holdPeriodYears > 1 && potentialRentalIncome[holdPeriodYears - 2] > 0
+        ? (lastYearIncome / potentialRentalIncome[holdPeriodYears - 2]) - 1
+        : 0.03 // Default 3% growth if no pattern available
+      
+      const projectedGrossIncome = lastYearIncome * (1 + growthRate)
+      const projectedVacancy = projectedGrossIncome * (vacancyRates?.[holdPeriodYears - 1] || 0)
+      const projectedEGI = projectedGrossIncome - projectedVacancy
+      
+      let projectedOpEx = 0
+      if (operatingExpenses && operatingExpenses[holdPeriodYears - 1] !== undefined) {
+        if (operatingExpenseType === 'percentage') {
+          projectedOpEx = projectedEGI * ((operatingExpenses[holdPeriodYears - 1] || 0) / 100)
+        } else {
+          // Project operating expenses with same growth rate
+          projectedOpEx = (operatingExpenses[holdPeriodYears - 1] || 0) * (1 + growthRate)
+        }
+      }
+      
+      yearAfterHoldNOI = projectedEGI - projectedOpEx
+    } else {
+      // Fallback: project using NOI growth rate
+      yearAfterHoldNOI = finalYearNOI * (1 + (noiGrowthRate || 0))
+    }
+    
+    // Determine sale price using Year N+1 NOI
     let estimatedSalePrice: number
+    let effectiveExitCapRate: number = dispositionCapRate || exitCapRate || 0.065 // Default 6.5%
+    
     if (dispositionPriceType === 'dollar' && dispositionPrice > 0) {
       estimatedSalePrice = dispositionPrice
+      // Calculate implied cap rate for display
+      effectiveExitCapRate = yearAfterHoldNOI > 0 ? yearAfterHoldNOI / dispositionPrice : 0
     } else if (dispositionPriceType === 'caprate' && dispositionCapRate > 0) {
-      estimatedSalePrice = estimateSalePrice(finalYearNOI, dispositionCapRate)
+      estimatedSalePrice = estimateSalePrice(yearAfterHoldNOI, dispositionCapRate)
+      effectiveExitCapRate = dispositionCapRate
     } else {
       // Fallback to legacy fields
-      estimatedSalePrice = salePrice || (exitCapRate ? estimateSalePrice(finalYearNOI, exitCapRate) : purchasePrice)
+      estimatedSalePrice = salePrice || (exitCapRate ? estimateSalePrice(yearAfterHoldNOI, exitCapRate) : purchasePrice)
     }
     
     // Determine selling costs using enhanced logic
@@ -633,8 +686,11 @@ export class ProFormaCalculator {
     const netSaleProceeds = estimatedSalePrice - sellingCostsAmount
     const beforeTaxSaleProceeds = netSaleProceeds - finalLoanBalance
     
+    // Calculate basis components
+    const originalBasis = purchasePrice + actualAcquisitionCosts
+    
     // Industry-standard tax calculations
-    const adjustedBasis = purchasePrice + actualAcquisitionCosts - cumulativeDepreciation
+    const adjustedBasis = originalBasis - cumulativeDepreciation
     const totalGain = Math.max(0, estimatedSalePrice - sellingCostsAmount - adjustedBasis)
     
     // Split gain between depreciation recapture and capital gains
@@ -649,18 +705,37 @@ export class ProFormaCalculator {
     const afterTaxSaleProceeds = beforeTaxSaleProceeds - taxesOnSale
 
     const saleProceeds: SaleProceeds = {
+      // Sale Price Calculation
+      yearAfterHoldNOI,
+      exitCapRate: effectiveExitCapRate,
       salePrice: estimatedSalePrice,
+      
+      // Sale Costs & Net Proceeds
       sellingCosts: sellingCostsAmount,
       netSaleProceeds,
+      
+      // Basis Calculations
+      originalBasis,
+      accumulatedDepreciation: cumulativeDepreciation,
+      adjustedBasis,
+      
+      // Loan & Equity
       loanBalance: finalLoanBalance,
       beforeTaxSaleProceeds,
-      adjustedBasis,
+      
+      // Gain/Loss Analysis
       totalGain,
-      capitalGains,
       deprecationRecapture: depreciationRecapture,
+      capitalGains,
+      
+      // Tax Calculations
+      capitalGainsTaxRate,
+      depreciationRecaptureRate,
       capitalGainsTax,
       depreciationRecaptureTax,
       taxesOnSale,
+      
+      // Final Proceeds
       afterTaxSaleProceeds,
     }
 
@@ -718,18 +793,37 @@ export class ProFormaCalculator {
           loanBalance: 0,
         })),
         saleProceeds: {
+          // Sale Price Calculation
+          yearAfterHoldNOI: 0,
+          exitCapRate: 0.065,
           salePrice: safePurchasePrice,
+          
+          // Sale Costs & Net Proceeds
           sellingCosts: 0,
           netSaleProceeds: safePurchasePrice,
+          
+          // Basis Calculations
+          originalBasis: safePurchasePrice,
+          accumulatedDepreciation: 0,
+          adjustedBasis: safePurchasePrice,
+          
+          // Loan & Equity
           loanBalance: 0,
           beforeTaxSaleProceeds: safePurchasePrice,
-          adjustedBasis: safePurchasePrice,
+          
+          // Gain/Loss Analysis
           totalGain: 0,
-          capitalGains: 0,
           deprecationRecapture: 0,
+          capitalGains: 0,
+          
+          // Tax Calculations
+          capitalGainsTaxRate: 0.20,
+          depreciationRecaptureRate: 0.25,
           capitalGainsTax: 0,
           depreciationRecaptureTax: 0,
           taxesOnSale: 0,
+          
+          // Final Proceeds
           afterTaxSaleProceeds: safePurchasePrice,
         },
         totalCashReturned: safeEquity,
