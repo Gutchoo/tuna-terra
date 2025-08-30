@@ -9,21 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Calculator, 
-  Download, 
-  AlertCircle,
-  Building,
-  Percent,
-  TrendingDown
-} from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
-import { formatCurrency, formatPercentage, cn } from "@/lib/utils"
+import { formatCurrency, formatPercentage } from "@/lib/utils"
 
 export function SaleContent() {
   const { state } = useFinancialModeling()
@@ -46,9 +35,10 @@ export function SaleContent() {
   const sale = results.saleProceeds
   const holdYears = assumptions.holdPeriodYears
   
-  // Helper function to format values (positive/negative styling)
-  const formatValue = (value: number, showParentheses = true) => {
-    if (value < 0 && showParentheses) {
+  // Helper function to format values following accounting conventions
+  const formatValue = (value: number) => {
+    // Only use parentheses for actual negative values, not for subtraction line items
+    if (value < 0) {
       return `(${formatCurrency(Math.abs(value))})`
     }
     return formatCurrency(value)
@@ -109,88 +99,10 @@ export function SaleContent() {
   return (
     <div className="space-y-6">
 
-      {/* Top Summary Cards - matches InputSheet layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Proforma NOI Card */}
-        <Card className="relative overflow-hidden">
-          <CardContent className="p-3">
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">
-                Year {holdYears + 1} Proforma NOI
-              </p>
-              <p className="text-2xl font-bold tracking-tight">
-                {formatCurrency(sale.yearAfterHoldNOI)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Projected net operating income
-              </p>
-            </div>
-            
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-          </CardContent>
-        </Card>
-
-        {/* Exit Cap Rate Card */}
-        <Card className="relative overflow-hidden">
-          <CardContent className="p-3">
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">
-                Exit Cap Rate
-              </p>
-              <p className="text-2xl font-bold tracking-tight">
-                {formatPercentage(sale.exitCapRate * 100)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {assumptions.dispositionPriceType === 'dollar' ? 'Implied from price' : 'Applied cap rate'}
-              </p>
-            </div>
-            
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-          </CardContent>
-        </Card>
-
-        {/* Calculated Sale Price Card */}
-        <Card className="relative overflow-hidden">
-          <CardContent className="p-3">
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">
-                Sale Price
-              </p>
-              <p className="text-2xl font-bold tracking-tight">
-                {formatCurrency(sale.salePrice)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {assumptions.dispositionPriceType === 'dollar' 
-                  ? 'User-specified price'
-                  : 'NOI ÷ Cap Rate'}
-              </p>
-            </div>
-            
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-muted/5 pointer-events-none" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Info Alert */}
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {assumptions.dispositionPriceType === 'dollar' 
-            ? `Using custom sale price of ${formatCurrency(sale.salePrice)} (implies ${formatPercentage(sale.exitCapRate * 100)} cap rate)`
-            : `Sale price calculated as: ${formatCurrency(sale.yearAfterHoldNOI)} ÷ ${formatPercentage(sale.exitCapRate * 100)} = ${formatCurrency(sale.salePrice)}`}
-        </AlertDescription>
-      </Alert>
-
       {/* Sheet 1: Adjusted Basis Calculation */}
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building className="h-5 w-5" />
-            Adjusted Basis Calculation
-          </CardTitle>
+          <CardTitle>Adjusted Basis Calculation</CardTitle>
           <p className="text-sm text-muted-foreground">
             Calculation of adjusted basis for determining taxable gain or loss
           </p>
@@ -229,8 +141,8 @@ export function SaleContent() {
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Less: Accumulated Depreciation ({holdYears} years)</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.accumulatedDepreciation)}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.accumulatedDepreciation)}
                   </TableCell>
                 </TableRow>
                 <TableRow className="border-t-2 border-b-2 bg-muted/50">
@@ -248,12 +160,9 @@ export function SaleContent() {
       {/* Sheet 2: Capital Gain Calculation */}
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Capital Gain Calculation
-          </CardTitle>
+          <CardTitle>Capital Gain Calculation</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Breakdown of total gain and tax liability on sale
+            Breakdown of total gain components on sale
           </p>
         </CardHeader>
         <CardContent className="p-6">
@@ -278,28 +187,19 @@ export function SaleContent() {
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Less: Costs of Sale</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.sellingCosts)}
-                  </TableCell>
-                </TableRow>
-                <TableRow className="border-t bg-muted/50">
-                  <TableCell className="font-semibold">Net Sale Proceeds</TableCell>
-                  <TableCell className="text-right font-mono text-sm font-semibold">
-                    {formatValue(sale.netSaleProceeds)}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.sellingCosts)}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Less: Adjusted Basis</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.adjustedBasis)}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.adjustedBasis)}
                   </TableCell>
                 </TableRow>
-                <TableRow className="border-t bg-muted/50">
+                <TableRow className="border-t-2 bg-muted/50">
                   <TableCell className="font-semibold">Total Gain (Loss)</TableCell>
-                  <TableCell className={cn(
-                    "text-right font-mono text-sm font-semibold",
-                    sale.totalGain > 0 ? "text-green-600" : sale.totalGain < 0 ? "text-red-600" : ""
-                  )}>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
                     {formatValue(sale.totalGain)}
                   </TableCell>
                 </TableRow>
@@ -310,33 +210,10 @@ export function SaleContent() {
                     {formatValue(sale.deprecationRecapture)}
                   </TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Capital Gain from Appreciation</TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {formatValue(sale.capitalGains)}
-                  </TableCell>
-                </TableRow>
-                
-                <TableRow>
-                  <TableCell className="font-medium">
-                    Capital Gains Tax ({formatPercentage(sale.capitalGainsTaxRate * 100)})
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(sale.capitalGainsTax)}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    Depreciation Recapture Tax ({formatPercentage(sale.depreciationRecaptureRate * 100)})
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(sale.depreciationRecaptureTax)}
-                  </TableCell>
-                </TableRow>
                 <TableRow className="border-t-2 border-b-2 bg-muted/50">
-                  <TableCell className="font-bold">Total Tax Liability</TableCell>
-                  <TableCell className="text-right font-mono text-sm font-bold text-red-600">
-                    {formatValue(sale.taxesOnSale)}
+                  <TableCell className="font-bold">Gain from Appreciation</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold">
+                    {formatValue(sale.capitalGains)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -348,10 +225,7 @@ export function SaleContent() {
       {/* Sheet 3: Sale Proceeds Calculation */}
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Percent className="h-5 w-5" />
-            Sale Proceeds Calculation
-          </CardTitle>
+          <CardTitle>Sale Proceeds Calculation</CardTitle>
           <p className="text-sm text-muted-foreground">
             Final calculation of after-tax proceeds and investment returns
           </p>
@@ -378,8 +252,8 @@ export function SaleContent() {
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Less: Costs of Sale</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.sellingCosts)}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.sellingCosts)}
                   </TableCell>
                 </TableRow>
                 <TableRow className="border-t bg-muted/50">
@@ -390,8 +264,8 @@ export function SaleContent() {
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Less: Loan Payoff</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.loanBalance)}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.loanBalance)}
                   </TableCell>
                 </TableRow>
                 <TableRow className="border-t bg-muted/50">
@@ -400,12 +274,31 @@ export function SaleContent() {
                     {formatValue(sale.beforeTaxSaleProceeds)}
                   </TableCell>
                 </TableRow>
+                
+                {/* Tax Calculations */}
                 <TableRow>
-                  <TableCell className="font-medium">Less: Tax Liability</TableCell>
-                  <TableCell className="text-right font-mono text-sm text-red-600">
-                    {formatValue(-sale.taxesOnSale)}
+                  <TableCell className="font-medium">
+                    Capital Gains Tax ({formatPercentage(sale.capitalGainsTaxRate * 100)})
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.capitalGainsTax)}
                   </TableCell>
                 </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    Depreciation Recapture Tax ({formatPercentage(sale.depreciationRecaptureRate * 100)})
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatValue(sale.depreciationRecaptureTax)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t bg-muted/50">
+                  <TableCell className="font-semibold">Total Tax Liability</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-semibold">
+                    {formatValue(sale.taxesOnSale)}
+                  </TableCell>
+                </TableRow>
+                
                 <TableRow className="border-t-2 border-b-2 bg-muted/50">
                   <TableCell className="font-bold">After-Tax Sale Proceeds</TableCell>
                   <TableCell className="text-right font-mono text-sm font-bold">
@@ -419,30 +312,10 @@ export function SaleContent() {
                     {formatValue(results.totalEquityInvested)}
                   </TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">After-Tax Sale Proceeds</TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {formatValue(sale.afterTaxSaleProceeds)}
-                  </TableCell>
-                </TableRow>
-                <TableRow className="border-t bg-muted/50">
-                  <TableCell className="font-semibold">Total Return</TableCell>
-                  <TableCell className={cn(
-                    "text-right font-mono text-sm font-semibold",
-                    sale.afterTaxSaleProceeds > results.totalEquityInvested ? "text-green-600" : "text-red-600"
-                  )}>
+                <TableRow className="border-t-2 border-b-2 bg-muted/50">
+                  <TableCell className="font-bold">Total Return</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold">
                     {formatValue(sale.afterTaxSaleProceeds - results.totalEquityInvested)}
-                    {sale.afterTaxSaleProceeds > results.totalEquityInvested ? (
-                      <TrendingUp className="inline h-3 w-3 ml-1" />
-                    ) : (
-                      <TrendingDown className="inline h-3 w-3 ml-1" />
-                    )}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Return Multiple</TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {(sale.afterTaxSaleProceeds / results.totalEquityInvested).toFixed(2)}x
                   </TableCell>
                 </TableRow>
               </TableBody>
