@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/financial-modeling/app-sidebar"
 import { InputSheetContent } from "@/components/financial-modeling/InputSheetContent"
 import { CashflowsContent } from "@/components/financial-modeling/CashflowsContent" 
 import { SaleContent } from "@/components/financial-modeling/SaleContent"
-import { NewResultsPanel } from "@/components/financial-modeling/NewResultsPanel"
+import { DealSummaryPanel } from "@/components/financial-modeling/DealSummaryPanel"
 import { SiteHeader } from "@/components/site-header"
 import {
   SidebarInset,
@@ -59,9 +59,9 @@ export default function FinancialModelingPage() {
                   </motion.div>
                 </div>
                 
-                {/* Results Panel */}
+                {/* Deal Summary Panel */}
                 <div className="hidden xl:block xl:w-96 flex-shrink-0 px-4 lg:px-6">
-                  <NewResultsPanel />
+                  <DealSummaryPanel />
                 </div>
               </div>
             </div>
