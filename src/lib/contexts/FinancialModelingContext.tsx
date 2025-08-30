@@ -2,12 +2,15 @@
 
 import { createContext, useContext, useReducer, ReactNode, useMemo, useEffect } from "react"
 import { type PropertyAssumptions, type ProFormaResults, ProFormaCalculator } from "@/lib/financial-modeling/proforma"
+import { getCompletionState, type CompletionState } from "@/lib/financial-modeling/completion-logic"
 
 interface FinancialState {
   activeSection: string
   assumptions: PropertyAssumptions
   results: ProFormaResults | null
   isCalculating: boolean
+  viewedSections: Set<string>
+  completionState: CompletionState
 }
 
 type FinancialAction = 
@@ -15,6 +18,7 @@ type FinancialAction =
   | { type: 'UPDATE_ASSUMPTIONS'; payload: Partial<PropertyAssumptions> }
   | { type: 'SET_RESULTS'; payload: ProFormaResults | null }
   | { type: 'SET_CALCULATING'; payload: boolean }
+  | { type: 'MARK_SECTION_VIEWED'; payload: string }
   | { type: 'RESET_MODEL' }
 
 interface FinancialModelingContextType {
@@ -73,25 +77,44 @@ const defaultAssumptions: PropertyAssumptions = {
   sellingCosts: 0,
 }
 
+const initialCompletionState = getCompletionState(defaultAssumptions)
+
 const initialState: FinancialState = {
   activeSection: "input-sheet",
   assumptions: defaultAssumptions,
   results: null,
-  isCalculating: false
+  isCalculating: false,
+  viewedSections: new Set<string>(),
+  completionState: initialCompletionState
 }
 
 function financialReducer(state: FinancialState, action: FinancialAction): FinancialState {
   switch (action.type) {
-    case 'SET_ACTIVE_SECTION':
-      return { ...state, activeSection: action.payload }
-    case 'UPDATE_ASSUMPTIONS':
-      return { ...state, assumptions: { ...state.assumptions, ...action.payload } }
+    case 'SET_ACTIVE_SECTION': {
+      const newViewedSections = new Set(state.viewedSections)
+      newViewedSections.add(action.payload)
+      return { ...state, activeSection: action.payload, viewedSections: newViewedSections }
+    }
+    case 'UPDATE_ASSUMPTIONS': {
+      const newAssumptions = { ...state.assumptions, ...action.payload }
+      const newCompletionState = getCompletionState(newAssumptions)
+      return { 
+        ...state, 
+        assumptions: newAssumptions,
+        completionState: newCompletionState
+      }
+    }
     case 'SET_RESULTS':
       return { ...state, results: action.payload }
     case 'SET_CALCULATING':
       return { ...state, isCalculating: action.payload }
+    case 'MARK_SECTION_VIEWED': {
+      const newViewedSections = new Set(state.viewedSections)
+      newViewedSections.add(action.payload)
+      return { ...state, viewedSections: newViewedSections }
+    }
     case 'RESET_MODEL':
-      return { ...initialState }
+      return { ...initialState, viewedSections: new Set<string>() }
     default:
       return state
   }

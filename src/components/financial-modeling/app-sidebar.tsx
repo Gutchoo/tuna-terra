@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Calculator, FileSpreadsheet, TrendingUp, DollarSign, ChevronRight } from "lucide-react"
+import { Calculator, FileSpreadsheet, TrendingUp, DollarSign, ChevronRight, Lock, CheckCircle } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { Badge } from "@/components/ui/badge"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
+import { getSectionStatus } from "@/lib/financial-modeling/completion-logic"
 
 const sections = [
   {
@@ -39,6 +41,34 @@ const sections = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, dispatch } = useFinancialModeling()
   
+  // Get status for each section
+  const getStatusBadge = (sectionId: 'input-sheet' | 'cashflows' | 'sale') => {
+    const status = getSectionStatus(sectionId, state.assumptions, state.viewedSections)
+    
+    if (sectionId === 'input-sheet') {
+      // Show progress percentage for input sheet
+      const progress = state.completionState.inputSheetProgress
+      if (progress === 100) {
+        return <CheckCircle className="ml-auto size-4 text-green-600" />
+      } else if (progress > 0) {
+        return <Badge variant="secondary" className="ml-auto text-xs">{progress}%</Badge>
+      }
+      return null
+    }
+    
+    // For other sections, show status badges
+    switch (status) {
+      case 'viewed':
+        return <CheckCircle className="ml-auto size-4 text-green-600" />
+      case 'ready':
+        return <Badge variant="default" className="ml-auto text-xs">Ready</Badge>
+      case 'locked':
+        return <Lock className="ml-auto size-3 text-muted-foreground" />
+      default:
+        return null
+    }
+  }
+  
   return (
     <Sidebar {...props} className="top-12">
       <SidebarContent>
@@ -46,21 +76,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Financial Modeling</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {sections.map((section) => (
-                <SidebarMenuItem key={section.id}>
-                  <SidebarMenuButton
-                    isActive={state.activeSection === section.id}
-                    onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', payload: section.id })}
-                    tooltip={section.description}
-                  >
-                    <section.icon className="size-4" />
-                    <span>{section.title}</span>
-                    {state.activeSection === section.id && (
-                      <ChevronRight className="ml-auto size-4" />
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {sections.map((section) => {
+                const sectionId = section.id as 'input-sheet' | 'cashflows' | 'sale'
+                const status = getSectionStatus(sectionId, state.assumptions, state.viewedSections)
+                const isDisabled = status === 'locked' && sectionId !== 'input-sheet'
+                
+                return (
+                  <SidebarMenuItem key={section.id}>
+                    <SidebarMenuButton
+                      isActive={state.activeSection === section.id}
+                      onClick={() => !isDisabled && dispatch({ type: 'SET_ACTIVE_SECTION', payload: section.id })}
+                      tooltip={isDisabled ? "Complete required inputs first" : section.description}
+                      disabled={isDisabled}
+                      className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      <section.icon className="size-4" />
+                      <span>{section.title}</span>
+                      {state.activeSection === section.id && (
+                        <ChevronRight className="ml-auto size-4" />
+                      )}
+                      {state.activeSection !== section.id && getStatusBadge(sectionId)}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
