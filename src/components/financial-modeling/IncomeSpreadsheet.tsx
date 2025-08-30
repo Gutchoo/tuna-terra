@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { ApplyInput } from '@/components/ui/apply-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -161,38 +161,30 @@ export function IncomeSpreadsheet({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <div className="relative">
-                  <Input
-                    type="number"
-                    placeholder="3"
-                    value={assumptions.rentalIncomeGrowthRate || ''}
-                    onChange={(e) => onAssumptionsChange({
-                      ...assumptions,
-                      rentalIncomeGrowthRate: parseFloat(e.target.value) || undefined
-                    })}
-                    className="pr-8"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-muted-foreground text-sm">%</span>
-                  </div>
+            <div className="space-y-1">
+              <div className="relative">
+                <ApplyInput
+                  type="number"
+                  placeholder="3"
+                  value={assumptions.rentalIncomeGrowthRate || ''}
+                  onChange={(e) => onAssumptionsChange({
+                    ...assumptions,
+                    rentalIncomeGrowthRate: parseFloat(e.target.value) || undefined
+                  })}
+                  onApply={() => autoPopulateWithGrowth(
+                    'potentialRentalIncome', 
+                    assumptions.rentalIncomeGrowthRate || 0
+                  )}
+                  applyDisabled={!assumptions.rentalIncomeGrowthRate || !assumptions.potentialRentalIncome?.some(val => val > 0)}
+                  className="pr-24"
+                />
+                <div className="absolute inset-y-0 right-20 flex items-center pr-1 pointer-events-none">
+                  <span className="text-muted-foreground text-sm">%</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Grows from the highest existing value forward
-                </p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => autoPopulateWithGrowth(
-                  'potentialRentalIncome', 
-                  assumptions.rentalIncomeGrowthRate || 0
-                )}
-                disabled={!assumptions.rentalIncomeGrowthRate || !assumptions.potentialRentalIncome?.some(val => val > 0)}
-              >
-                Apply
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Grows from the highest existing value forward
+              </p>
             </div>
           </div>
 
@@ -211,62 +203,44 @@ export function IncomeSpreadsheet({
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <div className="relative">
-                  <Input
-                    type="number"
-                    placeholder="2"
-                    value={otherIncomeGrowthRate || ''}
-                    onChange={(e) => setOtherIncomeGrowthRate(parseFloat(e.target.value) || undefined)}
-                    className="pr-8"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-muted-foreground text-sm">%</span>
-                  </div>
+            <div className="space-y-1">
+              <div className="relative">
+                <ApplyInput
+                  type="number"
+                  placeholder="2"
+                  value={otherIncomeGrowthRate || ''}
+                  onChange={(e) => setOtherIncomeGrowthRate(parseFloat(e.target.value) || undefined)}
+                  onApply={() => autoPopulateWithGrowth(
+                    'otherIncome',
+                    otherIncomeGrowthRate || 0
+                  )}
+                  applyDisabled={!otherIncomeGrowthRate || !assumptions.otherIncome?.some(val => val > 0)}
+                  className="pr-24"
+                />
+                <div className="absolute inset-y-0 right-20 flex items-center pr-1 pointer-events-none">
+                  <span className="text-muted-foreground text-sm">%</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Grows from the highest existing value forward
-                </p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => autoPopulateWithGrowth(
-                  'otherIncome',
-                  otherIncomeGrowthRate || 0
-                )}
-                disabled={!otherIncomeGrowthRate || !assumptions.otherIncome?.some(val => val > 0)}
-              >
-                Apply
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Grows from the highest existing value forward
+              </p>
             </div>
           </div>
 
           {/* Vacancy Rate Auto-populate */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Auto-populate Vacancy Rate</Label>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Input
-                  type="number"
-                  placeholder="Default vacancy %"
-                  value={assumptions.defaultVacancyRate || ''}
-                  onChange={(e) => onAssumptionsChange({
-                    ...assumptions,
-                    defaultVacancyRate: parseFloat(e.target.value) || undefined
-                  })}
-                />
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={autoPopulateVacancyRates}
-                disabled={assumptions.defaultVacancyRate === undefined}
-              >
-                Apply
-              </Button>
-            </div>
+            <ApplyInput
+              type="number"
+              placeholder="Default vacancy %"
+              value={assumptions.defaultVacancyRate || ''}
+              onChange={(e) => onAssumptionsChange({
+                ...assumptions,
+                defaultVacancyRate: parseFloat(e.target.value) || undefined
+              })}
+              onApply={autoPopulateVacancyRates}
+              applyDisabled={assumptions.defaultVacancyRate === undefined}
+            />
           </div>
 
           {/* Operating Expenses */}
@@ -306,35 +280,27 @@ export function IncomeSpreadsheet({
               
               {/* Show percentage input and apply button when percentage is selected */}
               {assumptions.operatingExpenseType === 'percentage' && (
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        placeholder="40"
-                        value={assumptions.defaultOperatingExpenseRate || ''}
-                        onChange={(e) => onAssumptionsChange({
-                          ...assumptions,
-                          defaultOperatingExpenseRate: parseFloat(e.target.value) || undefined
-                        })}
-                        className="pr-8"
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <span className="text-muted-foreground text-sm">%</span>
-                      </div>
+                <div className="space-y-1">
+                  <div className="relative">
+                    <ApplyInput
+                      type="number"
+                      placeholder="40"
+                      value={assumptions.defaultOperatingExpenseRate || ''}
+                      onChange={(e) => onAssumptionsChange({
+                        ...assumptions,
+                        defaultOperatingExpenseRate: parseFloat(e.target.value) || undefined
+                      })}
+                      onApply={autoPopulateOperatingExpenses}
+                      applyDisabled={assumptions.defaultOperatingExpenseRate === undefined}
+                      className="pr-24"
+                    />
+                    <div className="absolute inset-y-0 right-20 flex items-center pr-1 pointer-events-none">
+                      <span className="text-muted-foreground text-sm">%</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Applies percentage to effective gross income for all years
-                    </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={autoPopulateOperatingExpenses}
-                    disabled={assumptions.defaultOperatingExpenseRate === undefined}
-                  >
-                    Apply
-                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Applies percentage to effective gross income for all years
+                  </p>
                 </div>
               )}
               
@@ -510,29 +476,6 @@ export function IncomeSpreadsheet({
           </div>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <div className="text-sm text-muted-foreground">Average NOI</div>
-            <div className="text-lg font-semibold">
-              ${Math.round(Array.from({ length: displayYears }, (_, i) => calculateNOI(i))
-                .reduce((sum, noi, _, arr) => sum + noi / arr.length, 0))
-                .toLocaleString()}
-            </div>
-          </div>
-          <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <div className="text-sm text-muted-foreground">Year 1 NOI</div>
-            <div className="text-lg font-semibold">
-              ${calculateNOI(0).toLocaleString()}
-            </div>
-          </div>
-          <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <div className="text-sm text-muted-foreground">Final Year NOI</div>
-            <div className="text-lg font-semibold">
-              ${calculateNOI(displayYears - 1).toLocaleString()}
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )

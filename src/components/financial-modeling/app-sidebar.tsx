@@ -40,8 +40,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, dispatch } = useFinancialModeling()
   
   return (
-    <Sidebar {...props}>
-      <SidebarContent className="pt-16">
+    <Sidebar {...props} className="top-12">
+      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Financial Modeling</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -70,7 +70,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton
+                  onClick={() => dispatch({ type: 'RESET_MODEL' })}
+                  tooltip="Reset all inputs to default values"
+                >
                   <Calculator className="size-4" />
                   <span>Reset Model</span>
                 </SidebarMenuButton>

@@ -15,6 +15,7 @@ type FinancialAction =
   | { type: 'UPDATE_ASSUMPTIONS'; payload: Partial<PropertyAssumptions> }
   | { type: 'SET_RESULTS'; payload: ProFormaResults | null }
   | { type: 'SET_CALCULATING'; payload: boolean }
+  | { type: 'RESET_MODEL' }
 
 interface FinancialModelingContextType {
   state: FinancialState
@@ -89,6 +90,8 @@ function financialReducer(state: FinancialState, action: FinancialAction): Finan
       return { ...state, results: action.payload }
     case 'SET_CALCULATING':
       return { ...state, isCalculating: action.payload }
+    case 'RESET_MODEL':
+      return { ...initialState }
     default:
       return state
   }
