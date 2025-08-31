@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { FinancialModelingSidebar } from "@/components/financial-modeling/FinancialModelingSidebar"
+import { AppSidebar } from "@/components/financial-modeling/app-sidebar"
 import { FinancialModelingProvider } from "@/lib/contexts/FinancialModelingContext"
 
 export default function FinancialModelingLayout({ 
@@ -17,7 +17,7 @@ export default function FinancialModelingLayout({
           } as React.CSSProperties
         }
       >
-        <FinancialModelingSidebar />
+        <AppSidebar />
         <SidebarInset>
           <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col">

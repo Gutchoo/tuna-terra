@@ -10,10 +10,10 @@ import { useFinancialModeling } from '@/lib/contexts/FinancialModelingContext'
 import { ProFormaCalculator } from '@/lib/financial-modeling/proforma'
 
 interface DataTableProps {
-  data?: any[]
+  data?: unknown[]
 }
 
-export function DataTable({ data }: DataTableProps) {
+export function DataTable({ }: DataTableProps) {
   const { state } = useFinancialModeling()
   const calculator = new ProFormaCalculator(state.assumptions)
   const results = calculator.calculate()
@@ -103,7 +103,7 @@ export function DataTable({ data }: DataTableProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cashflows.map((cf, index) => (
+                  {cashflows.map((cf) => (
                     <TableRow key={cf.year} className="hover:bg-muted/50">
                       <TableCell className="font-medium">
                         <Badge variant="outline">Year {cf.year}</Badge>
@@ -133,9 +133,14 @@ export function DataTable({ data }: DataTableProps) {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge variant={cf.cashOnCashReturn >= 0.05 ? 'default' : 'secondary'}>
-                          {formatPercentage(cf.cashOnCashReturn)}
-                        </Badge>
+                        {(() => {
+                          const cashOnCashReturn = results?.totalEquityInvested ? cf.beforeTaxCashflow / results.totalEquityInvested : 0;
+                          return (
+                            <Badge variant={cashOnCashReturn >= 0.05 ? 'default' : 'secondary'}>
+                              {formatPercentage(cashOnCashReturn)}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))}

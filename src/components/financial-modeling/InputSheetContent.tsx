@@ -238,6 +238,7 @@ export function InputSheetContent() {
                       label="Land (%)"
                       id="land-percentage"
                       type="percentage"
+                      tooltip={financialTooltips.landPercentage}
                       value={assumptions.landPercentage}
                       onChange={(value) => {
                         const numValue = parseFloat(value) || 0

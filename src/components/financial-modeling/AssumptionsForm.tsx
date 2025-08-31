@@ -224,7 +224,7 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
               <TooltipInput
                 id="land-value"
                 label="Land Value %"
-                tooltip={financialTooltips.landValue}
+                tooltip={financialTooltips.landPercentage}
                 value={assumptions.landPercentage}
                 onChange={(value) => updateAssumption('landPercentage', parseFloat(value) || 0)}
                 type="number"
@@ -233,7 +233,7 @@ function PropertyContent({ assumptions, updateAssumption, handlePropertyTypeChan
               <TooltipInput
                 id="improvements-value"
                 label="Improvements Value %"
-                tooltip={financialTooltips.improvementsValue}
+                tooltip={financialTooltips.improvementsPercentage}
                 value={assumptions.improvementsPercentage}
                 onChange={(value) => updateAssumption('improvementsPercentage', parseFloat(value) || 0)}
                 type="number"

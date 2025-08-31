@@ -38,7 +38,7 @@ export function isPropertyIncomeComplete(assumptions: PropertyAssumptions): bool
 
   const hasLegacyIncome = assumptions.year1NOI && assumptions.year1NOI > 0
 
-  return hasDetailedIncome || hasLegacyIncome
+  return Boolean(hasDetailedIncome || hasLegacyIncome)
 }
 
 /**
@@ -155,7 +155,7 @@ export function calculateInputSheetProgress(assumptions: PropertyAssumptions): n
     if (assumptions.interestRate > 0) points += 5
     if (assumptions.loanTermYears > 0) points += 5
     if (assumptions.amortizationYears > 0) points += 5
-    if ((assumptions.targetDSCR > 0) || (assumptions.targetLTV > 0) || (assumptions.loanAmount > 0)) points += 5
+    if (((assumptions.targetDSCR ?? 0) > 0) || ((assumptions.targetLTV ?? 0) > 0) || (assumptions.loanAmount > 0)) points += 5
   }
 
   // Tax & Exit (20 points)

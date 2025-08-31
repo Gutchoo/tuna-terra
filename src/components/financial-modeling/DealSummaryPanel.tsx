@@ -260,7 +260,7 @@ export function DealSummaryPanel() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
-                NPV @ {(metrics?.discountRate * 100).toFixed(0)}%
+                NPV @ {((metrics?.discountRate ?? 0) * 100).toFixed(0)}%
               </span>
               <span className="font-mono">
                 {showAfterTax 
@@ -331,8 +331,8 @@ export function DealSummaryPanel() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">DSCR (Y1)</span>
-                  <span className={`font-mono font-semibold ${metrics?.dscr < 1.2 ? 'text-red-600' : ''}`}>
-                    {metrics?.dscr.toFixed(2)}×
+                  <span className={`font-mono font-semibold ${(metrics?.dscr ?? 0) < 1.2 ? 'text-red-600' : ''}`}>
+                    {(metrics?.dscr ?? 0).toFixed(2)}×
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
