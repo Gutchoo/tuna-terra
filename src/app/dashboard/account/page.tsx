@@ -56,6 +56,34 @@ function AccountPageContent() {
     return fullName.trim() !== initialName
   }
 
+  const loadUserProfile = async () => {
+    try {
+      const response = await fetch('/api/user/profile')
+      if (!response.ok) {
+        throw new Error('Failed to load profile')
+      }
+
+      const data = await response.json()
+      setStats(data.stats)
+    } catch (error) {
+      console.error('Error loading user profile:', error)
+    }
+  }
+
+  const loadUserLimits = async () => {
+    try {
+      const response = await fetch('/api/user/limits')
+      if (!response.ok) {
+        throw new Error('Failed to load user limits')
+      }
+
+      const data = await response.json()
+      setUserLimits(data.limits)
+    } catch (error) {
+      console.error('Error loading user limits:', error)
+    }
+  }
+
   // Auto-dismiss success messages
   useEffect(() => {
     if (message?.type === 'success') {
@@ -74,8 +102,20 @@ function AccountPageContent() {
         if (!user) return
 
         setUser(user)
-        const name = user.user_metadata?.full_name || user.user_metadata?.name || ''
-        
+
+        // Extract name from user metadata (first/last name from signup or full_name from OAuth)
+        const firstName = user.user_metadata?.first_name || ''
+        const lastName = user.user_metadata?.last_name || ''
+
+        let name = ''
+        if (firstName && lastName) {
+          name = `${firstName} ${lastName}`
+        } else if (user.user_metadata?.full_name) {
+          name = user.user_metadata.full_name
+        } else if (firstName) {
+          name = firstName
+        }
+
         setFullName(name)
         setInitialName(name)
 
@@ -91,40 +131,9 @@ function AccountPageContent() {
     }
 
     loadUserData()
-  }, [supabase.auth])
+  }, []) // Remove problematic dependencies
 
-  const loadUserProfile = async () => {
-    try {
-      const response = await fetch('/api/user/profile')
-      if (!response.ok) {
-        throw new Error('Failed to load profile')
-      }
-      
-      const data = await response.json()
-      setStats(data.stats)
-      
-      // Update user data from API if available
-      if (data.user) {
-        setFullName(data.user.full_name || '')
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error)
-    }
-  }
 
-  const loadUserLimits = async () => {
-    try {
-      const response = await fetch('/api/user/limits')
-      if (!response.ok) {
-        throw new Error('Failed to load user limits')
-      }
-      
-      const data = await response.json()
-      setUserLimits(data.limits)
-    } catch (error) {
-      console.error('Error loading user limits:', error)
-    }
-  }
 
   const validateForm = () => {
     let isValid = true
@@ -254,6 +263,7 @@ function AccountPageContent() {
   const formatResetDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
+      day: 'numeric',
       year: 'numeric'
     })
   }
@@ -594,16 +604,10 @@ function AccountPageContent() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <SearchIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     Resets {userLimits ? formatResetDate(userLimits.reset_date) : '...'}
                   </span>
                 </div>
-                {userLimits?.tier === 'free' && (
-                  <Badge variant="outline" className="text-xs">
-                    Pro: Unlimited Lookups
-                  </Badge>
-                )}
               </div>
             </CardContent>
           </Card>

@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import { PropertyViewToggle } from './PropertyViewToggle'
 import { PropertyCardView } from './PropertyCardView'
 import { PropertyTableView } from './PropertyTableView'
 import { BulkActionBar } from './BulkActionBar'
-import { SearchBar } from './SearchBar'
+import { SearchInput } from './SearchBar'
+import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,18 +22,24 @@ import {
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 import { useDeleteProperty, useDeleteProperties, useRefreshProperty } from '@/hooks/use-properties'
+import { useCensusData } from '@/hooks/useCensusData'
+import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 
-type ViewMode = 'cards' | 'table'
+type ViewMode = 'cards' | 'table' | 'map'
 
 interface PropertyViewProps {
   properties: Property[]
   onPropertiesChange: (properties: Property[]) => void
   onError: (error: string) => void
+  portfolioId?: string | null
+  onAddProperties?: (method?: 'csv' | 'apn' | 'address') => void
+  // Demo mode override handlers
+  onRefreshOverride?: (property: Property) => void
+  onDeleteOverride?: (property: Property) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function PropertyView({ properties, onPropertiesChange, onError }: PropertyViewProps) {
+export function PropertyView({ properties, onPropertiesChange, onError, portfolioId, onAddProperties, onRefreshOverride, onDeleteOverride }: PropertyViewProps) {
   // React Query mutations for property operations
   const deleteProperty = useDeleteProperty()
   const deleteProperties = useDeleteProperties()
@@ -39,10 +48,16 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   const previousSearchQuery = useRef('')
+  
+  // Column visibility state (allow virtual columns)
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property | string>>(() => {
+    return new Set(AVAILABLE_COLUMNS.filter(col => col.defaultVisible).map(col => col.key))
+  })
   
   // Action states
   const [refreshingPropertyId, setRefreshingPropertyId] = useState<string | null>(null)
@@ -54,13 +69,42 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Census data hook
+  const { censusData, isLoading: isLoadingCensus, error: censusError } = useCensusData(properties)
+
+  // Handle census data errors
+  useEffect(() => {
+    if (censusError) {
+      console.warn('Census data error:', censusError)
+      // Don't show toast for census errors as it's not critical to property display
+    }
+  }, [censusError])
+
   // Load saved view preference
   useEffect(() => {
     const savedView = localStorage.getItem('property-view-mode')
-    if (savedView === 'cards' || savedView === 'table') {
-      setViewMode(savedView)
+    if (savedView === 'cards' || savedView === 'table' || savedView === 'map') {
+      setViewMode(savedView as ViewMode)
     }
   }, [])
+
+  // Load saved column preferences
+  useEffect(() => {
+    const saved = localStorage.getItem('propertyTableColumns')
+    if (saved) {
+      try {
+        const savedColumns = JSON.parse(saved)
+        setVisibleColumns(new Set(savedColumns))
+      } catch (error) {
+        console.warn('Failed to load saved column preferences:', error)
+      }
+    }
+  }, [])
+
+  // Save column preferences
+  useEffect(() => {
+    localStorage.setItem('propertyTableColumns', JSON.stringify(Array.from(visibleColumns)))
+  }, [visibleColumns])
 
   // Save view preference
   const handleViewChange = (view: ViewMode) => {
@@ -156,13 +200,18 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
   // Single property refresh
   const handleRefreshClick = async (property: Property) => {
+    // Use override handler if provided (for demo mode)
+    if (onRefreshOverride) {
+      return onRefreshOverride(property)
+    }
+
     if (!property.apn) {
       toast.error('Cannot refresh property: No APN available')
       return
     }
 
     setRefreshingPropertyId(property.id)
-    
+
     try {
       await refreshProperty.mutateAsync(property.id)
       toast.success('Property data refreshed successfully')
@@ -175,6 +224,11 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
 
   // Single property delete
   const handleDeleteClick = (property: Property) => {
+    // Use override handler if provided (for demo mode)
+    if (onDeleteOverride) {
+      return onDeleteOverride(property)
+    }
+
     setPropertyToDelete(property)
     setDeleteDialogOpen(true)
   }
@@ -257,66 +311,118 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
     setSelectedRows(new Set())
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Search Bar */}
-      <SearchBar
-        onSearchChange={handleSearchChange}
-        resultsCount={filteredProperties.length}
-        totalCount={properties.length}
-      />
+  // Helper to determine which properties to show (all properties if no search matches, filtered otherwise)
+  const displayProperties = filteredProperties.length === 0 && searchQuery.trim().length > 0 ? properties : filteredProperties
 
-      {/* View Toggle */}
-      <div className="flex justify-between items-center">
-        <PropertyViewToggle currentView={viewMode} onViewChange={handleViewChange} />
-        {viewMode === 'table' && selectedRows.size > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {selectedRows.size} of {filteredProperties.length} selected
-          </div>
-        )}
+  return (
+    <div>
+      {/* Perfect Alignment Container - Search Input, View Switcher, Add Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex-1 max-w-md">
+          <SearchInput
+            onSearchChange={handleSearchChange}
+            placeholder="Search properties..."
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <PropertyViewToggle
+            currentView={viewMode}
+            onViewChange={handleViewChange}
+          />
+
+          {onAddProperties && (
+            <Button onClick={() => onAddProperties()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Property
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Content */}
-      {filteredProperties.length === 0 && searchQuery.trim().length > 0 ? (
-        <div className="text-center py-12">
-          <div className="mx-auto h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-4">
-            <span className="text-2xl">🔍</span>
-          </div>
-          <h3 className="text-lg font-medium mb-2">No properties found</h3>
-          <p className="text-muted-foreground">
-            Try adjusting your search terms or{' '}
-            <button 
-              onClick={() => handleSearchChange('')}
-              className="text-primary hover:underline"
-            >
-              clear the search
-            </button>{' '}
-            to see all properties.
-          </p>
+      {/* Search Results Counter - Outside alignment container */}
+      <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          {filteredProperties.length === 0 && searchQuery.trim() ? (
+            <span className="text-amber-600">
+              No properties match &quot;{searchQuery}&quot;
+            </span>
+          ) : searchQuery.trim() ? (
+            <span>
+              Showing <span className="font-medium text-foreground">{filteredProperties.length}</span> of{' '}
+              <span className="font-medium">{properties.length}</span> properties
+            </span>
+          ) : (
+            <span>
+              <span className="font-medium text-foreground">{properties.length}</span> properties total
+            </span>
+          )}
         </div>
-      ) : viewMode === 'cards' ? (
+
+      </div>
+
+      {/* Table Controls - Show only when in table mode with selections */}
+      {viewMode === 'table' && (
+        <div className="mt-4 flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            {selectedRows.size > 0 && (
+              <div className="text-sm text-muted-foreground">
+                {selectedRows.size} of {filteredProperties.length} selected
+              </div>
+            )}
+          </div>
+          <ColumnSelector
+            visibleColumns={visibleColumns}
+            onColumnsChange={setVisibleColumns}
+          />
+        </div>
+      )}
+
+
+      {/* Content */}
+      <div className="mt-4">
+        {viewMode === 'cards' ? (
         <PropertyCardView
-          properties={filteredProperties}
+          properties={displayProperties}
           expandedCards={expandedCards}
           onToggleExpand={handleToggleExpand}
           onRefresh={handleRefreshClick}
           onDelete={handleDeleteClick}
           refreshingPropertyId={refreshingPropertyId}
+          censusData={censusData}
+          isLoadingCensus={isLoadingCensus}
         />
+      ) : viewMode === 'map' ? (
+        <div className="h-[75vh]">
+          <FullScreenMapView
+            properties={displayProperties}
+            selectedPropertyId={selectedPropertyId}
+            onPropertySelect={setSelectedPropertyId}
+            onPropertiesChange={onPropertiesChange}
+            onError={onError}
+            censusData={censusData}
+            isLoadingCensus={isLoadingCensus}
+          />
+        </div>
       ) : (
         <PropertyTableView
-          properties={filteredProperties}
+          properties={displayProperties}
           selectedRows={selectedRows}
           onRowSelect={handleRowSelect}
           onSelectAll={handleSelectAll}
           onRefresh={handleRefreshClick}
           onDelete={handleDeleteClick}
           refreshingPropertyId={refreshingPropertyId}
+          visibleColumns={visibleColumns}
+          censusData={censusData}
+          isLoadingCensus={isLoadingCensus}
         />
       )}
 
       {/* Bulk Action Bar */}
-      {viewMode === 'table' && filteredProperties.length > 0 && (
+      {viewMode === 'table' && displayProperties.length > 0 && (
         <BulkActionBar
           selectedCount={selectedRows.size}
           onBulkRefresh={handleBulkRefresh}
@@ -371,6 +477,7 @@ export function PropertyView({ properties, onPropertiesChange, onError }: Proper
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   )
 }

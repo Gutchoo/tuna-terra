@@ -1,16 +1,14 @@
 'use client'
 
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { TrashIcon } from 'lucide-react'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { useDeletePortfolio } from '@/hooks/use-portfolios'
 import type { PortfolioWithMembership } from '@/lib/supabase'
 
@@ -35,7 +33,13 @@ export function DeletePortfolioDialog({
     if (!portfolio) return
 
     try {
-      await deletePortfolioMutation.mutateAsync(portfolio.id)
+      const result = await deletePortfolioMutation.mutateAsync(portfolio.id)
+
+      // Show the message from the API if a new default was set
+      if (result?.message) {
+        console.log('Portfolio deletion result:', result.message)
+      }
+
       onDeleteSuccess()
       onOpenChange(false)
     } catch (error) {
@@ -48,83 +52,33 @@ export function DeletePortfolioDialog({
 
   if (!portfolio) return null
 
-  const hasProperties = (portfolio.property_count || 0) > 0
-  const hasMembers = (portfolio.member_count || 0) > 1 // More than just the owner
-
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <TrashIcon className="h-6 w-6 text-red-600" />
-            </div>
-            <div>
-              <AlertDialogTitle>Delete Portfolio</AlertDialogTitle>
-            </div>
-          </div>
-          <AlertDialogDescription className="text-left space-y-3">
-            <p>
-              Are you sure you want to delete <strong>&ldquo;{portfolio.name}&rdquo;</strong>? 
-              This action cannot be undone.
-            </p>
-            
-            {hasProperties && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-amber-800 font-medium text-sm">
-                  ⚠️ This portfolio contains {portfolio.property_count} {portfolio.property_count === 1 ? 'property' : 'properties'}
-                </p>
-                <p className="text-amber-700 text-sm mt-1">
-                  All properties in this portfolio will be permanently deleted.
-                </p>
-              </div>
-            )}
-
-            {hasMembers && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-blue-800 font-medium text-sm">
-                  👥 This portfolio has {portfolio.member_count} members
-                </p>
-                <p className="text-blue-700 text-sm mt-1">
-                  All members will lose access to this portfolio.
-                </p>
-              </div>
-            )}
-
-            {portfolio.is_sample && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-800 font-medium text-sm">
-                  🔒 This is a sample portfolio
-                </p>
-                <p className="text-red-700 text-sm mt-1">
-                  Sample portfolios showcase our platform capabilities and cannot be deleted. They remain available as examples of our data quality.
-                </p>
-              </div>
-            )}
-
-            {portfolio.is_default && !portfolio.is_sample && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <p className="text-orange-800 font-medium text-sm">
-                  🏠 This is your default portfolio
-                </p>
-                <p className="text-orange-700 text-sm mt-1">
-                  After deletion, you&apos;ll need to create a new portfolio to manage properties.
-                </p>
-              </div>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Portfolio</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete &ldquo;{portfolio.name}&rdquo;?
+            This action cannot be undone and will permanently delete all properties within this portfolio.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
             onClick={handleDeleteConfirm}
             disabled={isDeleting || portfolio.is_sample}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {portfolio.is_sample ? 'Cannot Delete Sample' : isDeleting ? 'Deleting...' : 'Delete Portfolio'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

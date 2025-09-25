@@ -60,3 +60,6 @@ src/lib/test-data/
 
 # Database schemas (contain sensitive production information)
 database/
+
+# Census API testing/development scripts (may contain sensitive data)
+census_api/

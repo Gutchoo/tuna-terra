@@ -20,8 +20,7 @@ import {
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { InlineEditablePortfolioName } from '@/components/portfolios/InlineEditablePortfolioName'
-import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
-import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
+import { usePortfolios, useUpdatePortfolioName, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useUserLimits, useRemainingLookups } from '@/hooks/use-user-limits'
 import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 // import type { PortfolioWithMembership } from '@/lib/supabase'
@@ -34,13 +33,13 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showProInfoModal, setShowProInfoModal] = useState(false)
-  const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   
   // Use optimized hooks for data fetching
   const { data: portfolios = [], isLoading: portfoliosLoading } = usePortfolios(true)
   const { data: userLimits } = useUserLimits()
   const remainingLookups = useRemainingLookups()
   const updatePortfolioName = useUpdatePortfolioName()
+  const updateLastUsedPortfolio = useUpdateLastUsedPortfolio()
 
   const loading = portfoliosLoading
   
@@ -54,10 +53,21 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
     } else {
       url.searchParams.delete('portfolio_id')
     }
-    
+
     router.replace(url.pathname + url.search)
+
+    // Track portfolio usage - set as last used portfolio (but not for virtual sample)
+    // Only update if the portfolio is not already marked as default/last-used and not currently updating
+    if (portfolioId && !isVirtualSamplePortfolio(portfolioId) && !updateLastUsedPortfolio.isPending) {
+      const portfolioData = portfolios.find(p => p.id === portfolioId)
+      if (portfolioData && !portfolioData.is_default) {
+        updateLastUsedPortfolio.mutate(portfolioId)
+        console.log('[HEADER] Setting new last-used portfolio via dropdown:', portfolioId)
+      }
+    }
+
     onPortfolioChange?.(portfolioId)
-  }, [router, onPortfolioChange])
+  }, [router, onPortfolioChange, updateLastUsedPortfolio, portfolios])
 
   const handlePortfolioNameUpdate = useCallback((portfolioId: string, newName: string) => {
     updatePortfolioName.mutate({ id: portfolioId, name: newName })
@@ -147,13 +157,13 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   if (loading) {
     return (
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="px-fluid-md py-fluid-md">
+          <div className="flex items-center justify-between gap-fluid-sm">
+            <div className="flex items-center gap-fluid-md">
               <div className="h-10 w-48 bg-muted rounded animate-pulse" />
               <div className="h-6 w-24 bg-muted rounded animate-pulse" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-fluid-sm">
               <div className="h-9 w-32 bg-muted rounded animate-pulse" />
               <div className="h-9 w-28 bg-muted rounded animate-pulse" />
             </div>
@@ -166,9 +176,9 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
   return (
     <TooltipProvider>
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-4 sm:px-6 py-4">
+        <div className="px-fluid-sm py-fluid-md">
           {/* Mobile Layout */}
-          <div className="flex flex-col gap-4 md:hidden">
+          <div className="flex flex-col gap-fluid-md md:hidden">
             {/* Top Row - Portfolio Selector */}
             <div className="flex items-center gap-2">
               <Select value={currentPortfolio || ''} onValueChange={handlePortfolioChange}>
@@ -185,9 +195,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                           onError={() => {}}
                           className="font-medium truncate"
                         />
-                        {selectedPortfolio.is_default && (
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
-                        )}
                         {isVirtualSamplePortfolio(selectedPortfolio.id) && (
                           <Badge className="text-xs flex-shrink-0 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                             Demo
@@ -208,9 +215,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                       <div className="flex items-center gap-2 min-w-0">
                         <BuildingIcon className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">{portfolio.name}</span>
-                        {portfolio.is_default && (
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">Default</Badge>
-                        )}
                         {isVirtualSamplePortfolio(portfolio.id) ? (
                           <Badge className="text-xs flex-shrink-0 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                             Demo
@@ -271,26 +275,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                     <span className="ml-1 hidden xs:inline">Manage</span>
                   </Link>
                 </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <Button 
-                        size="sm"
-                        onClick={() => setShowAddPropertiesModal(true)}
-                        className="text-xs px-2"
-                        disabled={currentPortfolio ? isVirtualSamplePortfolio(currentPortfolio) : false}
-                      >
-                        <PlusIcon className="h-3 w-3" />
-                        <span className="ml-1">Add</span>
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
-                    <TooltipContent>
-                      <p>Cannot add properties to demo portfolio</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
               </div>
             </div>
           </div>
@@ -315,9 +299,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                             onError={() => {}}
                             className="font-medium"
                           />
-                          {selectedPortfolio.is_default && (
-                            <Badge variant="secondary" className="text-xs">Default</Badge>
-                          )}
                           {isVirtualSamplePortfolio(selectedPortfolio.id) ? (
                             <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                               Demo
@@ -344,9 +325,6 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
                         <div className="flex items-center gap-2">
                           <BuildingIcon className="h-4 w-4" />
                           <span>{portfolio.name}</span>
-                          {portfolio.is_default && (
-                            <Badge variant="secondary" className="text-xs">Default</Badge>
-                          )}
                           {isVirtualSamplePortfolio(portfolio.id) ? (
                             <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                               Demo
@@ -404,52 +382,17 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
 
             {/* Right side - Action buttons */}
             <div className="flex items-center gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button variant="outline" asChild>
-                      <Link href="/dashboard/portfolios" className="flex items-center gap-2">
-                        <SettingsIcon className="h-4 w-4" />
-                        Manage Portfolios
-                      </Link>
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
-                  <TooltipContent>
-                    <p>Create and manage your portfolios here</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button 
-                      onClick={() => setShowAddPropertiesModal(true)}
-                      className="flex items-center gap-2"
-                      disabled={currentPortfolio ? isVirtualSamplePortfolio(currentPortfolio) : false}
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                      Add Properties
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {currentPortfolio && isVirtualSamplePortfolio(currentPortfolio) && (
-                  <TooltipContent>
-                    <p>Cannot add properties to demo portfolio</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/portfolios" className="flex items-center gap-2">
+                  <SettingsIcon className="h-4 w-4" />
+                  Manage Portfolios
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
       <ProLookupModal />
-      <AddPropertiesModal
-        open={showAddPropertiesModal}
-        onOpenChange={setShowAddPropertiesModal}
-        portfolioId={currentPortfolio}
-      />
     </TooltipProvider>
   )
 }

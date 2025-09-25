@@ -9,6 +9,7 @@ type UploadMethod = 'csv' | 'apn' | 'address'
 
 interface EmptyPropertiesStateProps {
   portfolioId?: string | null
+  portfolioName?: string
   onAddProperties?: (method: UploadMethod) => void
 }
 
@@ -44,7 +45,7 @@ const uploadMethods: MethodOption[] = [
   }
 ]
 
-export function EmptyPropertiesState({ portfolioId, onAddProperties }: EmptyPropertiesStateProps) {
+export function EmptyPropertiesState({ portfolioId, portfolioName, onAddProperties }: EmptyPropertiesStateProps) {
   // Safety check: this component should not be used for virtual sample portfolio
   if (portfolioId && isVirtualSamplePortfolio(portfolioId)) {
     return null
@@ -63,56 +64,54 @@ export function EmptyPropertiesState({ portfolioId, onAddProperties }: EmptyProp
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-2xl mx-auto px-6 text-center">
       {/* Header Section */}
-      <div className="mb-12">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-foreground">
-            Add your first property
-          </h1>
-          
-          <p className="text-muted-foreground leading-relaxed max-w-lg mx-auto">
-            Choose how you&apos;d like to get started. Upload properties and get comprehensive 
-            data including ownership, financials, and zoning information.
-          </p>
-        </div>
+      <div className="mb-8 mt-16">
+        <h1 className="text-2xl font-semibold text-foreground">
+          Get started by adding your first property to {portfolioName || 'your portfolio'}
+        </h1>
       </div>
 
-      {/* Method Cards */}
-      <div className="w-full max-w-2xl">
-        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-          {uploadMethods.map((method) => {
-            const Icon = method.icon
-            return (
-              <Card 
-                key={method.id}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group"
-                onClick={() => handleMethodSelect(method.id)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="space-y-4">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                        <Icon className="h-6 w-6 text-primary" />
+      {/* Quick Actions */}
+      <div className="w-full max-w-2xl space-y-8">
+        {/* Method Cards */}
+        <div>
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">Add Properties</h3>
+          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+            {uploadMethods.map((method) => {
+              const Icon = method.icon
+              return (
+                <Card 
+                  key={method.id}
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group"
+                  onClick={() => handleMethodSelect(method.id)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="space-y-4">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                          <Icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {method.id === 'csv' ? 'Bulk' : 'Single'}
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {method.id === 'csv' ? 'Bulk' : 'Single'}
-                      </Badge>
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg">{method.title}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {method.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 italic">
+                          e.g. {method.example}
+                        </p>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg">{method.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {method.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 italic">
-                        e.g. {method.example}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
         </div>
+
       </div>
     </div>
   )

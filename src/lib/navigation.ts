@@ -4,7 +4,7 @@
 
 /**
  * Build a URL with portfolio context preserved
- * @param basePath - The base path (e.g., '/dashboard', '/dashboard/map')
+ * @param basePath - The base path (e.g., '/dashboard')
  * @param portfolioId - The current portfolio ID to maintain in the URL
  * @returns The complete URL with portfolio_id parameter if provided
  */
@@ -49,7 +49,6 @@ export function createPortfolioAwareNavigation(currentPortfolioId: string | null
   return {
     home: buildPortfolioUrl('/dashboard', shouldPreserveContext ? currentPortfolioId : null),
     properties: buildPortfolioUrl('/dashboard', shouldPreserveContext ? currentPortfolioId : null),
-    map: buildPortfolioUrl('/dashboard/map', shouldPreserveContext ? currentPortfolioId : null),
     portfolios: '/dashboard/portfolios', // Portfolio management doesn't need portfolio context
     settings: '/dashboard/settings',
     account: buildPortfolioUrl('/dashboard/account', shouldPreserveContext ? currentPortfolioId : null)

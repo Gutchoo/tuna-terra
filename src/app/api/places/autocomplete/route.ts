@@ -21,12 +21,13 @@ interface GooglePlacesSuggestion {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserId()
-    if (!userId) {
+    const body = await request.json()
+    const { input, demoMode } = body
+
+    // Allow demo users to use Places API for authentic experience
+    if (!userId && !demoMode) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { input } = body
 
     if (!input || input.length < 3) {
       return NextResponse.json({ suggestions: [] })

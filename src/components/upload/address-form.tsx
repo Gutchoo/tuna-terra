@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -23,7 +23,9 @@ interface AddressFormProps {
   portfolioId: string | null
   onSuccess?: (property: unknown) => void
   onError?: (error: string) => void
+  onCancel?: () => void
   isModal?: boolean
+  demoMode?: boolean
 }
 
 interface AddressSuggestion {
@@ -38,7 +40,7 @@ interface AddressSuggestion {
 
 
 
-export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }: AddressFormProps) {
+export function AddressForm({ portfolioId, onSuccess, onError, onCancel, isModal = false, demoMode = false }: AddressFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([])
@@ -65,12 +67,14 @@ export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }
         return
       }
 
+      // Demo mode still uses real Google Places API for authentic experience
+      // Only the property creation is mocked, not the address search
 
       try {
         const response = await fetch('/api/places/autocomplete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input })
+          body: JSON.stringify({ input, demoMode })
         })
 
         if (!response.ok) {
@@ -79,15 +83,21 @@ export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }
 
         const data = await response.json()
         setSuggestions(data.suggestions || [])
-        setShowSuggestions(true)
+        setShowSuggestions(data.suggestions && data.suggestions.length > 0)
       } catch (error) {
         console.error('Places search error:', error)
         setSuggestions([])
         setShowSuggestions(false)
       }
-  }, [])
+  }, [demoMode])
 
-  const searchPlacesDebounced = useCallback(debounce(searchPlaces, 500), []) // eslint-disable-line react-hooks/exhaustive-deps
+  // Create a stable debounced function that properly captures the current searchPlaces
+  const searchPlacesDebounced = useMemo(
+    () => debounce((input: string) => {
+      searchPlaces(input)
+    }, 500),
+    [searchPlaces]
+  )
 
   const handleAddressChange = (value: string) => {
     form.setValue('address', value)
@@ -114,7 +124,7 @@ export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }
       const response = await fetch('/api/places/details', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ placeId: suggestion.placeId })
+        body: JSON.stringify({ placeId: suggestion.placeId, demoMode })
       })
 
       if (!response.ok) {
@@ -133,37 +143,131 @@ export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }
           inputRef.current.value = formattedAddress
         }
 
-        // Directly create the property with the address
-        const propertyData = {
-          portfolio_id: portfolioId,
-          address: formattedAddress,
-          use_pro_lookup: true, // Always attempt pro lookup first
+        // Parse address components from Google Places data
+        let parsedCity = ''
+        let parsedState = ''
+        let parsedZip = ''
+        let streetNumber = ''
+        let route = ''
+
+        if (place.addressComponents) {
+          for (const component of place.addressComponents) {
+            const types = component.types || []
+            
+            // Extract street number
+            if (types.includes('street_number')) {
+              streetNumber = component.longText
+            }
+            
+            // Extract route (street name)
+            if (types.includes('route')) {
+              route = component.longText
+            }
+            
+            // Extract city
+            if (types.includes('locality')) {
+              parsedCity = component.longText
+            } else if (types.includes('administrative_area_level_3') && !parsedCity) {
+              parsedCity = component.longText
+            }
+            
+            // Extract state
+            if (types.includes('administrative_area_level_1')) {
+              parsedState = component.shortText // Use short text for state abbreviation
+            }
+            
+            // Extract zip code
+            if (types.includes('postal_code')) {
+              parsedZip = component.longText
+            }
+          }
         }
 
-        // Create the property - the API will handle Regrid lookup internally
-        await createPropertyMutation.mutateAsync(propertyData)
+        // Build street address from components
+        const streetAddress = [streetNumber, route].filter(Boolean).join(' ')
 
-        // Success! Handle based on context
-        if (isModal && onSuccess) {
-          // Modal context: call success callback with property data
-          onSuccess({
-            address: formattedAddress,
-          })
-        } else {
-          // Regular page context: show success message and clear form
-          setShowSuccess(true)
-          setSubmitError(null)
-          setSuggestions([])
-          setShowSuggestions(false)
-          form.reset()
-          if (inputRef.current) {
-            inputRef.current.value = ''
-          }
+        if (demoMode) {
+          // Demo mode: use real Google Places data but skip database creation
+          // Simulate some processing delay for realism
+          await new Promise(resolve => setTimeout(resolve, 800))
           
-          // Hide success message after 3 seconds
-          setTimeout(() => {
-            setShowSuccess(false)
-          }, 3000)
+          const demoProperty = {
+            id: `demo-property-${Date.now()}`,
+            address: streetAddress || formattedAddress,
+            city: parsedCity || 'Unknown City',
+            state: parsedState || 'Unknown State', 
+            zip_code: parsedZip || 'Unknown ZIP',
+            owner: 'Property Owner',
+            year_built: 2010,
+            assessed_value: 500000,
+            portfolio_id: 'demo-portfolio',
+            geometry: place.geometry || null,
+            lat: place.geometry?.location?.lat || null,
+            lng: place.geometry?.location?.lng || null
+          }
+
+          if (onSuccess) {
+            onSuccess(demoProperty)
+
+            // Reset form and state for next property addition (demo mode)
+            form.reset()
+            setSuggestions([])
+            setShowSuggestions(false)
+            setSubmitError(null)
+            if (inputRef.current) {
+              inputRef.current.value = ''
+            }
+          }
+        } else {
+          // Regular mode: create the property in database
+          const propertyData = {
+            portfolio_id: portfolioId,
+            address: streetAddress || formattedAddress, // Use street address if available, fallback to full address
+            city: parsedCity || undefined,
+            state: parsedState || undefined,
+            zip_code: parsedZip || undefined,
+            use_pro_lookup: true, // Always attempt pro lookup first
+          }
+
+          // Create the property - the API will handle Regrid lookup internally
+          await createPropertyMutation.mutateAsync(propertyData)
+        }
+
+        // Success! Handle based on context (only for non-demo mode)
+        if (!demoMode) {
+          if (isModal && onSuccess) {
+            // Modal context: call success callback with property data then reset form
+            onSuccess({
+              address: streetAddress || formattedAddress,
+              city: parsedCity,
+              state: parsedState,
+              zip_code: parsedZip,
+            })
+
+            // Reset form and state for next property addition
+            form.reset()
+            setSuggestions([])
+            setShowSuggestions(false)
+            setSubmitError(null)
+            if (inputRef.current) {
+              inputRef.current.value = ''
+            }
+          } else {
+            // Regular page context: show success message and clear form
+            setShowSuccess(true)
+            setSubmitError(null)
+            setSuggestions([])
+            setShowSuggestions(false)
+            form.reset()
+            if (inputRef.current) {
+              inputRef.current.value = ''
+            }
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+              setShowSuccess(false)
+            }, 3000)
+          }
         }
       } else {
         throw new Error('Failed to get place details')
@@ -276,11 +380,28 @@ export function AddressForm({ portfolioId, onSuccess, onError, isModal = false }
         {isSubmitting && (
           <Alert>
             <LoaderIcon className="h-4 w-4 animate-spin" />
-            <AlertTitle>Adding Property...</AlertTitle>
+            <AlertTitle>{demoMode ? 'Adding to Demo...' : 'Adding Property...'}</AlertTitle>
             <AlertDescription>
-              Looking up property details and adding to your portfolio.
+              {demoMode 
+                ? 'Adding property to your demo portfolio.'
+                : 'Looking up property details and adding to your portfolio.'
+              }
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* Demo mode cancel button */}
+        {demoMode && onCancel && !isSubmitting && (
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
         )}
       </div>
     </Form>

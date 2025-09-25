@@ -27,10 +27,11 @@ import {
   TrashIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
-import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
+import { AVAILABLE_COLUMNS } from './ColumnSelector'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
+import type { CensusDataMap } from '@/hooks/useCensusData'
 
-type SortField = keyof Property
+type SortField = keyof Property | string
 type SortDirection = 'asc' | 'desc' | null
 
 interface SortConfig {
@@ -46,6 +47,9 @@ interface PropertyTableViewProps {
   onRefresh: (property: Property) => void
   onDelete: (property: Property) => void
   refreshingPropertyId: string | null
+  visibleColumns: Set<keyof Property | string> // Allow virtual columns
+  censusData?: CensusDataMap // Optional census data
+  isLoadingCensus?: boolean // Loading state for census data
 }
 
 export function PropertyTableView({
@@ -55,31 +59,12 @@ export function PropertyTableView({
   onSelectAll,
   onRefresh,
   onDelete,
-  refreshingPropertyId
+  refreshingPropertyId,
+  visibleColumns,
+  censusData = {},
+  isLoadingCensus = false
 }: PropertyTableViewProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, direction: null })
-  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property>>(() => {
-    // Initialize with default columns
-    return new Set(AVAILABLE_COLUMNS.filter(col => col.defaultVisible).map(col => col.key))
-  })
-
-  // Load saved column preferences from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('propertyTableColumns')
-    if (saved) {
-      try {
-        const savedColumns = JSON.parse(saved)
-        setVisibleColumns(new Set(savedColumns))
-      } catch (error) {
-        console.warn('Failed to load saved column preferences:', error)
-      }
-    }
-  }, [])
-
-  // Save column preferences to localStorage
-  useEffect(() => {
-    localStorage.setItem('propertyTableColumns', JSON.stringify(Array.from(visibleColumns)))
-  }, [visibleColumns])
 
   const formatCurrency = (value: number | null) => {
     if (!value) return '-'
@@ -101,8 +86,103 @@ export function PropertyTableView({
     return value.toLocaleString()
   }
 
-  const renderCellContent = (property: Property, columnKey: keyof Property) => {
-    const value = property[columnKey]
+  const renderCellContent = (property: Property, columnKey: keyof Property | string) => {
+    // Handle virtual demographics columns
+    const virtualColumns = [
+      'median_income', 'mean_income', 'households', 'population', 'median_age',
+      'total_housing_units', 'median_rent', 'owner_occupied_units', 'renter_occupied_units',
+      'avg_household_size_owner', 'avg_household_size_renter',
+      'bachelor_rate_25_34', 'bachelor_rate_35_44', 'bachelor_rate_45_64'
+    ]
+    
+    if (typeof columnKey === 'string' && virtualColumns.includes(columnKey)) {
+      const demographics = censusData[property.id]
+      
+      if (isLoadingCensus) {
+        return <span className="text-muted-foreground text-xs">Loading...</span>
+      }
+      
+      if (!demographics) {
+        return <span className="text-muted-foreground">-</span>
+      }
+      
+      // Handle basic demographics
+      if (['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(columnKey)) {
+        const demographicValue = demographics[columnKey as keyof typeof demographics]
+        
+        switch (columnKey) {
+          case 'median_income':
+          case 'mean_income':
+            return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
+          case 'households':
+          case 'population':
+            return <span className="font-mono text-sm">{formatNumber(demographicValue as number)}</span>
+          case 'median_age':
+            return demographicValue ? (
+              <span className="font-mono text-sm">{demographicValue as number} years</span>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )
+          default:
+            return <span className="text-muted-foreground">-</span>
+        }
+      }
+      
+      // Handle housing demographics
+      if (['total_housing_units', 'median_rent', 'owner_occupied_units', 'renter_occupied_units', 'avg_household_size_owner', 'avg_household_size_renter'].includes(columnKey)) {
+        const demographicValue = demographics[columnKey as keyof typeof demographics]
+        
+        switch (columnKey) {
+          case 'median_rent':
+            return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
+          case 'total_housing_units':
+          case 'owner_occupied_units':
+          case 'renter_occupied_units':
+            return <span className="font-mono text-sm">{formatNumber(demographicValue as number)}</span>
+          case 'avg_household_size_owner':
+          case 'avg_household_size_renter':
+            return demographicValue ? (
+              <span className="font-mono text-sm">{Number(demographicValue).toFixed(1)}</span>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )
+          default:
+            return <span className="text-muted-foreground">-</span>
+        }
+      }
+      
+      // Handle education demographics
+      if (['bachelor_rate_25_34', 'bachelor_rate_35_44', 'bachelor_rate_45_64'].includes(columnKey)) {
+        const educationDetails = demographics.education_details
+        if (!educationDetails) {
+          return <span className="text-muted-foreground">-</span>
+        }
+        
+        let value: number | null = null
+        switch (columnKey) {
+          case 'bachelor_rate_25_34':
+            value = educationDetails.pct_bachelor_plus_25_34
+            break
+          case 'bachelor_rate_35_44':
+            value = educationDetails.pct_bachelor_plus_35_44
+            break
+          case 'bachelor_rate_45_64':
+            value = educationDetails.pct_bachelor_plus_45_64
+            break
+        }
+        
+        return value ? (
+          <span className="font-mono text-sm">{value.toFixed(1)}%</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )
+      }
+      
+      return <span className="text-muted-foreground">-</span>
+    }
+    
+    // Handle regular property columns
+    const value = property[columnKey as keyof Property]
     
     switch (columnKey) {
       case 'address':
@@ -194,12 +274,24 @@ export function PropertyTableView({
   const sortedProperties = [...properties].sort((a, b) => {
     if (!sortConfig.field || !sortConfig.direction) return 0
     
-    const aVal = a[sortConfig.field]
-    const bVal = b[sortConfig.field]
+    let aVal: unknown
+    let bVal: unknown
     
-    if (aVal === null && bVal === null) return 0
-    if (aVal === null) return sortConfig.direction === 'asc' ? 1 : -1
-    if (bVal === null) return sortConfig.direction === 'asc' ? -1 : 1
+    // Handle virtual demographics columns
+    if (typeof sortConfig.field === 'string' && ['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(sortConfig.field)) {
+      const aDemographics = censusData[a.id]
+      const bDemographics = censusData[b.id]
+      aVal = aDemographics?.[sortConfig.field as keyof typeof aDemographics] || null
+      bVal = bDemographics?.[sortConfig.field as keyof typeof bDemographics] || null
+    } else {
+      // Handle regular property fields
+      aVal = a[sortConfig.field as keyof Property]
+      bVal = b[sortConfig.field as keyof Property]
+    }
+    
+    if ((aVal === null || aVal === undefined) && (bVal === null || bVal === undefined)) return 0
+    if (aVal === null || aVal === undefined) return sortConfig.direction === 'asc' ? 1 : -1
+    if (bVal === null || bVal === undefined) return sortConfig.direction === 'asc' ? -1 : 1
     
     if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1
     if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1
@@ -225,14 +317,7 @@ export function PropertyTableView({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <ColumnSelector 
-          visibleColumns={visibleColumns} 
-          onColumnsChange={setVisibleColumns} 
-        />
-      </div>
-      
+    <div className="space-y-3 w-full">
       {/* Mobile Card View */}
       <div className="block md:hidden space-y-3">
         {sortedProperties.map((property) => (
@@ -289,7 +374,7 @@ export function PropertyTableView({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            
+
             {/* Mobile Card Body - Key Info Only */}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -324,9 +409,10 @@ export function PropertyTableView({
           </div>
         ))}
       </div>
-      
+
       {/* Desktop Table View */}
-      <div className="hidden md:block border rounded-md overflow-x-auto">
+      <div className="hidden md:block w-full">
+        <div className="border rounded-md overflow-x-auto w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -428,6 +514,7 @@ export function PropertyTableView({
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   )

@@ -19,7 +19,6 @@ export default function UploadLayout({
             <Suspense fallback={
               <div className="flex items-center gap-2 min-w-0">
                 <div className="h-8 w-8 bg-muted rounded-md animate-pulse flex-shrink-0" />
-                <div className="h-4 w-32 bg-muted rounded animate-pulse hidden sm:block" />
               </div>
             }>
               <PortfolioAwareHomeButton className="flex items-center gap-2 min-w-0" />

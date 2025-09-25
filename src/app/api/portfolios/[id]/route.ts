@@ -255,6 +255,37 @@ export async function DELETE(
     // Allow deletion of other portfolios (including regular default portfolios)
     // The cascade delete will handle all related data (properties, memberships, invitations)
 
+    // If we're deleting the user's last-used portfolio, we need to set another one as default
+    let newDefaultPortfolio = null
+    if (portfolio.is_default) {
+      // Find another portfolio to set as default (excluding the one being deleted)
+      const { data: otherPortfolios } = await supabase
+        .from('portfolios')
+        .select('id, name, created_at')
+        .eq('owner_id', userId)
+        .neq('id', portfolioId)
+        .eq('is_sample', false) // Don't make sample portfolios the default
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (otherPortfolios && otherPortfolios.length > 0) {
+        newDefaultPortfolio = otherPortfolios[0]
+
+        // Set the most recent portfolio as the new default
+        const { error: updateError } = await supabase
+          .from('portfolios')
+          .update({ is_default: true })
+          .eq('id', newDefaultPortfolio.id)
+
+        if (updateError) {
+          console.error('Error setting new default portfolio:', updateError)
+          // Continue with deletion even if we can't set new default
+        } else {
+          console.log(`Set portfolio "${newDefaultPortfolio.name}" as new default after deleting last-used portfolio`)
+        }
+      }
+    }
+
     // Delete portfolio (cascade will handle memberships and invitations)
     const { error } = await supabase
       .from('portfolios')
@@ -266,7 +297,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Failed to delete portfolio' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      new_default_portfolio: newDefaultPortfolio,
+      message: newDefaultPortfolio
+        ? `Portfolio deleted. "${newDefaultPortfolio.name}" will be your landing page next time you visit the dashboard.`
+        : 'Portfolio deleted successfully.'
+    })
   } catch (error) {
     console.error('Portfolio deletion error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

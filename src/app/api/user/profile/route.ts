@@ -87,7 +87,20 @@ export async function GET() {
       user: {
         id: user.id,
         email: user.email,
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+        full_name: (() => {
+          const firstName = user.user_metadata?.first_name || ''
+          const lastName = user.user_metadata?.last_name || ''
+
+          if (firstName && lastName) {
+            return `${firstName} ${lastName}`
+          } else if (user.user_metadata?.full_name) {
+            return user.user_metadata.full_name
+          } else if (firstName) {
+            return firstName
+          } else {
+            return user.user_metadata?.name || ''
+          }
+        })(),
         avatar_url: user.user_metadata?.avatar_url || null,
         provider: user.app_metadata?.provider || 'email',
         created_at: user.created_at,

@@ -1,19 +1,30 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { AnimatedButton } from '../ui/AnimatedButton'
+import { AuthModal } from '@/components/modals/AuthModal'
+import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const router = useRouter()
+
+  const handleTryDemo = () => {
+    router.push('/demo')
+  }
+
   return (
-    <section className="container mx-auto px-4 py-20 lg:py-32">
-      <div className="max-w-4xl mx-auto text-center space-y-8">
-        <div className="space-y-6">
+    <section className="fluid-container py-20 sm:py-24 lg:py-32 xl:py-40">
+      <div className="max-w-4xl mx-auto text-center">
+        {/* Title Section */}
+        <div className="mb-8 sm:mb-10 lg:mb-12">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
+            className="text-fluid-4xl font-bold tracking-tight leading-normal mb-6 sm:mb-8"
           >
             Manage Your Real Estate Portfolio
           </motion.h1>
@@ -22,48 +33,46 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+            className="text-fluid-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed px-fluid-md"
           >
             Visualize, track, and manage properties with interactive maps, 
             dynamic tables, and smart insights.
           </motion.p>
         </div>
         
+        {/* CTA Button Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex flex-col sm:flex-row justify-center items-center gap-4 px-fluid-md"
         >
           <AnimatedButton 
             size="lg" 
-            className="w-full sm:w-auto text-base px-8 py-3"
+            className="w-full sm:w-auto px-fluid-lg py-fluid-md text-primary-foreground"
             premium
-            asChild
+            onClick={() => setAuthModalOpen(true)}
           >
-            <Link href="/sign-up">Get Started Free</Link>
+            Start Building Your Portfolio
           </AnimatedButton>
           
-          <AnimatedButton 
-            variant="outline" 
-            size="lg" 
-            className="w-full sm:w-auto text-base px-8 py-3"
-            asChild
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full sm:w-auto px-fluid-lg py-fluid-md"
+            onClick={handleTryDemo}
           >
-            <Link href="/sign-in">Sign In</Link>
-          </AnimatedButton>
+            Try Demo
+          </Button>
         </motion.div>
         
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="text-sm text-muted-foreground flex items-center justify-center gap-2"
-        >
-          <div className="w-2 h-2 bg-green-500 rounded-full" />
-          No credit card required • Start managing properties in minutes
-        </motion.div>
       </div>
+      
+      <AuthModal 
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        defaultMode="sign-up"
+      />
     </section>
   )
 }

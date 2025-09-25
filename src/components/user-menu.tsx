@@ -75,7 +75,20 @@ function UserMenuContent() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.user_metadata?.full_name || 'User'}
+              {(() => {
+                const firstName = user.user_metadata?.first_name || ''
+                const lastName = user.user_metadata?.last_name || ''
+
+                if (firstName && lastName) {
+                  return `${firstName} ${lastName}`
+                } else if (user.user_metadata?.full_name) {
+                  return user.user_metadata.full_name
+                } else if (firstName) {
+                  return firstName
+                } else {
+                  return 'User'
+                }
+              })()}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}

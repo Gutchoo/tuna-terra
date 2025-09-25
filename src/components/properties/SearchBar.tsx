@@ -10,13 +10,65 @@ interface SearchBarProps {
   placeholder?: string
   resultsCount?: number
   totalCount?: number
+  showResults?: boolean
 }
 
-export function SearchBar({ 
-  onSearchChange, 
+// Search Input Component - Just the input field for alignment containers
+export function SearchInput({
+  onSearchChange,
+  placeholder = "Search properties...",
+  query,
+  onQueryChange
+}: {
+  onSearchChange: (query: string) => void
+  placeholder?: string
+  query: string
+  onQueryChange: (query: string) => void
+}) {
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearchChange(query)
+    }, 300) // 300ms debounce
+
+    return () => clearTimeout(timer)
+  }, [query, onSearchChange])
+
+  const handleClear = () => {
+    onQueryChange('')
+    onSearchChange('')
+  }
+
+  return (
+    <div className="relative">
+      <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input
+        type="text"
+        placeholder={placeholder}
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+        className="pl-10 pr-10"
+      />
+      {query && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleClear}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+        >
+          <XIcon className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  )
+}
+
+export function SearchBar({
+  onSearchChange,
   placeholder = "Search properties by address, owner, APN, zip code...",
   resultsCount,
-  totalCount
+  totalCount,
+  showResults = true
 }: SearchBarProps) {
   const [query, setQuery] = useState('')
 
@@ -34,12 +86,12 @@ export function SearchBar({
     onSearchChange('')
   }
 
-  const showResultsCount = resultsCount !== undefined && totalCount !== undefined
+  const showResultsCount = totalCount !== undefined
   const hasResults = resultsCount !== undefined && resultsCount > 0
   const isFiltered = query.trim().length > 0
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="relative">
         <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -60,9 +112,9 @@ export function SearchBar({
           </Button>
         )}
       </div>
-      
-      {/* Results Counter */}
-      {showResultsCount && (
+
+      {/* Results Counter - Always shown to prevent spacing jumps */}
+      {showResults && showResultsCount && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div>
             {isFiltered ? (
@@ -71,9 +123,13 @@ export function SearchBar({
                   Showing <span className="font-medium text-foreground">{resultsCount}</span> of{' '}
                   <span className="font-medium">{totalCount}</span> properties
                 </span>
-              ) : (
+              ) : resultsCount !== undefined ? (
                 <span className="text-amber-600">
                   No properties match &quot;{query}&quot;
+                </span>
+              ) : (
+                <span>
+                  <span className="font-medium text-foreground">{totalCount}</span> properties total
                 </span>
               )
             ) : (
@@ -82,17 +138,17 @@ export function SearchBar({
               </span>
             )}
           </div>
-          
-          {isFiltered && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="h-auto p-1 text-xs hover:bg-muted"
-            >
-              Clear search
-            </Button>
-          )}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            className={`h-auto p-1 text-xs hover:bg-muted ${
+              isFiltered ? 'visible' : 'invisible'
+            }`}
+          >
+            Clear search
+          </Button>
         </div>
       )}
     </div>

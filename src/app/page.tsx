@@ -1,10 +1,10 @@
-import { AnimatedButton } from '@/components/homepage/ui/AnimatedButton'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/auth'
+import { PublicNavigation } from '@/components/navigation/PublicNavigation'
 import { HeroSection } from '@/components/homepage/hero/HeroSection'
 import { FeaturesSection } from '@/components/homepage/sections/FeaturesSection'
 import { CallToActionSection } from '@/components/homepage/sections/CallToActionSection'
+import { AuthDebugPanel } from '@/components/homepage/AuthDebugPanel'
 
 export default async function Home() {
   const user = await getUser()
@@ -15,25 +15,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">TT</span>
-            </div>
-            <span className="font-semibold text-lg">Tuna Terra</span>
-          </div>
-          <div className="flex gap-2">
-            <AnimatedButton variant="ghost" asChild>
-              <Link href="/sign-in">Sign In</Link>
-            </AnimatedButton>
-            <AnimatedButton asChild>
-              <Link href="/sign-up">Get Started</Link>
-            </AnimatedButton>
-          </div>
-        </div>
-      </header>
+      <PublicNavigation />
 
       {/* Enhanced Hero Section */}
       <HeroSection />
@@ -43,6 +25,9 @@ export default async function Home() {
 
       {/* Call to Action Section */}
       <CallToActionSection />
+
+      {/* Auth Debug Panel - Dev Only */}
+      <AuthDebugPanel />
     </div>
   )
 }

@@ -50,15 +50,27 @@ export async function POST() {
       })
     }
 
-    // Get user email for portfolio name
+    // Get user info for portfolio name
     const { data: { user } } = await supabase.auth.getUser()
-    const userEmail = user?.email || 'User'
+
+    // Extract first name from user metadata, fallback to email or generic name
+    let firstName = user?.user_metadata?.first_name || ''
+
+    // If no first_name in metadata, try to extract from full_name (Google OAuth)
+    if (!firstName && user?.user_metadata?.full_name) {
+      firstName = user.user_metadata.full_name.split(' ')[0]
+    }
+
+    // Final fallback
+    if (!firstName) {
+      firstName = user?.email?.split('@')[0] || 'User'
+    }
 
     // Create default portfolio
     const { data: portfolio, error } = await supabase
       .from('portfolios')
       .insert({
-        name: `${userEmail}'s Portfolio`,
+        name: `${firstName}'s Portfolio`,
         description: 'Default portfolio created automatically',
         owner_id: userId,
         is_default: true,

@@ -15,10 +15,11 @@ import { Settings2Icon } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 
 export interface TableColumn {
-  key: keyof Property
+  key: keyof Property | string // Allow virtual columns (like demographics)
   label: string
-  category: 'basic' | 'property' | 'financial' | 'location' | 'other'
+  category: 'basic' | 'property' | 'financial' | 'location' | 'demographics' | 'other'
   defaultVisible: boolean
+  virtual?: boolean // Indicates this is a virtual column (not from database)
 }
 
 export const AVAILABLE_COLUMNS: TableColumn[] = [
@@ -57,6 +58,26 @@ export const AVAILABLE_COLUMNS: TableColumn[] = [
   { key: 'census_block', label: 'Census Block', category: 'location', defaultVisible: false },
   { key: 'qoz_status', label: 'QOZ Status', category: 'other', defaultVisible: true },
   
+  // Demographics (virtual columns)
+  { key: 'median_income', label: 'Area Median Income', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'mean_income', label: 'Area Mean Income', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'households', label: 'Area Households', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'population', label: 'Area Population', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'median_age', label: 'Median Age', category: 'demographics', defaultVisible: false, virtual: true },
+  
+  // Housing demographics (virtual columns from DP04)
+  { key: 'total_housing_units', label: 'Total Housing Units', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'median_rent', label: 'Area Median Rent', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'owner_occupied_units', label: 'Owner Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'renter_occupied_units', label: 'Renter Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'avg_household_size_owner', label: 'Avg HH Size (Owner)', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'avg_household_size_renter', label: 'Avg HH Size (Renter)', category: 'demographics', defaultVisible: false, virtual: true },
+  
+  // Education demographics (virtual columns from S1501)
+  { key: 'bachelor_rate_25_34', label: 'Bachelor Rate (25-34)', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'bachelor_rate_35_44', label: 'Bachelor Rate (35-44)', category: 'demographics', defaultVisible: false, virtual: true },
+  { key: 'bachelor_rate_45_64', label: 'Bachelor Rate (45-64)', category: 'demographics', defaultVisible: false, virtual: true },
+  
   // Other
   { key: 'created_at', label: 'Added', category: 'other', defaultVisible: true },
   { key: 'user_notes', label: 'Notes', category: 'other', defaultVisible: false },
@@ -64,14 +85,14 @@ export const AVAILABLE_COLUMNS: TableColumn[] = [
 ]
 
 interface ColumnSelectorProps {
-  visibleColumns: Set<keyof Property>
-  onColumnsChange: (columns: Set<keyof Property>) => void
+  visibleColumns: Set<keyof Property | string> // Allow virtual column keys
+  onColumnsChange: (columns: Set<keyof Property | string>) => void
 }
 
 export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelectorProps) {
   const [open, setOpen] = useState(false)
 
-  const handleColumnToggle = (columnKey: keyof Property, checked: boolean) => {
+  const handleColumnToggle = (columnKey: keyof Property | string, checked: boolean) => {
     const newColumns = new Set(visibleColumns)
     if (checked) {
       newColumns.add(columnKey)
@@ -114,6 +135,7 @@ export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelect
     property: 'Property Details', 
     financial: 'Financial Data',
     location: 'Location Data',
+    demographics: 'Area Demographics',
     other: 'Other'
   }
 

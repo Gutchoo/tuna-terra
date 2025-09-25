@@ -132,12 +132,17 @@ export function useDeletePortfolio() {
       }
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Show informative message about new default portfolio if applicable
+      if (result?.new_default_portfolio) {
+        console.log(`New default portfolio set: ${result.new_default_portfolio.name}`)
+      }
+
       // Invalidate all portfolio-related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.portfolios() })
       queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(true) })
       queryClient.invalidateQueries({ queryKey: queryKeys.portfolios(false) })
-      
+
       // Also invalidate any property queries since they depend on portfolios
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
@@ -147,14 +152,14 @@ export function useDeletePortfolio() {
 // Update portfolio name mutation
 export function useUpdatePortfolioName() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
       // Prevent updating virtual sample portfolio
       if (isVirtualSamplePortfolio(id)) {
         throw new Error('Sample portfolios cannot be edited')
       }
-      
+
       const response = await fetch(`/api/portfolios/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -173,13 +178,13 @@ export function useUpdatePortfolioName() {
           if (!old) return old
           return {
             ...old,
-            portfolios: old.portfolios.map(p => 
+            portfolios: old.portfolios.map(p =>
               p.id === id ? { ...p, name } : p
             )
           }
         }
       )
-      
+
       // Also update the version without stats if it exists
       queryClient.setQueryData(
         queryKeys.portfolios(false),
@@ -187,12 +192,57 @@ export function useUpdatePortfolioName() {
           if (!old) return old
           return {
             ...old,
-            portfolios: old.portfolios.map(p => 
+            portfolios: old.portfolios.map(p =>
               p.id === id ? { ...p, name } : p
             )
           }
         }
       )
+    },
+  })
+}
+
+// Set portfolio as last used mutation
+export function useUpdateLastUsedPortfolio() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (portfolioId: string) => {
+      // Prevent setting virtual sample portfolio as last used
+      if (isVirtualSamplePortfolio(portfolioId)) {
+        throw new Error('Virtual sample portfolios cannot be set as last used')
+      }
+
+      const response = await fetch(`/api/portfolios/${portfolioId}/set-last-used`, {
+        method: 'PUT',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to set portfolio as last used')
+      }
+
+      return response.json()
+    },
+    onSuccess: (result, portfolioId) => {
+      // Update cache to reflect new default/last used portfolio
+      const updatePortfoliosData = (old: PortfoliosResponse | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p => ({
+            ...p,
+            is_default: p.id === portfolioId // Set only this portfolio as default
+          }))
+        }
+      }
+
+      // Update both versions of the portfolios cache
+      queryClient.setQueryData(queryKeys.portfolios(true), updatePortfoliosData)
+      queryClient.setQueryData(queryKeys.portfolios(false), updatePortfoliosData)
+    },
+    onError: (error) => {
+      console.error('Failed to set last used portfolio:', error)
     },
   })
 }

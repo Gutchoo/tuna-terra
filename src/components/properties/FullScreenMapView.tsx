@@ -5,6 +5,7 @@ import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Property } from '@/lib/supabase'
 import { MapOverlayTable } from './MapOverlayTable'
+import type { CensusDataMap } from '@/hooks/useCensusData'
 
 interface FullScreenMapViewProps {
   properties: Property[]
@@ -12,6 +13,8 @@ interface FullScreenMapViewProps {
   onPropertySelect: (id: string) => void
   onPropertiesChange: (properties: Property[]) => void
   onError: (error: string) => void
+  censusData: CensusDataMap
+  isLoadingCensus: boolean
 }
 
 // Set the Mapbox access token
@@ -23,7 +26,9 @@ export function FullScreenMapView({
   selectedPropertyId,
   onPropertySelect,
   onPropertiesChange,
-  onError
+  onError,
+  censusData,
+  isLoadingCensus
 }: FullScreenMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -134,7 +139,9 @@ export function FullScreenMapView({
   // Center map on specific property
   const centerOnProperty = useCallback((propertyId: string) => {
     const property = properties.find(p => p.id === propertyId)
+    console.log('centerOnProperty called:', { propertyId, property: property ? { id: property.id, address: property.address, lat: property.lat, lng: property.lng } : null })
     if (property && property.lat && property.lng && map.current) {
+      console.log('Flying to property:', { center: [property.lng, property.lat], zoom: 16 })
       map.current.flyTo({
         center: [property.lng, property.lat],
         zoom: 16,
@@ -261,9 +268,6 @@ export function FullScreenMapView({
       // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
 
-      // Add fullscreen control
-      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right')
-
 
       map.current.on('load', () => {
         setIsLoading(false)
@@ -388,6 +392,7 @@ export function FullScreenMapView({
 
   // Center on property when selectedPropertyId changes from table
   useEffect(() => {
+    console.log('selectedPropertyId changed:', selectedPropertyId)
     if (selectedPropertyId) {
       centerOnProperty(selectedPropertyId)
     }
@@ -397,20 +402,27 @@ export function FullScreenMapView({
   useEffect(() => {
     if (!map.current || !mapInitialized || properties.length === 0) return
 
+    // Don't auto-fit bounds if user has selected a specific property (let them stay focused on it)
+    if (selectedPropertyId) {
+      console.log('Skipping fitBounds because property is selected:', selectedPropertyId)
+      return
+    }
+
     // If this is the first time we have properties, or if we switched to a very different location,
     // gently adjust the map view without destroying it
     const propertiesWithCoords = properties.filter(p => p.lat && p.lng)
-    
+
     if (propertiesWithCoords.length > 0) {
       // Calculate bounds for current properties
       const coordinates = propertiesWithCoords.flatMap(p => [p.lng!, p.lat!])
-      
+
       if (coordinates.length >= 2) {
         const bounds = new mapboxgl.LngLatBounds()
         for (let i = 0; i < coordinates.length; i += 2) {
           bounds.extend([coordinates[i], coordinates[i + 1]])
         }
-        
+
+        console.log('Fitting bounds to show all properties')
         // Smoothly transition to show all properties in new portfolio
         map.current.fitBounds(bounds, {
           padding: 50,
@@ -419,7 +431,7 @@ export function FullScreenMapView({
         })
       }
     }
-  }, [properties, mapInitialized])
+  }, [properties, mapInitialized, selectedPropertyId])
 
   // Handle property refresh
   const handleRefreshProperty = async (property: Property) => {
@@ -522,9 +534,9 @@ export function FullScreenMapView({
       )}
 
       {/* Map container */}
-      <div 
-        ref={mapContainer} 
-        className={`h-full w-full ${error ? 'hidden' : ''}`}
+      <div
+        ref={mapContainer}
+        className={`h-full w-full rounded-lg border overflow-hidden ${error ? 'hidden' : ''}`}
       />
 
       {/* Overlay Table */}
@@ -536,6 +548,8 @@ export function FullScreenMapView({
           onRefreshProperty={handleRefreshProperty}
           onDeleteProperty={handleDeleteProperty}
           refreshingPropertyId={refreshingPropertyId}
+          censusData={censusData}
+          isLoadingCensus={isLoadingCensus}
         />
       )}
     </div>

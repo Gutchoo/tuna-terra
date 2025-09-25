@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,16 +21,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   ChevronUpIcon,
-  ChevronDownIcon,
   MoreHorizontalIcon,
   RefreshCwIcon,
-  TrashIcon,
-  SearchIcon,
-  XIcon
+  TrashIcon
 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
 import type { Property } from '@/lib/supabase'
+import type { CensusDataMap } from '@/hooks/useCensusData'
 
 interface MapOverlayTableProps {
   properties: Property[]
@@ -38,10 +36,32 @@ interface MapOverlayTableProps {
   onRefreshProperty: (property: Property) => void
   onDeleteProperty: (property: Property) => void
   refreshingPropertyId: string | null
+  censusData: CensusDataMap
+  isLoadingCensus: boolean
 }
 
 // Default minimal columns for map overlay
 const DEFAULT_MAP_COLUMNS = ['address', 'apn', 'owner'] as (keyof Property)[]
+
+// Animation variants
+
+const resizeHandleVariants = {
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.2,
+      delay: 0.1
+    }
+  },
+  hidden: {
+    opacity: 0,
+    scale: 0.95,
+    transition: {
+      duration: 0.15
+    }
+  }
+}
 
 export function MapOverlayTable({
   properties,
@@ -49,69 +69,119 @@ export function MapOverlayTable({
   onPropertySelect,
   onRefreshProperty,
   onDeleteProperty,
-  refreshingPropertyId
+  refreshingPropertyId,
+  censusData,
+  isLoadingCensus
 }: MapOverlayTableProps) {
   const [isMinimized, setIsMinimized] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property>>(() => {
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property | string>>(() => {
     // Initialize with minimal default columns for map view
     return new Set(DEFAULT_MAP_COLUMNS)
   })
   
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('')
+  // Resize functionality
+  const [width, setWidth] = useState(384) // Default width in px (equivalent to w-96)
+  const [isResizing, setIsResizing] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const resizeRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = useRef(false)
 
-  // Load saved column preferences from localStorage (specific to map view)
+  // Handle responsive behavior
   useEffect(() => {
-    const saved = localStorage.getItem('mapOverlayTableColumns')
-    if (saved) {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Handle reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    prefersReducedMotion.current = mediaQuery.matches
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      prefersReducedMotion.current = e.matches
+    }
+    
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  // Enhanced minimize toggle with animation awareness
+  const handleToggle = useCallback(() => {
+    setIsAnimating(true)
+    setIsMinimized(!isMinimized)
+    
+    // Reset animation state after transition completes
+    setTimeout(() => setIsAnimating(false), 300)
+  }, [isMinimized])
+
+  // Load saved preferences from localStorage (columns and width)
+  useEffect(() => {
+    const savedColumns = localStorage.getItem('mapOverlayTableColumns')
+    if (savedColumns) {
       try {
-        const savedColumns = JSON.parse(saved)
-        setVisibleColumns(new Set(savedColumns))
+        const columns = JSON.parse(savedColumns)
+        setVisibleColumns(new Set(columns))
       } catch (error) {
         console.warn('Failed to load saved map overlay column preferences:', error)
       }
     }
+
+    const savedWidth = localStorage.getItem('mapOverlayTableWidth')
+    if (savedWidth) {
+      try {
+        const parsedWidth = parseInt(savedWidth)
+        if (parsedWidth >= 280 && parsedWidth <= 800) { // Reasonable bounds
+          setWidth(parsedWidth)
+        }
+      } catch (error) {
+        console.warn('Failed to load saved map overlay width:', error)
+      }
+    }
   }, [])
 
-  // Save column preferences to localStorage (specific to map view)
+  // Save preferences to localStorage
   useEffect(() => {
     localStorage.setItem('mapOverlayTableColumns', JSON.stringify(Array.from(visibleColumns)))
   }, [visibleColumns])
 
-  // Multi-field search algorithm (same as PropertyView)
-  const searchInProperty = (property: Property, query: string): boolean => {
-    if (!query.trim()) return true
-    
-    const lowerQuery = query.toLowerCase().trim()
-    const searchableFields = [
-      property.address,
-      property.city,
-      property.state, 
-      property.zip_code,
-      property.owner,
-      property.apn,
-      property.county,
-      property.zoning,
-      property.use_description,
-      property.subdivision,
-      property.use_code,
-      property.zoning_description
-    ]
-    
-    return searchableFields.some(field => 
-      field?.toLowerCase().includes(lowerQuery)
-    )
-  }
+  useEffect(() => {
+    localStorage.setItem('mapOverlayTableWidth', width.toString())
+  }, [width])
 
-  // Filter properties based on search query
-  const filteredProperties = useMemo(() => {
-    return properties.filter(property => searchInProperty(property, searchQuery))
-  }, [properties, searchQuery])
+  // Handle resize functionality
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+    
+    const startX = e.clientX
+    const startWidth = width
 
-  // Handle search query change
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query)
-  }
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = startWidth + (e.clientX - startX)
+      const clampedWidth = Math.max(280, Math.min(800, newWidth)) // Min 280px, max 800px
+      setWidth(clampedWidth)
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'ew-resize'
+    document.body.style.userSelect = 'none'
+  }, [width])
 
   const formatCurrency = (value: number | null) => {
     if (!value) return '-'
@@ -133,8 +203,36 @@ export function MapOverlayTable({
     return value.toLocaleString()
   }
 
-  const renderCellContent = (property: Property, columnKey: keyof Property) => {
-    const value = property[columnKey]
+  const renderCellContent = (property: Property, columnKey: keyof Property | string) => {
+    // Handle virtual demographics columns
+    if (typeof columnKey === 'string' && ['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(columnKey)) {
+      const demographics = censusData[property.id]
+      
+      if (isLoadingCensus) {
+        return <span className="text-muted-foreground text-xs">Loading...</span>
+      }
+      
+      if (!demographics) {
+        return <span className="text-muted-foreground">-</span>
+      }
+      
+      const demographicValue = demographics[columnKey as keyof typeof demographics]
+      
+      switch (columnKey) {
+        case 'median_income':
+        case 'mean_income':
+          return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
+        case 'households':
+        case 'population':
+          return formatNumber(demographicValue as number)
+        case 'median_age':
+          return demographicValue ? `${demographicValue} years` : '-'
+        default:
+          return String(demographicValue) || '-'
+      }
+    }
+    
+    const value = property[columnKey as keyof Property]
     
     switch (columnKey) {
       case 'address':
@@ -193,9 +291,10 @@ export function MapOverlayTable({
   }
 
   // Get visible column definitions
-  const visibleColumnDefs = AVAILABLE_COLUMNS.filter(col => visibleColumns.has(col.key))
+  const visibleColumnDefs = AVAILABLE_COLUMNS.filter(col => visibleColumns.has(col.key as keyof Property | string))
 
   const handleRowClick = (propertyId: string) => {
+    console.log('MapOverlayTable: Row clicked for property:', propertyId)
     onPropertySelect(propertyId)
   }
 
@@ -204,89 +303,78 @@ export function MapOverlayTable({
   }
 
   return (
-    <div className="absolute top-4 left-4 right-4 md:right-auto z-10 md:w-96 md:max-w-[25vw]">
-      <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
+    <div 
+      ref={containerRef}
+      className="absolute top-4 left-4 right-4 md:right-auto z-10"
+      style={{ 
+        width: !isMobile ? `${width}px` : 'auto',
+        maxWidth: !isMobile ? `${Math.min(width, (typeof window !== 'undefined' ? window.innerWidth : 1024) * 0.4)}px` : 'calc(100vw - 2rem)'
+      }}
+    >
+      <Card className="bg-background/95 backdrop-blur-sm border shadow-lg relative group !py-0">
         {/* Header */}
-        <div className="p-2.5 border-b space-y-2">
+        <div className={`px-2.5 ${isMinimized ? 'py-1' : 'py-1.5'} ${!isMinimized ? 'border-b' : ''}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-sm">
-                Properties ({searchQuery.trim() ? `${filteredProperties.length}/${properties.length}` : properties.length})
+                Properties ({properties.length})
               </h3>
-              {selectedPropertyId && (
-                <Badge variant="outline" className="text-xs">
-                  1 selected
-                </Badge>
-              )}
             </div>
             <div className="flex items-center gap-1">
-              <ColumnSelector 
-                visibleColumns={visibleColumns} 
-                onColumnsChange={setVisibleColumns} 
-              />
+              <AnimatePresence>
+                {!isMinimized && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ 
+                      duration: prefersReducedMotion.current ? 0.01 : 0.2 
+                    }}
+                  >
+                    <ColumnSelector 
+                      visibleColumns={visibleColumns} 
+                      onColumnsChange={setVisibleColumns} 
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMinimized(!isMinimized)}
+                onClick={handleToggle}
+                disabled={isAnimating}
                 className="h-8 w-8 p-0"
               >
-                {isMinimized ? (
-                  <ChevronUpIcon className="h-4 w-4 transition-transform duration-200" />
-                ) : (
-                  <ChevronDownIcon className="h-4 w-4 transition-transform duration-200" />
-                )}
-              </Button>
-            </div>
-          </div>
-          
-          {/* Search Input */}
-          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            !isMinimized ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="relative">
-              <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search properties..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-7 pr-7 h-7 text-xs"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSearchChange('')}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                <motion.div
+                  animate={{ rotate: isMinimized ? 180 : 0 }}
+                  transition={{ 
+                    duration: prefersReducedMotion.current ? 0.01 : 0.3, 
+                    ease: "easeInOut" 
+                  }}
                 >
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              )}
+                  <ChevronUpIcon className="h-4 w-4" />
+                </motion.div>
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Table Content */}
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          !isMinimized ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <div className="max-h-48 overflow-auto">
-            {filteredProperties.length === 0 && searchQuery.trim().length > 0 ? (
-              <div className="text-center py-8">
-                <SearchIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No properties match &quot;{searchQuery}&quot;
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSearchChange('')}
-                  className="mt-2 h-auto p-1 text-xs"
-                >
-                  Clear search
-                </Button>
-              </div>
-            ) : (
+        <AnimatePresence mode="wait">
+          {!isMinimized && (
+            <motion.div
+              key="table-content"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ 
+                duration: prefersReducedMotion.current ? 0.01 : 0.25,
+                ease: "easeInOut"
+              }}
+              style={{ willChange: isAnimating ? 'transform, opacity' : 'auto' }}
+            >
+              <div className="max-h-48 overflow-auto">
+            {properties.length > 0 ? (
               <Table>
                 <TableHeader className="sticky top-0 bg-background">
                   <TableRow>
@@ -313,7 +401,7 @@ export function MapOverlayTable({
                 </TableHeader>
                 
                 <TableBody>
-                  {filteredProperties.map((property) => (
+                  {properties.map((property) => (
                     <TableRow 
                       key={property.id}
                       className={`cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -377,21 +465,63 @@ export function MapOverlayTable({
                   ))}
                 </TableBody>
               </Table>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">No properties to display</p>
+              </div>
             )}
-          </div>
-        </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Footer with instructions */}
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          !isMinimized && filteredProperties.length > 0 ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <div className="p-1.5 border-t bg-muted/30 text-center">
-            <p className="text-xs text-muted-foreground">
-              Click to center map
-              {searchQuery.trim() && ` • ${filteredProperties.length}/${properties.length} shown`}
-            </p>
-          </div>
-        </div>
+        <AnimatePresence>
+          {!isMinimized && properties.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ 
+                duration: prefersReducedMotion.current ? 0.01 : 0.25,
+                ease: "easeInOut"
+              }}
+              className="border-t bg-muted/30"
+            >
+              <div className="p-1.5 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Click to center map
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Resize Handle - Only show on desktop when expanded */}
+        <AnimatePresence>
+          {!isMobile && !isMinimized && (
+            <motion.div
+              ref={resizeRef}
+              onMouseDown={handleMouseDown}
+              variants={resizeHandleVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-transparent hover:bg-primary/20 transition-colors duration-200 flex items-center justify-center"
+              whileHover={{ 
+                backgroundColor: "rgba(59, 130, 246, 0.2)",
+                transition: { duration: 0.15 }
+              }}
+              title="Drag to resize"
+            >
+              <motion.div 
+                className="w-0.5 h-8 bg-muted-foreground/40 rounded-full"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.15 }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Card>
     </div>
   )

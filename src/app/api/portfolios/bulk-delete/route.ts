@@ -59,13 +59,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'No portfolios found or access denied' }, { status: 404 })
     }
 
-    // Check if user is trying to delete default portfolios
-    const defaultPortfolios = portfoliosToDelete.filter(p => p.is_default)
-    if (defaultPortfolios.length > 0) {
-      return NextResponse.json({ 
-        error: 'Cannot delete default portfolios',
-        details: 'Default portfolios cannot be deleted'
-      }, { status: 400 })
+    // Check if we're deleting the user's current default (last-used) portfolio
+    const defaultPortfolio = portfoliosToDelete.find(p => p.is_default)
+    let needsDefaultReassignment = false
+
+    if (defaultPortfolio) {
+      needsDefaultReassignment = true
     }
 
     // If we found fewer portfolios than requested, some don't exist or user doesn't own them
@@ -146,13 +145,40 @@ export async function DELETE(request: NextRequest) {
 
     if (portfolioError) {
       console.error('Error deleting portfolios:', portfolioError)
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Failed to delete portfolios',
-        details: portfolioError.message 
+        details: portfolioError.message
       }, { status: 500 })
     }
 
-    return NextResponse.json({ 
+    // If we deleted the default portfolio, we need to assign a new default
+    if (needsDefaultReassignment) {
+      // Get remaining portfolios for this user, ordered by most recent
+      const { data: remainingPortfolios, error: remainingError } = await supabase
+        .from('portfolios')
+        .select('id, name, created_at')
+        .eq('owner_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      // If user has remaining portfolios, make the most recent one the new default
+      if (!remainingError && remainingPortfolios && remainingPortfolios.length > 0) {
+        const { error: updateError } = await supabase
+          .from('portfolios')
+          .update({ is_default: true })
+          .eq('id', remainingPortfolios[0].id)
+          .eq('owner_id', userId)
+
+        if (updateError) {
+          console.warn('Warning: Failed to reassign default portfolio after deletion:', updateError)
+          // Don't fail the entire operation - deletion was successful
+        } else {
+          console.log(`Reassigned default portfolio to: ${remainingPortfolios[0].name} (${remainingPortfolios[0].id})`)
+        }
+      }
+    }
+
+    return NextResponse.json({
       message: `Successfully deleted ${portfoliosToDelete.length} portfolio${portfoliosToDelete.length === 1 ? '' : 's'}`,
       deletedPortfolios: portfoliosToDelete.map(p => ({ id: p.id, name: p.name }))
     })

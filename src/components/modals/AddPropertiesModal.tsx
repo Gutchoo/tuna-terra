@@ -8,14 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Sheet, 
-  FileTextIcon, 
-  MapPinIcon, 
+import {
+  Sheet,
+  FileTextIcon,
+  MapPinIcon,
   ArrowLeftIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  BuildingIcon
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
@@ -48,6 +48,7 @@ interface AddPropertiesModalProps {
   onOpenChange: (open: boolean) => void
   portfolioId: string | null
   initialMethod?: UploadMethod
+  onCreatePortfolio?: () => void
 }
 
 interface MethodOption {
@@ -62,9 +63,9 @@ const uploadMethods: MethodOption[] = [
   {
     id: 'csv',
     title: 'CSV Upload',
-    description: 'Upload multiple properties from a CSV file',
+    description: 'Upload multiple properties from CSV',
     icon: Sheet,
-    example: 'Bulk import from spreadsheet'
+    example: 'properties.csv with APNs'
   },
   {
     id: 'apn',
@@ -82,14 +83,16 @@ const uploadMethods: MethodOption[] = [
   }
 ]
 
-export function AddPropertiesModal({ 
-  open, 
-  onOpenChange, 
+export function AddPropertiesModal({
+  open,
+  onOpenChange,
   portfolioId,
-  initialMethod
+  initialMethod,
+  onCreatePortfolio
 }: AddPropertiesModalProps) {
   const [currentStep, setCurrentStep] = useState<'method' | 'form' | 'success'>('method')
   const [selectedMethod, setSelectedMethod] = useState<UploadMethod | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
   const queryClient = useQueryClient()
 
   // Reset modal state when opened
@@ -141,49 +144,34 @@ export function AddPropertiesModal({
 
     // Invalidate properties cache for real-time updates
     if (portfolioId) {
-      await queryClient.invalidateQueries({ 
-        queryKey: ['properties', portfolioId] 
+      await queryClient.invalidateQueries({
+        queryKey: ['properties', portfolioId]
       })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['user-properties'] 
+      await queryClient.invalidateQueries({
+        queryKey: ['user-properties']
       })
     }
 
-    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
-    if (initialMethod) {
-      setCurrentStep('form')
-      setSelectedMethod(initialMethod)
-    } else {
-      setCurrentStep('method')
-      setSelectedMethod(null)
-    }
+    // Always reset to the current form to allow continuous property addition
+    setCurrentStep('form')
+    setSelectedMethod(selectedMethod) // Keep current method (APN/Address)
   }
 
   const handleCsvSuccess = async (result: unknown) => {
-    // For CSV uploads, show different success message
-    const csvResult = result as { successful: number; total: number }
-    toast.success('CSV upload completed!', {
-      description: `${csvResult.successful}/${csvResult.total} properties uploaded successfully`
-    })
-
     // Invalidate properties cache for real-time updates
     if (portfolioId) {
-      await queryClient.invalidateQueries({ 
-        queryKey: ['properties', portfolioId] 
+      await queryClient.invalidateQueries({
+        queryKey: ['properties', portfolioId]
       })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['user-properties'] 
+      await queryClient.invalidateQueries({
+        queryKey: ['user-properties']
       })
     }
 
-    // Reset for next upload - if initialMethod was provided, reset to that form, otherwise go to method selection
-    if (initialMethod) {
-      setCurrentStep('form')
-      setSelectedMethod(initialMethod)
-    } else {
-      setCurrentStep('method')
-      setSelectedMethod(null)
-    }
+    // For CSV uploads: brief delay then close modal (clean completion)
+    setTimeout(() => {
+      onOpenChange(false)
+    }, 250) // 0.25 second delay after 100% completion
   }
 
   const handleError = (error: string) => {
@@ -206,21 +194,23 @@ export function AddPropertiesModal({
     if (portfolioId && isVirtualSamplePortfolio(portfolioId)) {
       return (
         <div className="space-y-6">
-          <div className="text-center space-y-3">
-            <h3 className="text-lg font-semibold">Demo Portfolio</h3>
-            <div className="p-4 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  Demo
-                </Badge>
+          <div className="text-center space-y-4">
+            <div className="p-6 bg-muted/50 border border-border rounded-lg">
+              <p className="text-base text-muted-foreground mb-6">
+                This is a demo. Properties cannot be added. Create your own portfolio to start adding your own properties.
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => {
+                    onOpenChange(false)
+                    onCreatePortfolio?.()
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <BuildingIcon className="h-4 w-4" />
+                  Create Portfolio
+                </Button>
               </div>
-              <p className="text-sm text-purple-800 dark:text-purple-200">
-                This is a demonstration portfolio showcasing our platform features. 
-                Properties cannot be added to this portfolio.
-              </p>
-              <p className="text-sm text-purple-700 dark:text-purple-300 mt-2">
-                Create your own portfolio to start managing your real estate data.
-              </p>
             </div>
           </div>
         </div>
@@ -228,36 +218,38 @@ export function AddPropertiesModal({
     }
 
     return (
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold">Add Property</h3>
-          <p className="text-sm text-muted-foreground">
-            Choose how you&apos;d like to add properties to your portfolio
+      <div className="space-y-fluid-md">
+        <div className="text-center space-y-fluid-sm">
+          <h3 className="text-fluid-lg font-semibold">Add Property</h3>
+          <p className="text-fluid-sm text-muted-foreground">
+            Choose how you&apos;d like to add properties
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-fluid-xs">
           {uploadMethods.map((method) => {
             const Icon = method.icon
             return (
               <Card 
                 key={method.id}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50"
+                className="cursor-pointer hover:shadow-sm transition-all duration-200 hover:border-primary/30"
                 onClick={() => handleMethodSelect(method.id)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Icon className="h-5 w-5 text-primary" />
+                <CardContent className="p-fluid-sm">
+                  <div className="flex items-start gap-fluid-sm">
+                    <div className="p-2 bg-primary/5 rounded-md flex-shrink-0">
+                      <Icon className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium">{method.title}</h4>
-                        <Badge variant="secondary" className="text-xs">
+                        <h4 className="font-medium text-sm">{method.title}</h4>
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex-shrink-0">
                           {method.id === 'csv' ? 'Bulk' : 'Single'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{method.description}</p>
+                      <p className="text-xs text-muted-foreground leading-tight">
+                        {method.description}
+                      </p>
                       <p className="text-xs text-muted-foreground/70 italic">
                         e.g. {method.example}
                       </p>
@@ -281,19 +273,19 @@ export function AddPropertiesModal({
     const Icon = method.icon
 
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
+      <div className="space-y-fluid-md">
+        <div className="flex items-center gap-fluid-sm">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="p-1 h-8 w-8"
+            className="p-1 w-fluid-sm h-fluid-sm flex-shrink-0"
           >
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Icon className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">{method.title}</h3>
+          <div className="flex items-center gap-fluid-sm min-w-0 flex-1">
+            <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+            <h3 className="text-fluid-lg font-semibold truncate">{method.title}</h3>
             {selectedMethod === 'csv' && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -334,7 +326,7 @@ export function AddPropertiesModal({
 
         <Separator />
 
-        {selectedMethod === 'csv' && (
+        {selectedMethod === 'csv' && !isProcessing && (
           <div className="mb-4">
             <p className="text-sm text-muted-foreground">
               We only accept CSV files with one column of parcel numbers (APNs). The column header should be &quot;apn&quot;, &quot;parcel&quot;, or similar.
@@ -349,6 +341,7 @@ export function AddPropertiesModal({
               onSuccess={handleCsvSuccess}
               onError={handleError}
               isModal={true}
+              onProcessingStateChange={setIsProcessing}
             />
           )}
           {selectedMethod === 'apn' && (
@@ -374,10 +367,7 @@ export function AddPropertiesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(
-        "max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto",
-        currentStep === 'form' && "sm:max-w-2xl"
-      )}>
+      <DialogContent className="w-[clamp(400px,90vw,520px)] max-w-none max-h-[90vh] overflow-y-auto p-fluid-md">
         <DialogHeader className="sr-only">
           <DialogTitle>Add Property Modal</DialogTitle>
         </DialogHeader>

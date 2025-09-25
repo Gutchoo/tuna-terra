@@ -23,10 +23,12 @@ import {
   TagIcon,
   HomeIcon,
   LandmarkIcon,
-  TreesIcon
+  TreesIcon,
+  TrendingUpIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
+import type { CensusDemographics } from '@/hooks/useCensusData'
 
 interface PropertyCardProps {
   property: Property
@@ -35,6 +37,8 @@ interface PropertyCardProps {
   onRefresh: (property: Property) => void
   onDelete: (property: Property) => void
   isRefreshing: boolean
+  demographics?: CensusDemographics | null
+  isLoadingDemographics?: boolean
 }
 
 export function PropertyCard({ 
@@ -43,7 +47,9 @@ export function PropertyCard({
   onToggleExpand, 
   onRefresh, 
   onDelete, 
-  isRefreshing 
+  isRefreshing,
+  demographics,
+  isLoadingDemographics = false
 }: PropertyCardProps) {
   const formatCurrency = (value: number | null) => {
     if (!value) return null
@@ -65,106 +71,112 @@ export function PropertyCard({
     return value.toLocaleString()
   }
 
-
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
+    <Card className="transition-all duration-300 hover:shadow-lg">
       {/* Card Header - Always Visible */}
-      <div className="px-4 sm:px-6 py-4">
-        <div className="flex justify-between items-start">
-          <div 
-            className="flex-1 cursor-pointer"
-            onClick={() => onToggleExpand(property.id)}
-          >
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold hover:text-primary transition-colors">
+      <div className="px-fluid-md sm:px-fluid-lg py-fluid-md">
+        {/* Main Content with Title, Chevron, and Menu on same line */}
+        <div 
+          className="cursor-pointer"
+          onClick={() => onToggleExpand(property.id)}
+        >
+          <div className="flex items-start justify-between">
+            <div className="space-y-fluid-sm flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h3 className="text-fluid-lg font-semibold hover:text-primary transition-colors truncate pr-2">
                   {property.address}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPinIcon className="h-3 w-3" />
-                  <span>
-                    {[property.city, property.state, property.zip_code]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </span>
-                </div>
-                
-                {/* Compact Info Row */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
-                  {property.year_built && (
-                    <span>Built {property.year_built}</span>
-                  )}
-                  {property.county && (
-                    <span>{property.county} County</span>
-                  )}
-                  {property.zoning && (
-                    <span>Zoned {property.zoning}</span>
-                  )}
-                  {property.qoz_status === 'Yes' && (
-                    <Badge variant="secondary" className="text-xs">QOZ</Badge>
-                  )}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <ChevronDownIcon className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVerticalIcon className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onRefresh(property)
+                        }}
+                        disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
+                        className="focus:bg-blue-50"
+                      >
+                        <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(property)
+                        }}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                        disabled={isVirtualSampleProperty(property.id)}
+                      >
+                        <TrashIcon className="mr-2 h-4 w-4" />
+                        Delete Property
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               
-              <Button variant="ghost" size="sm" className="ml-4">
-                <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-              </Button>
+              <div className="flex items-center gap-fluid-xs text-fluid-sm text-muted-foreground">
+                <MapPinIcon className="h-3 w-3" />
+                <span>
+                  {[property.city, property.state, property.zip_code]
+                    .filter(Boolean)
+                    .join(', ')}
+                </span>
+              </div>
+              
+              {/* Compact Info Row */}
+              <div className="flex flex-wrap items-center gap-fluid-xs sm:gap-fluid-sm text-fluid-xs text-muted-foreground">
+                {property.year_built && (
+                  <span>Built {property.year_built}</span>
+                )}
+                {property.county && (
+                  <span>{property.county} County</span>
+                )}
+                {property.zoning && (
+                  <span>Zoned {property.zoning}</span>
+                )}
+                {property.qoz_status === 'Yes' && (
+                  <Badge variant="secondary" className="text-fluid-xs">QOZ</Badge>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Actions Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-2">
-                <MoreVerticalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => onRefresh(property)}
-                disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
-                className="focus:bg-blue-50"
-              >
-                <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete(property)}
-                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                disabled={isVirtualSampleProperty(property.id)}
-              >
-                <TrashIcon className="mr-2 h-4 w-4" />
-                Delete Property
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
         
         {/* Quick Stats - Always Visible */}
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-fluid-md grid grid-cols-2 md:grid-cols-4 gap-fluid-sm">
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Assessed Value</p>
-            <p className="text-sm font-medium">
+            <p className="text-fluid-xs text-muted-foreground">Assessed Value</p>
+            <p className="text-fluid-sm font-medium">
               {formatCurrency(property.assessed_value) || 'N/A'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Owner</p>
-            <p className="text-sm font-medium truncate" title={property.owner || 'N/A'}>
+            <p className="text-fluid-xs text-muted-foreground">Owner</p>
+            <p className="text-fluid-sm font-medium truncate" title={property.owner || 'N/A'}>
               {property.owner || 'N/A'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Last Sale</p>
-            <p className="text-sm font-medium">
+            <p className="text-fluid-xs text-muted-foreground">Last Sale</p>
+            <p className="text-fluid-sm font-medium">
               {(property.last_sale_price && property.last_sale_price > 0) 
                 ? formatCurrency(property.last_sale_price) 
                 : 'N/A'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">APN</p>
-            <p className="text-sm font-medium font-mono">{property.apn || 'N/A'}</p>
+            <p className="text-fluid-xs text-muted-foreground">APN</p>
+            <p className="text-fluid-sm font-medium font-mono">{property.apn || 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -175,17 +187,17 @@ export function PropertyCard({
           isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-4 sm:px-6 pb-4">
-          <Separator className="mb-4" />
+        <div className="px-fluid-md sm:px-fluid-lg pb-fluid-md">
+          <Separator className="mb-fluid-md" />
           
-          <div className="space-y-5">
+          <div className="space-y-fluid-lg">
             {/* Property Details */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                 <BuildingIcon className="h-4 w-4" />
-                <h4 className="font-medium">Property Details</h4>
+                <h4 className="font-medium text-fluid-base">Property Details</h4>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                 {property.year_built && (
                   <div>
                     <p className="text-muted-foreground">Year Built</p>
@@ -228,11 +240,11 @@ export function PropertyCard({
             {/* Zoning & Land Use */}
             {(property.zoning || property.zoning_description || property.use_code) && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                   <LandmarkIcon className="h-4 w-4" />
-                  <h4 className="font-medium">Zoning & Land Use</h4>
+                  <h4 className="font-medium text-fluid-base">Zoning & Land Use</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                   {property.zoning && (
                     <div>
                       <p className="text-muted-foreground">Zoning Code</p>
@@ -258,11 +270,11 @@ export function PropertyCard({
             {/* Land Information */}
             {(property.lot_size_acres || property.lot_size_sqft) && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                   <TreesIcon className="h-4 w-4" />
-                  <h4 className="font-medium">Land Information</h4>
+                  <h4 className="font-medium text-fluid-base">Land Information</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                   {property.lot_size_acres && (
                     <div>
                       <p className="text-muted-foreground">Lot Size (Acres)</p>
@@ -281,11 +293,11 @@ export function PropertyCard({
 
             {/* Location Information */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                 <MapPinIcon className="h-4 w-4" />
-                <h4 className="font-medium">Location Information</h4>
+                <h4 className="font-medium text-fluid-base">Location Information</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                 {property.county && (
                   <div>
                     <p className="text-muted-foreground">County</p>
@@ -319,7 +331,7 @@ export function PropertyCard({
                 {property.lat && property.lng && (
                   <div>
                     <p className="text-muted-foreground">Coordinates</p>
-                    <p className="font-medium font-mono text-xs">
+                    <p className="font-medium font-mono text-fluid-xs">
                       {property.lat.toFixed(6)}, {property.lng.toFixed(6)}
                     </p>
                   </div>
@@ -330,11 +342,11 @@ export function PropertyCard({
             {/* Financial Information */}
             {(property.assessed_value || property.land_value || property.improvement_value || property.last_sale_price) && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                   <DollarSignIcon className="h-4 w-4" />
-                  <h4 className="font-medium">Financial Information</h4>
+                  <h4 className="font-medium text-fluid-base">Financial Information</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                   {property.assessed_value && (
                     <div>
                       <p className="text-muted-foreground">Assessed Value</p>
@@ -381,14 +393,138 @@ export function PropertyCard({
               </div>
             )}
 
+            {/* Area Demographics */}
+            {(demographics || isLoadingDemographics) && (
+              <div>
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
+                  <TrendingUpIcon className="h-4 w-4" />
+                  <h4 className="font-medium text-fluid-base">Area Demographics</h4>
+                  {isLoadingDemographics && (
+                    <span className="text-xs text-muted-foreground ml-2">Loading...</span>
+                  )}
+                </div>
+                {isLoadingDemographics ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Median Income</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Mean Income</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Population</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Median Age</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Total Housing Units</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Owner Occupied Units</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Renter Occupied Units</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Avg HH Size (Owner)</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                    <div className="animate-pulse">
+                      <p className="text-muted-foreground">Avg HH Size (Renter)</p>
+                      <div className="h-4 bg-muted rounded mt-1"></div>
+                    </div>
+                  </div>
+                ) : demographics ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
+                    {demographics.median_income && (
+                      <div>
+                        <p className="text-muted-foreground">Median Income</p>
+                        <p className="font-medium">{formatCurrency(demographics.median_income)}</p>
+                      </div>
+                    )}
+                    {demographics.mean_income && (
+                      <div>
+                        <p className="text-muted-foreground">Mean Income</p>
+                        <p className="font-medium">{formatCurrency(demographics.mean_income)}</p>
+                      </div>
+                    )}
+                    {demographics.households && (
+                      <div>
+                        <p className="text-muted-foreground">Households</p>
+                        <p className="font-medium">{formatNumber(demographics.households)}</p>
+                      </div>
+                    )}
+                    {demographics.population && (
+                      <div>
+                        <p className="text-muted-foreground">Population</p>
+                        <p className="font-medium">{formatNumber(demographics.population)}</p>
+                      </div>
+                    )}
+                    {demographics.median_age && (
+                      <div>
+                        <p className="text-muted-foreground">Median Age</p>
+                        <p className="font-medium">{demographics.median_age} years</p>
+                      </div>
+                    )}
+                    {demographics.total_housing_units && (
+                      <div>
+                        <p className="text-muted-foreground">Total Housing Units</p>
+                        <p className="font-medium">{formatNumber(demographics.total_housing_units)}</p>
+                      </div>
+                    )}
+                    {demographics.owner_occupied_units && (
+                      <div>
+                        <p className="text-muted-foreground">Owner Occupied Units</p>
+                        <p className="font-medium">{formatNumber(demographics.owner_occupied_units)}</p>
+                      </div>
+                    )}
+                    {demographics.renter_occupied_units && (
+                      <div>
+                        <p className="text-muted-foreground">Renter Occupied Units</p>
+                        <p className="font-medium">{formatNumber(demographics.renter_occupied_units)}</p>
+                      </div>
+                    )}
+                    {demographics.avg_household_size_owner && (
+                      <div>
+                        <p className="text-muted-foreground">Avg HH Size (Owner)</p>
+                        <p className="font-medium">{demographics.avg_household_size_owner.toFixed(1)}</p>
+                      </div>
+                    )}
+                    {demographics.avg_household_size_renter && (
+                      <div>
+                        <p className="text-muted-foreground">Avg HH Size (Renter)</p>
+                        <p className="font-medium">{demographics.avg_household_size_renter.toFixed(1)}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-muted-foreground">Data Source</p>
+                      <p className="font-medium text-xs">US Census Bureau (2023)</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No demographic data available for {property.city}, {property.state}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Owner Information */}
             {(property.owner || property.owner_mailing_address) && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                   <HomeIcon className="h-4 w-4" />
-                  <h4 className="font-medium">Owner Information</h4>
+                  <h4 className="font-medium text-fluid-base">Owner Information</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-md text-fluid-sm">
                   {property.owner && (
                     <div>
                       <p className="text-muted-foreground">Owner Name</p>
@@ -415,11 +551,11 @@ export function PropertyCard({
             {/* User Information */}
             {(property.user_notes || property.insurance_provider || property.maintenance_history || property.tags?.length) && (
               <div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                   <UserIcon className="h-4 w-4" />
-                  <h4 className="font-medium">Your Information</h4>
+                  <h4 className="font-medium text-fluid-base">Your Information</h4>
                 </div>
-                <div className="space-y-3 text-sm">
+                <div className="space-y-fluid-sm text-fluid-sm">
                   {property.user_notes && (
                     <div>
                       <p className="text-muted-foreground">Notes</p>
@@ -440,10 +576,10 @@ export function PropertyCard({
                   )}
                   {property.tags && property.tags.length > 0 && (
                     <div>
-                      <p className="text-muted-foreground mb-2">Tags</p>
+                      <p className="text-muted-foreground mb-fluid-sm">Tags</p>
                       <div className="flex flex-wrap gap-1">
                         {property.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge key={index} variant="secondary" className="text-fluid-xs">
                             <TagIcon className="h-3 w-3 mr-1" />
                             {tag}
                           </Badge>
@@ -457,11 +593,11 @@ export function PropertyCard({
 
             {/* Timeline */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-fluid-sm mb-fluid-sm">
                 <CalendarIcon className="h-4 w-4" />
-                <h4 className="font-medium">Timeline</h4>
+                <h4 className="font-medium text-fluid-base">Timeline</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-md text-fluid-sm">
                 <div>
                   <p className="text-muted-foreground">Added to Portfolio</p>
                   <p className="font-medium">{formatDate(property.created_at)}</p>

@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         description: validatedData.description || null,
         owner_id: userId,
-        is_default: false,
+        is_default: true, // Set new portfolios as last-used portfolio
       })
       .select()
       .single()

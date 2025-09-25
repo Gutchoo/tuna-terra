@@ -339,11 +339,9 @@ export default function PortfoliosPage() {
           <Card 
             key={portfolio.id} 
             className={`relative group transition-all duration-200 ${
-              isVirtualSamplePortfolio(portfolio.id)
-                ? 'bg-accent/10 border-accent/20 shadow-sm ring-1 ring-accent/10'
-                : isSelected 
-                  ? 'bg-muted/30 border-muted-foreground/20' 
-                  : 'hover:shadow-md'
+              isSelected
+                ? 'bg-muted/30 border-muted-foreground/20'
+                : 'hover:shadow-md'
             }`}
           >
             {/* Checkbox overlay for owner portfolios (except sample portfolios) */}

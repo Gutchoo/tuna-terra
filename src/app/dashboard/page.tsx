@@ -6,13 +6,14 @@ import { Suspense, useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { PropertyView } from '@/components/properties/PropertyView'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
-import { WelcomeEmptyState } from '@/components/welcome/WelcomeEmptyState'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
 import { VirtualSamplePortfolioState } from '@/components/welcome/VirtualSamplePortfolioState'
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
+import { PropertyFlowDebugPanel } from '@/components/debug/PropertyFlowDebugPanel'
+import { PortfolioStatusDebugPanel } from '@/components/debug/PortfolioStatusDebugPanel'
 import { toast } from 'sonner'
-import { useDefaultPortfolio } from '@/hooks/use-portfolios'
+import { useDefaultPortfolio, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
 import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 
@@ -25,7 +26,6 @@ function DashboardPageContent() {
   // Debug log immediately to see what we're getting
   console.log('[DASHBOARD] Component render - currentPortfolioId:', currentPortfolioId, 'searchParams:', searchParams.toString())
   const [isRedirecting, setIsRedirecting] = useState(false)
-  const [hasNoPortfolios, setHasNoPortfolios] = useState(false)
   const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   const [showCreatePortfolioModal, setShowCreatePortfolioModal] = useState(false)
   const [modalInitialMethod, setModalInitialMethod] = useState<'csv' | 'apn' | 'address' | undefined>(undefined)
@@ -35,15 +35,34 @@ function DashboardPageContent() {
   const hasShownToastRef = useRef(false)
   const isMountedRef = useRef(true)
   
-  // Cleanup on unmount
+  // Debug event listeners for modal control
   useEffect(() => {
+    const handleDebugOpenCsvModal = () => {
+      setShowAddPropertiesModal(true)
+      setModalInitialMethod('csv')
+    }
+
+    const handleDebugCloseModal = () => {
+      setShowAddPropertiesModal(false)
+      setShowCreatePortfolioModal(false)
+    }
+
+    // Only add listeners in development
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_TEST_DATA !== 'false') {
+      window.addEventListener('debug-open-csv-modal', handleDebugOpenCsvModal as EventListener)
+      window.addEventListener('debug-close-modal', handleDebugCloseModal)
+    }
+
     return () => {
       isMountedRef.current = false
+      window.removeEventListener('debug-open-csv-modal', handleDebugOpenCsvModal as EventListener)
+      window.removeEventListener('debug-close-modal', handleDebugCloseModal)
     }
   }, [])
 
   // Use optimized hooks for data fetching
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
+  const updateLastUsedPortfolio = useUpdateLastUsedPortfolio()
   
   // Debug: Log what we're passing to useProperties
   console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
@@ -81,7 +100,6 @@ function DashboardPageContent() {
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
         
         // Reset states for valid portfolio
-        setHasNoPortfolios(false)
         setIsRedirecting(false)
         return
       }
@@ -99,11 +117,8 @@ function DashboardPageContent() {
     
     // Handle missing portfolio ID
     if (!portfolioId) {
-      if (!portfolios || portfolios.length === 0) {
-        console.log('[DASHBOARD] No portfolios found - showing welcome state')
-        setHasNoPortfolios(true)
-        return
-      }
+      // Since every user always has the virtual sample portfolio, portfolios.length is never 0
+      // Skip the dead code path and proceed directly to default portfolio logic
       
       // Redirect to default portfolio if available
       if (defaultPortfolio?.id) {
@@ -125,14 +140,14 @@ function DashboardPageContent() {
           setIsRedirecting(true)
           router.replace(`/dashboard?portfolio_id=${defaultPortfolio.id}`)
         } else {
-          setHasNoPortfolios(true)
+          // This should never happen since virtual sample portfolio always exists
+          console.error('[DASHBOARD] No default portfolio found - this should not happen')
           router.replace('/dashboard')
         }
         return
       }
       
       // Valid portfolio - ensure clean state
-      setHasNoPortfolios(false)
       setIsRedirecting(false)
     }
   }, [currentPortfolioId, searchParams, portfoliosLoading, portfolios, defaultPortfolio, router])
@@ -148,6 +163,27 @@ function DashboardPageContent() {
       }
     }
   }, [isRedirecting, portfoliosLoading, portfolios, currentPortfolioId])
+
+  // Track portfolio usage when user visits with a specific portfolio_id
+  useEffect(() => {
+    // Only track usage if:
+    // 1. We have a portfolio ID from URL
+    // 2. Portfolios are loaded (not loading)
+    // 3. The portfolio exists in user's portfolios
+    // 4. It's not the virtual sample portfolio
+    // 5. The portfolio is not already marked as default/last-used (prevent redundant calls)
+    if (currentPortfolioId && !portfoliosLoading && portfolios && portfolios.length > 0) {
+      const currentPortfolioData = portfolios.find(p => p.id === currentPortfolioId)
+
+      if (currentPortfolioData &&
+          !isVirtualSamplePortfolio(currentPortfolioId) &&
+          !currentPortfolioData.is_default) { // Only update if not already default
+        // Set this portfolio as the user's last used portfolio
+        updateLastUsedPortfolio.mutate(currentPortfolioId)
+        console.log('[DASHBOARD] Setting new last-used portfolio:', currentPortfolioId)
+      }
+    }
+  }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio])
 
   const handlePropertiesChange = () => {
     // Properties are now managed by React Query
@@ -166,7 +202,6 @@ function DashboardPageContent() {
       portfoliosLoading,
       propertiesLoading,
       isRedirecting,
-      hasNoPortfolios,
       portfoliosCount: portfolios?.length,
       propertiesCount: properties?.length
     })
@@ -209,13 +244,6 @@ function DashboardPageContent() {
       )
     }
 
-    if (hasNoPortfolios) {
-      return (
-        <WelcomeEmptyState 
-          onCreatePortfolio={() => router.push('/dashboard/portfolios/new')}
-        />
-      )
-    }
 
     if (!currentPortfolioId) {
       console.log('[DASHBOARD] No portfolio ID detected:', { currentPortfolioId, searchParamsValue: searchParams.get('portfolio_id') })
@@ -237,9 +265,11 @@ function DashboardPageContent() {
 
     // Show empty properties state if user has portfolio but no properties (excluding virtual sample portfolio)
     if (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) {
+      const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
       return (
         <EmptyPropertiesState 
           portfolioId={currentPortfolioId}
+          portfolioName={currentPortfolio?.name}
           onAddProperties={(method) => {
             setModalInitialMethod(method)
             setShowAddPropertiesModal(true)
@@ -253,6 +283,11 @@ function DashboardPageContent() {
         properties={properties}
         onPropertiesChange={handlePropertiesChange}
         onError={handleError}
+        portfolioId={currentPortfolioId}
+        onAddProperties={(method) => {
+          setModalInitialMethod(method)
+          setShowAddPropertiesModal(true)
+        }}
       />
     )
   }
@@ -260,26 +295,24 @@ function DashboardPageContent() {
   return (
     <div className="flex flex-col min-h-screen">
       
-      {/* Only show header when user has portfolios */}
-      {!hasNoPortfolios && (
-        <DashboardHeader 
-          onPortfolioChange={(portfolioId) => {
-            // Note: DashboardHeader handles URL updates directly
-            // This callback is just for potential future use
-            console.log('Portfolio changed to:', portfolioId)
-          }}
-        />
-      )}
+      {/* Dashboard Header */}
+      <DashboardHeader
+        onPortfolioChange={(portfolioId) => {
+          // Note: DashboardHeader handles URL updates directly
+          // This callback is just for potential future use
+          console.log('Portfolio changed to:', portfolioId)
+        }}
+      />
 
       {/* Conditional layout - empty states get full height, content gets card wrapper */}
-      {hasNoPortfolios || (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
+      {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
         <div className="flex-1 flex flex-col">
           {renderContent()}
         </div>
       ) : (
         <div className="p-6">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-0">
               {renderContent()}
             </CardContent>
           </Card>
@@ -297,11 +330,16 @@ function DashboardPageContent() {
         }}
         portfolioId={currentPortfolioId}
         initialMethod={modalInitialMethod}
+        onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
       />
       <CreatePortfolioModal
         open={showCreatePortfolioModal}
         onOpenChange={setShowCreatePortfolioModal}
       />
+
+      {/* Floating Debug Panels */}
+      <PortfolioStatusDebugPanel />
+      <PropertyFlowDebugPanel />
     </div>
   )
 }

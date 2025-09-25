@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { CensusService } from './census'
 
 const REGRID_API_BASE = 'https://app.regrid.com/api/v2'
 
@@ -44,6 +45,14 @@ export interface RegridProperty {
     assessed_value?: number
     [key: string]: string | number | undefined
   }
+  // Enhanced with demographic data
+  demographics?: {
+    households?: number | null
+    median_income?: number | null
+    mean_income?: number | null
+    population?: number | null
+    unemployment_rate?: number | null
+  } | null
 }
 
 export interface RegridSearchResult {
@@ -92,8 +101,8 @@ export class RegridService {
     return response.json()
   }
 
-  // Search by APN
-  static async searchByAPN(apn: string, state?: string): Promise<RegridProperty | null> {
+  // Search by APN with optional location filtering
+  static async searchByAPN(apn: string, state?: string, county?: string, city?: string): Promise<RegridProperty | null> {
     try {
       // Use cached test data for development testing
       if (TEST_APNS.includes(apn) && process.env.NODE_ENV === 'development') {
@@ -108,7 +117,7 @@ export class RegridService {
           const features = testData?.parcels?.features || []
           if (features.length > 0) {
             console.log(`✅ Loaded cached test data for APN: ${apn}`)
-            return this.normalizeProperty(features[0])
+            return await this.normalizeProperty(features[0])
           }
         } catch (fileError) {
           console.warn(`⚠️  Could not load test data for APN ${apn}, falling back to API:`, fileError instanceof Error ? fileError.message : String(fileError))
@@ -116,9 +125,22 @@ export class RegridService {
         }
       }
 
-      const params: Record<string, string> = { 
+      const params: Record<string, string> = {
         parcelnumb: apn,
-        token: this.apiKey! 
+        token: this.apiKey!
+      }
+
+      // Add path parameter to narrow down location if provided
+      if (state) {
+        let path = `/us/${state.toLowerCase()}`
+        if (county) {
+          path += `/${county.toLowerCase().replace(/\s+/g, '-')}`
+          if (city) {
+            path += `/${city.toLowerCase().replace(/\s+/g, '-')}`
+          }
+        }
+        params.path = path
+        console.log(`🎯 Using location filter: ${path}`)
       }
 
       const data = await this.makeRequest('/parcels/apn', params)
@@ -126,12 +148,118 @@ export class RegridService {
       // Handle the new API response structure: parcels.features[]
       const features = data?.parcels?.features || []
       if (features.length > 0) {
-        return this.normalizeProperty(features[0])
+        if (features.length > 1) {
+          console.log(`🎯 Found ${features.length} parcels with APN ${apn}, using highest ranked result`)
+          // Log all results for debugging
+          features.forEach((feature: unknown, index: number) => {
+            const f = feature as { properties?: { fields?: Record<string, unknown> } }
+            const fields = f.properties?.fields || {}
+            console.log(`  ${index + 1}. ${fields.address || 'No address'}, ${fields.scity || 'Unknown city'}, ${fields.state2 || 'Unknown state'} - $${fields.parval || 'N/A'}`)
+          })
+        }
+        // Return the first (highest ranked) result
+        return await this.normalizeProperty(features[0])
       }
       return null
     } catch (error) {
       console.error('Error searching by APN:', error)
       console.error('APN:', apn, 'State:', state)
+      throw error
+    }
+  }
+
+  // Search by APN with multiple results and custom tiebreaker
+  static async searchByAPNWithTiebreaker(
+    apn: string,
+    options?: {
+      state?: string
+      county?: string
+      city?: string
+      preferredOwner?: string
+      minAssessedValue?: number
+      maxAssessedValue?: number
+      preferredAddress?: string
+    }
+  ): Promise<RegridProperty[]> {
+    try {
+      const params: Record<string, string> = {
+        parcelnumb: apn,
+        token: this.apiKey!,
+        limit: '50' // Get more results for better tiebreaking
+      }
+
+      // Add path parameter if location provided
+      if (options?.state) {
+        let path = `/us/${options.state.toLowerCase()}`
+        if (options.county) {
+          path += `/${options.county.toLowerCase().replace(/\s+/g, '-')}`
+          if (options.city) {
+            path += `/${options.city.toLowerCase().replace(/\s+/g, '-')}`
+          }
+        }
+        params.path = path
+      }
+
+      const data = await this.makeRequest('/parcels/apn', params)
+      const features = data?.parcels?.features || []
+
+      if (features.length === 0) {
+        return []
+      }
+
+      console.log(`🔍 Found ${features.length} parcels with APN ${apn}`)
+
+      // Convert all features to RegridProperty objects
+      const properties = await Promise.all(
+        features.map(async (feature: unknown) => await this.normalizeProperty(feature as { id?: string | number; properties?: { fields?: Record<string, unknown> }; fields?: Record<string, unknown>; geometry?: unknown }))
+      )
+
+      // Apply tiebreaker logic
+      let filteredProperties = properties
+
+      // Filter by owner if specified
+      if (options?.preferredOwner) {
+        const ownerMatches = filteredProperties.filter(p =>
+          p.properties.owner?.toLowerCase().includes(options.preferredOwner!.toLowerCase())
+        )
+        if (ownerMatches.length > 0) {
+          filteredProperties = ownerMatches
+        }
+      }
+
+      // Filter by assessed value range if specified
+      if (options?.minAssessedValue || options?.maxAssessedValue) {
+        filteredProperties = filteredProperties.filter(p => {
+          const value = p.properties.assessed_value || 0
+          const minOk = !options?.minAssessedValue || value >= options.minAssessedValue
+          const maxOk = !options?.maxAssessedValue || value <= options.maxAssessedValue
+          return minOk && maxOk
+        })
+      }
+
+      // Filter by address if specified
+      if (options?.preferredAddress) {
+        const addressMatches = filteredProperties.filter(p =>
+          p.address.line1?.toLowerCase().includes(options.preferredAddress!.toLowerCase())
+        )
+        if (addressMatches.length > 0) {
+          filteredProperties = addressMatches
+        }
+      }
+
+      // Sort by assessed value (highest first) as final tiebreaker
+      filteredProperties.sort((a, b) =>
+        (b.properties.assessed_value || 0) - (a.properties.assessed_value || 0)
+      )
+
+      // Log results for debugging
+      filteredProperties.forEach((property, index) => {
+        console.log(`  ${index + 1}. ${property.address.line1}, ${property.address.city}, ${property.address.state} - Owner: ${property.properties.owner} - $${property.properties.assessed_value?.toLocaleString() || 'N/A'}`)
+      })
+
+      return filteredProperties
+    } catch (error) {
+      console.error('Error in tiebreaker search:', error)
       throw error
     }
   }
@@ -197,7 +325,7 @@ export class RegridService {
       
       // Handle the v2 API response structure
       if (data.parcels?.features && data.parcels.features.length > 0) {
-        return this.normalizeProperty(data.parcels.features[0])
+        return await this.normalizeProperty(data.parcels.features[0])
       }
       
       return null
@@ -213,15 +341,41 @@ export class RegridService {
   }
 
   // Normalize property data from different Regrid response formats
-  static normalizeProperty(rawProperty: {
+  static async normalizeProperty(rawProperty: {
     id?: string | number
     properties?: { fields?: Record<string, unknown> }
     fields?: Record<string, unknown>
     geometry?: unknown
-  }): RegridProperty {
+  }): Promise<RegridProperty> {
     // Handle v2 API format: data is in rawProperty.properties.fields
     const fields = rawProperty.properties?.fields || rawProperty.fields || rawProperty.properties || rawProperty as Record<string, unknown>
     const geometry = rawProperty.geometry
+
+    // Extract city and state for census data lookup
+    const city = String((fields as Record<string, unknown>).scity || (fields as Record<string, unknown>).city || '')
+    const state = String((fields as Record<string, unknown>).state2 || (fields as Record<string, unknown>).state || '')
+
+    // Fetch demographic data if city and state are available
+    let demographics = null
+    if (city && state) {
+      try {
+        console.log(`🔍 Fetching census data for ${city}, ${state}`)
+        const censusData = await CensusService.getCachedOrFetchCensusData(city, state, 2023)
+        if (censusData) {
+          demographics = {
+            households: censusData.households,
+            median_income: censusData.median_income,
+            mean_income: censusData.mean_income,
+            population: censusData.population,
+            unemployment_rate: censusData.unemployment_rate,
+          }
+          console.log(`✅ Census data attached for ${city}, ${state}`)
+        }
+      } catch (error) {
+        console.warn(`⚠️  Failed to fetch census data for ${city}, ${state}:`, error)
+        // Continue without demographics - don't break property creation
+      }
+    }
 
     return {
       id: String(rawProperty.id || (fields as Record<string, unknown>).id || ''),
@@ -290,7 +444,8 @@ export class RegridService {
         qualified_opportunity_zone: String((fields as Record<string, unknown>).qoz || ''),
         // Store all raw fields for future use
         ...(fields as Record<string, string | number | undefined>)
-      }
+      },
+      demographics
     }
   }
 

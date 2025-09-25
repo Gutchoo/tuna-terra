@@ -20,6 +20,9 @@ export const createServerSupabaseClient = () => {
   throw new Error('createServerSupabaseClient from lib/supabase is deprecated. Use local createServerClient implementations in API routes instead.')
 }
 
+// Import census types
+import type { CensusDemographics } from '@/hooks/useCensusData'
+
 // Database types
 export type Property = {
   id: string
@@ -87,6 +90,11 @@ export type Property = {
   updated_at: string
 }
 
+// Enhanced property type with demographics data (client-side only)
+export interface PropertyWithDemographics extends Property {
+  demographics?: CensusDemographics | null
+}
+
 // Portfolio-related types
 export interface Portfolio {
   id: string
@@ -146,14 +154,17 @@ export interface PortfolioMember {
 
 // User limits and tier types
 export interface UserLimits {
-  id: string
+  id?: string
   user_id: string
   tier: 'free' | 'pro'
   property_lookups_used: number
   property_lookups_limit: number
+  total_lookups_lifetime: number
   reset_date: string
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
+  join_date?: string
+  can_proceed?: boolean
 }
 
 export type Profile = {

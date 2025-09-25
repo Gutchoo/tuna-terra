@@ -23,7 +23,9 @@ interface APNFormProps {
   portfolioId: string | null
   onSuccess?: (property: unknown) => void
   onError?: (error: string) => void
+  onCancel?: () => void
   isModal?: boolean
+  demoMode?: boolean
 }
 
 
@@ -37,7 +39,7 @@ interface DuplicateProperty {
 }
 
 
-export function APNForm({ portfolioId, onSuccess, onError, isModal = false }: APNFormProps) {
+export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = false, demoMode = false }: APNFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isDuplicateChecking, setIsDuplicateChecking] = useState(false)
@@ -119,8 +121,8 @@ export function APNForm({ portfolioId, onSuccess, onError, isModal = false }: AP
       return
     }
 
-    // Check for duplicates first
-    if (duplicateProperty) {
+    // Check for duplicates first (skip in demo mode)
+    if (duplicateProperty && !demoMode) {
       const errorMsg = 'This property already exists in your portfolio'
       if (isModal && onError) {
         onError(errorMsg)
@@ -134,31 +136,66 @@ export function APNForm({ portfolioId, onSuccess, onError, isModal = false }: AP
     setSubmitError(null)
 
     try {
-      // Use the existing create property mutation which handles the Regrid lookup internally
-      await createPropertyMutation.mutateAsync({
-        portfolio_id: portfolioId,
-        apn: data.apn,
-        address: `APN: ${data.apn}`, // Fallback address - will be updated by Regrid API
-        use_pro_lookup: true, // Always attempt pro lookup first
-      })
-
-      // Success! The mutation handles cache invalidation automatically
-      if (isModal && onSuccess) {
-        // Modal context: call success callback with property data
-        onSuccess({
+      if (demoMode) {
+        // Demo mode: simulate API call and return mock property data
+        await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API delay
+        
+        const mockProperty = {
+          id: `demo-property-${Date.now()}`,
           apn: data.apn,
           address: `APN: ${data.apn}`,
-        })
+          city: 'Demo City',
+          state: 'CA',
+          zip_code: '90210',
+          owner: 'Demo Owner',
+          year_built: 2000,
+          assessed_value: 500000,
+          portfolio_id: 'demo-portfolio',
+          geometry: null,
+          lat: null,
+          lng: null
+        }
+
+        if (onSuccess) {
+          onSuccess(mockProperty)
+
+          // Reset form for next property addition (demo mode)
+          form.reset()
+          setSubmitError(null)
+          setDuplicateProperty(null)
+        }
       } else {
-        // Regular page context: show success message and clear form
-        setShowSuccess(true)
-        setSubmitError(null)
-        form.reset()
-        
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setShowSuccess(false)
-        }, 3000)
+        // Regular mode: use the existing create property mutation
+        await createPropertyMutation.mutateAsync({
+          portfolio_id: portfolioId,
+          apn: data.apn,
+          address: `APN: ${data.apn}`, // Fallback address - will be updated by Regrid API
+          use_pro_lookup: true, // Always attempt pro lookup first
+        })
+
+        // Success! The mutation handles cache invalidation automatically
+        if (isModal && onSuccess) {
+          // Modal context: call success callback with property data then reset form
+          onSuccess({
+            apn: data.apn,
+            address: `APN: ${data.apn}`,
+          })
+
+          // Reset form for next property addition
+          form.reset()
+          setSubmitError(null)
+          setDuplicateProperty(null)
+        } else {
+          // Regular page context: show success message and clear form
+          setShowSuccess(true)
+          setSubmitError(null)
+          form.reset()
+          
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            setShowSuccess(false)
+          }, 3000)
+        }
       }
       
     } catch (error) {
@@ -311,16 +348,23 @@ export function APNForm({ portfolioId, onSuccess, onError, isModal = false }: AP
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
             type="submit"
-            disabled={isSubmitting || !apnValue || !!duplicateProperty || isDuplicateChecking || isRecentlyChanged}
+            disabled={isSubmitting || !apnValue || (!!duplicateProperty && !demoMode) || isDuplicateChecking || isRecentlyChanged}
             className="flex items-center justify-center gap-2"
           >
-            {isSubmitting ? (
-              <LoaderIcon className="h-4 w-4 animate-spin" />
-            ) : (
-              <CheckCircleIcon className="h-4 w-4" />
-            )}
-            {isSubmitting ? 'Adding Property...' : 'Add Property'}
+            {isSubmitting && <LoaderIcon className="h-4 w-4 animate-spin" />}
+            {isSubmitting ? (demoMode ? 'Adding to Demo...' : 'Adding Property...') : 'Add Property'}
           </Button>
+          
+          {demoMode && onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
 
         {showSuccess && (

@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { TerraLogo } from '@/components/ui/terra-logo'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -82,9 +83,7 @@ export default function SignIn() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">TT</span>
-            </div>
+            <TerraLogo size="md" />
             <span className="font-semibold text-lg">Tuna Terra</span>
           </div>
           <CardTitle className="text-2xl">Sign in</CardTitle>

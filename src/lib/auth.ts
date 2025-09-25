@@ -27,7 +27,10 @@ export async function getUser() {
     const { data: { user }, error } = await supabase.auth.getUser()
     
     if (error) {
-      console.error('Auth error:', error)
+      // Only log unexpected auth errors, not normal "no session" errors
+      if (error.message !== 'Auth session missing!') {
+        console.error('Auth error:', error)
+      }
       return null
     }
     

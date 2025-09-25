@@ -4,12 +4,13 @@ import { getUserId } from '@/lib/auth'
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserId()
-    if (!userId) {
+    const body = await request.json()
+    const { placeId, demoMode } = body
+
+    // Allow demo users to use Places API for authentic experience
+    if (!userId && !demoMode) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { placeId } = body
 
     if (!placeId) {
       return NextResponse.json({ error: 'Place ID is required' }, { status: 400 })

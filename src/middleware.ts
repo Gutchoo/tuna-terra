@@ -64,6 +64,21 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(path)
   )
 
+  // Public demo route - allow access without authentication
+  if (req.nextUrl.pathname.startsWith('/demo')) {
+    return res
+  }
+
+  // Allow Places API access - let route handlers manage authentication
+  if (req.nextUrl.pathname.startsWith('/api/places/')) {
+    return res
+  }
+
+  // Allow Census API access for demo users - provides public demographic data
+  if (req.nextUrl.pathname.startsWith('/api/census/')) {
+    return res
+  }
+
   // Public auth routes
   const authPaths = ['/sign-in', '/sign-up']
   const isAuthPath = authPaths.some(path => 

@@ -27,14 +27,14 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="container mx-auto px-4 py-20 lg:py-24">
+    <section className="fluid-container py-24 sm:py-28 lg:py-36 xl:py-44">
       <div className="max-w-4xl mx-auto">
         {/* Section Header */}
-        <ScrollReveal className="text-center mb-16 lg:mb-20">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+        <ScrollReveal className="text-center mb-16 sm:mb-20 lg:mb-24">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 sm:mb-8">
             Powerful Features
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-fluid-lg text-muted-foreground max-w-2xl mx-auto px-fluid-md">
             Everything you need to manage your real estate portfolio efficiently and effectively
           </p>
         </ScrollReveal>
@@ -57,7 +57,7 @@ export function FeaturesSection() {
         </div>
         
         {/* Additional Features Hint */}
-        <ScrollReveal delay={0.8} className="text-center mt-16">
+        <ScrollReveal delay={0.8} className="text-center mt-16 sm:mt-20 lg:mt-24">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted/20 rounded-full border border-border/50">
             <div className="flex -space-x-1">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />

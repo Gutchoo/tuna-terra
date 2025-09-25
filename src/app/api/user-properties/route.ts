@@ -32,7 +32,6 @@ const createPropertySchema = z.object({
 const bulkCreateSchema = z.object({
   properties: z.array(createPropertySchema),
   source: z.enum(['csv', 'manual', 'api']).optional(),
-  use_pro_lookup: z.boolean().optional().default(true), // Add pro lookup flag for bulk operations
 })
 
 export async function GET(request: NextRequest) {
@@ -331,7 +330,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
         )
         if (searchResults.length > 0 && searchResults[0]._fullFeature) {
           console.log('handleSingleCreate - found address results, using full feature data')
-          regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
+          regridData = await RegridService.normalizeProperty(searchResults[0]._fullFeature)
         }
       }
       
@@ -450,7 +449,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
 
 async function handleBulkCreate(userId: string, body: unknown) {
   const validatedData = bulkCreateSchema.parse(body)
-  const { properties, source, use_pro_lookup } = validatedData
+  const { properties, source } = validatedData
 
   // Pre-filter duplicates to avoid unnecessary API calls and usage increments
   const filteredProperties = []
@@ -499,9 +498,14 @@ async function handleBulkCreate(userId: string, body: unknown) {
     filteredProperties.push(...properties.map((propertyInput, index) => ({ index, propertyInput })))
   }
 
-  // Only check user limits for non-duplicate properties if pro lookup is enabled
-  if (use_pro_lookup && filteredProperties.length > 0) {
-    const limitCheck = await checkUserLimitsServer(userId, filteredProperties.length)
+  // Count how many properties actually need pro lookups
+  const proLookupCount = filteredProperties.filter(({ propertyInput }) =>
+    propertyInput.use_pro_lookup !== false
+  ).length
+
+  // Only check limits for properties that will actually use pro lookups
+  if (proLookupCount > 0) {
+    const limitCheck = await checkUserLimitsServer(userId, proLookupCount)
     if (!limitCheck.canProceed) {
       return NextResponse.json(
         createLimitExceededResponse(limitCheck),
@@ -516,11 +520,12 @@ async function handleBulkCreate(userId: string, body: unknown) {
   
   for (const { index, propertyInput } of filteredProperties) {
     try {
-      // Pass the use_pro_lookup flag to each property
-      const enrichedInput = { ...propertyInput, use_pro_lookup }
+      // Use the individual property's pro lookup setting (defaults to true if not specified)
+      const useProLookup = propertyInput.use_pro_lookup !== false
+      const enrichedInput = { ...propertyInput, use_pro_lookup: useProLookup }
       const result = await createSinglePropertyFromInput(userId, enrichedInput)
       results.push(result.property)
-      
+
       // Track successful lookups that actually used the Regrid API
       if (result.usedRegridApi) {
         successfulLookupCount++
@@ -537,7 +542,7 @@ async function handleBulkCreate(userId: string, body: unknown) {
   }
 
   // Increment usage counter only for successful Regrid API lookups
-  if (use_pro_lookup && successfulLookupCount > 0) {
+  if (successfulLookupCount > 0) {
     try {
       await checkAndIncrementUsageServer(userId, successfulLookupCount)
       console.log(`Incremented usage by ${successfulLookupCount} for successful CSV lookups`)
@@ -573,8 +578,8 @@ async function handleBulkCreate(userId: string, body: unknown) {
     }
   }
 
-  // Only include usage info in pro mode
-  if (use_pro_lookup) {
+  // Include usage info if any properties used pro lookups
+  if (proLookupCount > 0) {
     const limitCheck = await checkUserLimitsServer(userId, 0) // Get current usage
     response.usage = {
       used: limitCheck.currentUsed,
@@ -639,7 +644,7 @@ async function createSinglePropertyFromInput(userId: string, input: unknown): Pr
           1
         )
         if (searchResults.length > 0 && searchResults[0]._fullFeature) {
-          regridData = RegridService.normalizeProperty(searchResults[0]._fullFeature)
+          regridData = await RegridService.normalizeProperty(searchResults[0]._fullFeature)
         }
         usedRegridApi = true // API call was made
       }
