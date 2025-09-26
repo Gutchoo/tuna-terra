@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { CalculatorCard } from './shared/CalculatorCard'
 import { InputField } from './shared/InputField'
 import { ResultsDisplay } from './shared/ResultsDisplay'
@@ -74,10 +74,10 @@ export function TVMCalculator({
     }
   }
 
-  const calculateResults = () => {
+  const calculateResults = useCallback(() => {
     // Clear fields based on what we're solving for
     const adjustedInputs = { ...inputs }
-    
+
     // Clear payment field for compound interest calculations
     adjustedInputs.payment = undefined
     if (solveFor === 'fv') adjustedInputs.futureValue = undefined
@@ -96,21 +96,31 @@ export function TVMCalculator({
     } else {
       setResults(null)
     }
-  }
+  }, [inputs, solveFor])
 
 
   useEffect(() => {
     calculateResults()
-  }, [inputs, solveFor, calculateResults])
+  }, [calculateResults])
+
+  // Memoize formatter functions to prevent infinite re-renders
+  const xFormatter = useCallback((value: string | number) => `Year ${value}`, [])
+
+  const yFormatter = useCallback((value: string | number) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value)), [])
 
   // Generate growth timeline for visualization
-  const growthData = results && results.presentValue && results.futureValue
+  const growthData = useMemo(() => results && results.presentValue && results.futureValue
     ? generateGrowthTimeline(results.presentValue, inputs.interestRate || 0.07, inputs.periods || 10)
         .map(point => ({
           period: point.period,
           value: point.value,
         }))
-    : []
+    : [], [results, inputs.interestRate, inputs.periods])
 
   const getResultItems = () => {
     if (!results) return []
@@ -294,13 +304,8 @@ export function TVMCalculator({
                 yKey="value"
                 xLabel="Year"
                 yLabel="Value"
-                xFormatter={(value) => `Year ${value}`}
-                yFormatter={(value) => new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                }).format(Number(value))}
+                xFormatter={xFormatter}
+                yFormatter={yFormatter}
               />
             </motion.div>
           )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { CalculatorCard } from './shared/CalculatorCard'
 import { InputField } from './shared/InputField'
 import { WaterfallLineItems, type WaterfallLineItem } from './shared/WaterfallLineItems'
@@ -51,7 +51,7 @@ export function NOICalculator({
     }))
   }
 
-  const calculateResults = () => {
+  const calculateResults = useCallback(() => {
     const validationErrors = validateNOIInputs(inputs)
     setErrors(validationErrors)
 
@@ -65,7 +65,7 @@ export function NOICalculator({
     } else {
       setResults(null)
     }
-  }
+  }, [inputs])
 
   // const resetCalculator = () => {
   //   setInputs({
@@ -84,7 +84,7 @@ export function NOICalculator({
 
   // const waterfallSteps = generateNOIWaterfall(inputs)
 
-  const waterfallItems: WaterfallLineItem[] = results
+  const waterfallItems: WaterfallLineItem[] = useMemo(() => results
     ? [
         {
           label: 'Gross Rental Income',
@@ -119,7 +119,7 @@ export function NOICalculator({
           isTotal: true,
         },
       ]
-    : []
+    : [], [results, inputs.vacancyRate, inputs.otherIncome, inputs.operatingExpenses])
 
   return (
     <div className={className}>

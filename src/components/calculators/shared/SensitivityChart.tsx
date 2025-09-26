@@ -3,6 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
+import { useCallback } from 'react'
 
 interface ChartDataPoint {
   [key: string]: string | number | boolean | undefined
@@ -36,15 +37,31 @@ export function SensitivityChart({
   highlightColor = 'hsl(var(--destructive))',
   className,
 }: SensitivityChartProps) {
-  const formatTooltip = (value: string | number, name: string) => {
+  const formatTooltip = useCallback((value: string | number, name: string) => {
     const formatter = name === xKey ? xFormatter : yFormatter
     const label = name === xKey ? xLabel : yLabel
-    
+
     return [
       formatter ? formatter(value) : value,
       label
     ]
-  }
+  }, [xKey, yKey, xFormatter, yFormatter, xLabel, yLabel])
+
+  const renderDot = useCallback((props: { cx: number; cy: number; payload: ChartDataPoint; index: number }) => {
+    const { cx, cy, payload, index } = props
+    const isHighlighted = payload?.isHighlighted
+    return (
+      <circle
+        key={`dot-${index}`}
+        cx={cx}
+        cy={cy}
+        r={isHighlighted ? 6 : 4}
+        fill={isHighlighted ? highlightColor : color}
+        stroke={isHighlighted ? highlightColor : color}
+        strokeWidth={2}
+      />
+    )
+  }, [color, highlightColor])
 
   return (
     <motion.div
@@ -94,20 +111,7 @@ export function SensitivityChart({
                   dataKey={yKey}
                   stroke={color}
                   strokeWidth={2}
-                  dot={(props: { cx: number; cy: number; payload: ChartDataPoint }) => {
-                    const { cx, cy, payload } = props
-                    const isHighlighted = payload?.isHighlighted
-                    return (
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={isHighlighted ? 6 : 4}
-                        fill={isHighlighted ? highlightColor : color}
-                        stroke={isHighlighted ? highlightColor : color}
-                        strokeWidth={2}
-                      />
-                    )
-                  }}
+                  dot={renderDot}
                   activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
                 />
               </LineChart>

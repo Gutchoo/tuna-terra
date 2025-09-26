@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { CalculatorCard } from './shared/CalculatorCard'
 import { InputField } from './shared/InputField'
 import { SensitivityChart } from './shared/SensitivityChart'
@@ -48,7 +48,7 @@ export function CapRateCalculator({
     }))
   }
 
-  const calculateResults = () => {
+  const calculateResults = useCallback(() => {
     const validationErrors = validateCapRateInputs(inputs)
     setErrors(validationErrors)
 
@@ -62,7 +62,7 @@ export function CapRateCalculator({
     } else {
       setResults(null)
     }
-  }
+  }, [inputs])
 
   // const resetCalculator = () => {
   //   setInputs({ noi: 50000, price: 625000 })
@@ -77,12 +77,8 @@ export function CapRateCalculator({
   }, [inputs, calculateResults])
 
   // Update sensitivity chart when tab changes or target cap rate changes
-  useEffect(() => {
-    // Force re-render of sensitivity data when activeTab or targetCapRate changes
-  }, [activeTab, targetCapRate])
-
   // Generate sensitivity data based on active tab
-  const getSensitivityData = () => {
+  const sensitivityData = useMemo(() => {
     if (activeTab === 'calculate' && results) {
       // For calculate tab, use the calculated cap rate
       return generateCapRateSensitivity(inputs.noi, results.capRate).map(point => ({
@@ -100,13 +96,21 @@ export function CapRateCalculator({
       }))
     }
     return []
-  }
-
-  const sensitivityData = getSensitivityData()
+  }, [activeTab, results, inputs.noi, targetCapRate])
 
   const reverseCalculationValue = inputs.noi && targetCapRate && parseFloat(targetCapRate) > 0
     ? calculateValueFromCapRate(inputs.noi, parseFloat(targetCapRate) / 100)
     : 0
+
+  // Memoize formatter functions to prevent infinite re-renders
+  const xFormatter = useCallback((value: string | number) => `${Number(value).toFixed(1)}%`, [])
+
+  const yFormatter = useCallback((value: string | number) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value)), [])
 
   // const resultItems = results
   //   ? [
@@ -275,13 +279,8 @@ export function CapRateCalculator({
                 yKey="value"
                 xLabel="Cap Rate"
                 yLabel="Property Value"
-                xFormatter={(value) => `${Number(value).toFixed(1)}%`}
-                yFormatter={(value) => new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                }).format(Number(value))}
+                xFormatter={xFormatter}
+                yFormatter={yFormatter}
                 highlightColor="hsl(var(--chart-2))"
               />
             </motion.div>
