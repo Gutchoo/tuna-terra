@@ -78,7 +78,7 @@ export function DashboardHeader({ onPortfolioChange }: DashboardHeaderProps) {
     switch (role) {
       case 'owner': return 'bg-blue-100 text-blue-800'
       case 'editor': return 'bg-green-100 text-green-800'
-      case 'viewer': return 'bg-gray-100 text-gray-800'
+      case 'viewer': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
       default: return 'bg-gray-100 text-gray-800'
     }
   }, [])

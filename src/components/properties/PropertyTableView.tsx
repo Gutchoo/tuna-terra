@@ -44,12 +44,14 @@ interface PropertyTableViewProps {
   selectedRows: Set<string>
   onRowSelect: (id: string, selected: boolean) => void
   onSelectAll: (selected: boolean) => void
-  onRefresh: (property: Property) => void
-  onDelete: (property: Property) => void
+  onRefresh?: (property: Property) => void
+  onDelete?: (property: Property) => void
   refreshingPropertyId: string | null
   visibleColumns: Set<keyof Property | string> // Allow virtual columns
   censusData?: CensusDataMap // Optional census data
   isLoadingCensus?: boolean // Loading state for census data
+  canEdit?: boolean
+  userRole?: 'owner' | 'editor' | 'viewer' | null
 }
 
 export function PropertyTableView({
@@ -62,7 +64,9 @@ export function PropertyTableView({
   refreshingPropertyId,
   visibleColumns,
   censusData = {},
-  isLoadingCensus = false
+  isLoadingCensus = false,
+  canEdit = true,
+  userRole
 }: PropertyTableViewProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, direction: null })
 
@@ -335,7 +339,7 @@ export function PropertyTableView({
                   onCheckedChange={(checked) => onRowSelect(property.id, !!checked)}
                   aria-label={`Select ${property.address}`}
                   className="mt-1 flex-shrink-0"
-                  disabled={isVirtualSampleProperty(property.id)}
+                  disabled={!canEdit || isVirtualSampleProperty(property.id)}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate" title={property.address || ''}>
@@ -346,33 +350,35 @@ export function PropertyTableView({
                   </div>
                 </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
-                    <MoreHorizontalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => onRefresh(property)}
-                    disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
-                    className="focus:bg-blue-50"
-                  >
-                    <RefreshCwIcon className={`mr-2 h-4 w-4 ${
-                      refreshingPropertyId === property.id ? 'animate-spin' : ''
-                    }`} />
-                    {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete(property)}
-                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                    disabled={isVirtualSampleProperty(property.id)}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {canEdit && onRefresh && onDelete ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                      <MoreHorizontalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => onRefresh(property)}
+                      disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
+                      className="focus:bg-blue-50"
+                    >
+                      <RefreshCwIcon className={`mr-2 h-4 w-4 ${
+                        refreshingPropertyId === property.id ? 'animate-spin' : ''
+                      }`} />
+                      {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(property)}
+                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                      disabled={isVirtualSampleProperty(property.id)}
+                    >
+                      <TrashIcon className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
             </div>
 
             {/* Mobile Card Body - Key Info Only */}
@@ -421,6 +427,7 @@ export function PropertyTableView({
                   checked={allSelected}
                   onCheckedChange={(checked) => onSelectAll(!!checked)}
                   aria-label="Select all"
+                  disabled={!canEdit}
                 />
               </TableHead>
               
@@ -464,7 +471,7 @@ export function PropertyTableView({
                     checked={selectedRows.has(property.id)}
                     onCheckedChange={(checked) => onRowSelect(property.id, !!checked)}
                     aria-label={`Select ${property.address}`}
-                    disabled={isVirtualSampleProperty(property.id)}
+                    disabled={!canEdit || isVirtualSampleProperty(property.id)}
                   />
                 </TableCell>
                 
@@ -482,33 +489,35 @@ export function PropertyTableView({
                 })}
                 
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontalIcon className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => onRefresh(property)}
-                        disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
-                        className="focus:bg-blue-50"
-                      >
-                        <RefreshCwIcon className={`mr-2 h-4 w-4 ${
-                          refreshingPropertyId === property.id ? 'animate-spin' : ''
-                        }`} />
-                        {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDelete(property)}
-                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                        disabled={isVirtualSampleProperty(property.id)}
-                      >
-                        <TrashIcon className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {canEdit && onRefresh && onDelete ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontalIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => onRefresh(property)}
+                          disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
+                          className="focus:bg-blue-50"
+                        >
+                          <RefreshCwIcon className={`mr-2 h-4 w-4 ${
+                            refreshingPropertyId === property.id ? 'animate-spin' : ''
+                          }`} />
+                          {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDelete(property)}
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          disabled={isVirtualSampleProperty(property.id)}
+                        >
+                          <TrashIcon className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
                 </TableCell>
               </TableRow>
             ))}

@@ -70,39 +70,17 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    // Get portfolios user owns
-    const { data: ownedPortfolios } = await supabase
-      .from('portfolios')
-      .select('id')
-      .eq('owner_id', userId)
 
-    // Get portfolios user is a member of
-    const { data: memberships } = await supabase
-      .from('portfolio_memberships')
-      .select('portfolio_id')
-      .eq('user_id', userId)
-      .not('accepted_at', 'is', null)
-
-    // Combine and deduplicate accessible portfolio IDs
-    const ownedIds = (ownedPortfolios || []).map(p => p.id)
-    const memberIds = (memberships || []).map(m => m.portfolio_id)
-    const accessiblePortfolioIds = [...new Set([...ownedIds, ...memberIds])]
-
-    // If user has no accessible portfolios, return empty result
-    if (accessiblePortfolioIds.length === 0) {
-      return NextResponse.json({ properties: [] })
-    }
-
-    // If portfolio filter is specified, verify user has access
-    if (portfolioId && !accessiblePortfolioIds.includes(portfolioId)) {
-      return NextResponse.json({ error: 'Portfolio not found or access denied' }, { status: 403 })
-    }
-
-    // Get properties from accessible portfolios using RLS
+    // Use RLS policies to get properties user can access
+    // The policies handle both owned and shared portfolios automatically
     let query = supabase
       .from('properties')
       .select('*')
-      .in('portfolio_id', accessiblePortfolioIds)
+
+    // If specific portfolio requested, filter by it
+    if (portfolioId) {
+      query = query.eq('portfolio_id', portfolioId)
+    }
 
     // Apply filters
     if (filters.city) {
@@ -130,18 +108,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 })
     }
 
-    // Debug logging to track what properties are returned
-    console.log(`[DEBUG] API Response for user ${userId}:`)
-    console.log(`[DEBUG] Requested portfolio: ${portfolioId || 'ALL'}`)
-    console.log(`[DEBUG] Accessible portfolios: [${accessiblePortfolioIds.join(', ')}]`)
-    console.log(`[DEBUG] Properties returned: ${properties?.length || 0}`)
-    if (properties && properties.length > 0) {
-      const portfolioBreakdown = properties.reduce((acc: Record<string, number>, prop: { portfolio_id: string }) => {
-        acc[prop.portfolio_id] = (acc[prop.portfolio_id] || 0) + 1
-        return acc
-      }, {})
-      console.log(`[DEBUG] Properties by portfolio:`, portfolioBreakdown)
-    }
 
     return NextResponse.json({ properties: properties || [] })
   } catch (error) {

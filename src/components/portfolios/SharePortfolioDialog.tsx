@@ -151,7 +151,7 @@ export function SharePortfolioDialog({
     switch (role) {
       case 'owner': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'editor': return 'bg-green-100 text-green-800 border-green-200'
-      case 'viewer': return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'viewer': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -372,7 +372,7 @@ export function SharePortfolioDialog({
                 <span>Can view, add, edit, and delete properties</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge className="text-xs bg-gray-100 text-gray-800 border-gray-200">Viewer</Badge>
+                <Badge className="text-xs bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800">Viewer</Badge>
                 <span>Can only view properties (read-only access)</span>
               </div>
               <div className="flex items-center gap-2">

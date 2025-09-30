@@ -8,11 +8,13 @@ interface PropertyCardViewProps {
   properties: Property[]
   expandedCards: Set<string>
   onToggleExpand: (id: string) => void
-  onRefresh: (property: Property) => void
-  onDelete: (property: Property) => void
+  onRefresh?: (property: Property) => void
+  onDelete?: (property: Property) => void
   refreshingPropertyId: string | null
   censusData?: CensusDataMap
   isLoadingCensus?: boolean
+  canEdit?: boolean
+  userRole?: 'owner' | 'editor' | 'viewer' | null
 }
 
 export function PropertyCardView({
@@ -23,7 +25,9 @@ export function PropertyCardView({
   onDelete,
   refreshingPropertyId,
   censusData = {},
-  isLoadingCensus = false
+  isLoadingCensus = false,
+  canEdit = true,
+  userRole
 }: PropertyCardViewProps) {
 
   if (properties.length === 0) {
@@ -53,6 +57,8 @@ export function PropertyCardView({
           isRefreshing={refreshingPropertyId === property.id}
           demographics={censusData[property.id]}
           isLoadingDemographics={isLoadingCensus}
+          canEdit={canEdit}
+          userRole={userRole}
         />
       ))}
     </div>

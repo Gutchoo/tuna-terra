@@ -54,8 +54,43 @@ export async function GET(request: NextRequest) {
 
       if (data.user) {
         console.log('User authenticated successfully:', { userId: data.user.id, email: data.user.email })
-        
-        // Verify user has required records (portfolio and limits)
+
+        // Check if user is returning from an invitation acceptance flow
+        const invitationTokenPattern = /\/invitations\/accept\/([^/?]+)/
+        const invitationMatch = next.match(invitationTokenPattern)
+
+        if (invitationMatch) {
+          const invitationToken = invitationMatch[1]
+          console.log('User authenticated via invitation flow, token:', invitationToken)
+
+          try {
+            // Accept the invitation now that user is authenticated
+            const acceptResponse = await fetch(`${request.nextUrl.origin}/api/invitations/${invitationToken}/accept`, {
+              method: 'POST',
+              headers: {
+                'Cookie': cookieStore.toString(),
+              },
+            })
+
+            if (acceptResponse.ok) {
+              const acceptResult = await acceptResponse.json()
+              console.log('Invitation accepted successfully:', acceptResult)
+
+              // Redirect to the shared portfolio
+              return NextResponse.redirect(new URL(`/dashboard?portfolio_id=${acceptResult.portfolio.id}`, request.url))
+            } else {
+              console.error('Failed to accept invitation after auth')
+              // Still redirect to invitation page to show error
+              return NextResponse.redirect(new URL(next, request.url))
+            }
+          } catch (invitationError) {
+            console.error('Error accepting invitation after auth:', invitationError)
+            // Still redirect to invitation page to handle error
+            return NextResponse.redirect(new URL(next, request.url))
+          }
+        }
+
+        // Regular auth flow - verify user has required records (portfolio and limits)
         const { data: portfolio, error: portfolioError } = await supabase
           .from('portfolios')
           .select('id')

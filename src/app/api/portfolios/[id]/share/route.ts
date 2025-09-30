@@ -130,7 +130,28 @@ export async function POST(
         return NextResponse.json({ error: 'Failed to share portfolio' }, { status: 500 })
       }
 
-      // TODO: Send notification email to existing user
+      // Send notification email to existing user
+      try {
+        const { data: inviterData } = await supabase.auth.getUser()
+        const inviterName = inviterData.user?.user_metadata?.name ||
+                          inviterData.user?.email?.split('@')[0] ||
+                          'Someone'
+
+        await supabase.functions.invoke('send-portfolio-invitation', {
+          body: {
+            email,
+            portfolioName: portfolio.name,
+            inviterName,
+            role,
+            acceptUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?portfolio_id=${portfolioId}`,
+            isExistingUser: true,
+          }
+        })
+      } catch (emailError) {
+        console.error('Error sending notification email:', emailError)
+        // Don't fail the request if email fails - membership is already created
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Portfolio shared successfully',
@@ -172,7 +193,28 @@ export async function POST(
         return NextResponse.json({ error: 'Failed to create invitation' }, { status: 500 })
       }
 
-      // TODO: Send invitation email
+      // Send invitation email to new user
+      try {
+        const { data: inviterData } = await supabase.auth.getUser()
+        const inviterName = inviterData.user?.user_metadata?.name ||
+                          inviterData.user?.email?.split('@')[0] ||
+                          'Someone'
+
+        await supabase.functions.invoke('send-portfolio-invitation', {
+          body: {
+            email,
+            portfolioName: portfolio.name,
+            inviterName,
+            role,
+            acceptUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/invitations/accept/${invitation.invitation_token}`,
+            isExistingUser: false,
+          }
+        })
+      } catch (emailError) {
+        console.error('Error sending invitation email:', emailError)
+        // Don't fail the request if email fails - invitation is already created
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Invitation sent successfully',

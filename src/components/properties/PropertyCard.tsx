@@ -34,22 +34,26 @@ interface PropertyCardProps {
   property: Property
   isExpanded: boolean
   onToggleExpand: (id: string) => void
-  onRefresh: (property: Property) => void
-  onDelete: (property: Property) => void
+  onRefresh?: (property: Property) => void
+  onDelete?: (property: Property) => void
   isRefreshing: boolean
   demographics?: CensusDemographics | null
   isLoadingDemographics?: boolean
+  canEdit?: boolean
+  userRole?: 'owner' | 'editor' | 'viewer' | null
 }
 
-export function PropertyCard({ 
-  property, 
-  isExpanded, 
-  onToggleExpand, 
-  onRefresh, 
-  onDelete, 
+export function PropertyCard({
+  property,
+  isExpanded,
+  onToggleExpand,
+  onRefresh,
+  onDelete,
   isRefreshing,
   demographics,
-  isLoadingDemographics = false
+  isLoadingDemographics = false,
+  canEdit = true,
+  userRole
 }: PropertyCardProps) {
   const formatCurrency = (value: number | null) => {
     if (!value) return null
@@ -90,37 +94,40 @@ export function PropertyCard({
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <ChevronDownIcon className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreVerticalIcon className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onRefresh(property)
-                        }}
-                        disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
-                        className="focus:bg-blue-50"
-                      >
-                        <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                        {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDelete(property)
-                        }}
-                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                        disabled={isVirtualSampleProperty(property.id)}
-                      >
-                        <TrashIcon className="mr-2 h-4 w-4" />
-                        Delete Property
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {canEdit && onRefresh && onDelete && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVerticalIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onRefresh(property)
+                          }}
+                          disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
+                          className="focus:bg-blue-50"
+                        >
+                          <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                          {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onDelete(property)
+                          }}
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          disabled={isVirtualSampleProperty(property.id)}
+                        >
+                          <TrashIcon className="mr-2 h-4 w-4" />
+                          Delete Property
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
                 </div>
               </div>
               

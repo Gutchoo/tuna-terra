@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Tuna Terra</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: white; border-radius: 8px; padding: 40px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="color: #1e293b; margin: 0; font-size: 28px; font-weight: 600;">Welcome to Tuna Terra</h1>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 16px;">Real Estate Portfolio Management</p>
+            </div>
+
+            <!-- Content -->
+            <div style="margin-bottom: 40px;">
+                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                    Hi there! 👋
+                </p>
+
+                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                    <strong>{{inviterName}}</strong> has invited you to collaborate on their real estate portfolio <strong>"{{portfolioName}}"</strong> as a <span style="background-color: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-weight: 500;">{{role}}</span>.
+                </p>
+
+                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    To get started, create your free account and accept the invitation:
+                </p>
+
+                <!-- CTA Button -->
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{acceptUrl}}" style="background-color: #0f172a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px; display: inline-block;">Create Account & Accept Invitation</a>
+                </div>
+            </div>
+
+            <!-- Role Info -->
+            <div style="background-color: #f8fafc; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">Your {{role}} permissions:</h3>
+                <ul style="color: #64748b; margin: 0; padding-left: 20px; line-height: 1.6;">
+                    {{#if isEditor}}
+                    <li>View all properties in the portfolio</li>
+                    <li>Add new properties</li>
+                    <li>Edit existing property data</li>
+                    <li>Delete properties</li>
+                    <li>Access financial modeling tools</li>
+                    {{else}}
+                    <li>View all properties in the portfolio</li>
+                    <li>Access financial modeling tools</li>
+                    <li style="color: #ef4444;">✗ Cannot add, edit, or delete properties</li>
+                    {{/if}}
+                </ul>
+            </div>
+
+            <!-- Footer -->
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 30px; text-align: center;">
+                <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+                    This invitation will expire in 7 days. If you have questions, reply to this email.
+                </p>
+                <p style="color: #94a3b8; font-size: 12px; margin: 20px 0 0 0;">
+                    © 2024 Tuna Terra. Professional real estate portfolio management.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

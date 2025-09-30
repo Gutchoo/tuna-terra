@@ -23,6 +23,7 @@ import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 import { useDeleteProperty, useDeleteProperties, useRefreshProperty } from '@/hooks/use-properties'
 import { useCensusData } from '@/hooks/useCensusData'
+import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 
@@ -44,6 +45,11 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const deleteProperty = useDeleteProperty()
   const deleteProperties = useDeleteProperties()
   const refreshProperty = useRefreshProperty()
+
+  // Get user's role in current portfolio for permission checks
+  const { data: userRole, isLoading: isLoadingRole } = usePortfolioRole(portfolioId ?? null)
+  const canEdit = userRole === 'owner' || userRole === 'editor'
+
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
@@ -334,7 +340,11 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           />
 
           {onAddProperties && (
-            <Button onClick={() => onAddProperties()}>
+            <Button
+              onClick={canEdit ? () => onAddProperties() : undefined}
+              disabled={!canEdit}
+              className={!canEdit ? "opacity-60 cursor-not-allowed" : ""}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Property
             </Button>
@@ -388,11 +398,13 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           properties={displayProperties}
           expandedCards={expandedCards}
           onToggleExpand={handleToggleExpand}
-          onRefresh={handleRefreshClick}
-          onDelete={handleDeleteClick}
+          onRefresh={canEdit ? handleRefreshClick : undefined}
+          onDelete={canEdit ? handleDeleteClick : undefined}
           refreshingPropertyId={refreshingPropertyId}
           censusData={censusData}
           isLoadingCensus={isLoadingCensus}
+          canEdit={canEdit}
+          userRole={userRole}
         />
       ) : viewMode === 'map' ? (
         <div className="h-[75vh]">
@@ -412,17 +424,19 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           selectedRows={selectedRows}
           onRowSelect={handleRowSelect}
           onSelectAll={handleSelectAll}
-          onRefresh={handleRefreshClick}
-          onDelete={handleDeleteClick}
+          onRefresh={canEdit ? handleRefreshClick : undefined}
+          onDelete={canEdit ? handleDeleteClick : undefined}
           refreshingPropertyId={refreshingPropertyId}
           visibleColumns={visibleColumns}
           censusData={censusData}
           isLoadingCensus={isLoadingCensus}
+          canEdit={canEdit}
+          userRole={userRole}
         />
       )}
 
-      {/* Bulk Action Bar */}
-      {viewMode === 'table' && displayProperties.length > 0 && (
+      {/* Bulk Action Bar - Only show for editors */}
+      {viewMode === 'table' && displayProperties.length > 0 && canEdit && (
         <BulkActionBar
           selectedCount={selectedRows.size}
           onBulkRefresh={handleBulkRefresh}

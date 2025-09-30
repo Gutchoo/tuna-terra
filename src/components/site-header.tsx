@@ -2,7 +2,6 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
-import { UserMenu } from "@/components/user-menu"
 
 const sections = [
   {
@@ -47,13 +46,10 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between px-4">
-      <div className="flex items-center">
-        <SidebarTrigger className="-ml-1" />
-        <div className="mx-2 h-4 w-px bg-border" />
-        <h1 className="text-sm font-semibold">{getCurrentSheetTitle()}</h1>
-      </div>
-      <UserMenu />
+    <header className="flex h-12 shrink-0 items-center px-4">
+      <SidebarTrigger className="-ml-1" />
+      <div className="mx-2 h-4 w-px bg-border" />
+      <h1 className="text-sm font-semibold">{getCurrentSheetTitle()}</h1>
     </header>
   )
 }
