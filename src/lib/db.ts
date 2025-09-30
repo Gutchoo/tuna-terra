@@ -187,7 +187,12 @@ export class DatabaseService {
     }
 
     if (filters.search) {
-      query = query.or(`address.ilike.%${filters.search}%,city.ilike.%${filters.search}%,apn.ilike.%${filters.search}%`)
+      // Use full-text search to prevent SQL injection
+      // Searches across address, city, apn, and owner fields using the fts tsvector column
+      query = query.textSearch('fts', filters.search, {
+        type: 'websearch',
+        config: 'english'
+      })
     }
 
     const { data, error } = await query.order('created_at', { ascending: false })

@@ -48,6 +48,10 @@ next-env.d.ts
 CLAUDE.md
 .claude/
 
+# Security documentation (sensitive implementation details)
+CRITICAL_SECURITY.md
+SECURITY_CONFIGURATION.md
+
 # Python virtual environment
 venv/
 

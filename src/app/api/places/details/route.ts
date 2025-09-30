@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Place ID is required' }, { status: 400 })
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY
     if (!apiKey) {
       return NextResponse.json({ error: 'Places API key not configured' }, { status: 500 })
     }

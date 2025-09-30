@@ -90,7 +90,12 @@ export async function GET(request: NextRequest) {
       query = query.ilike('state', `%${filters.state}%`)
     }
     if (filters.search) {
-      query = query.or(`address.ilike.%${filters.search}%,owner.ilike.%${filters.search}%,apn.ilike.%${filters.search}%,city.ilike.%${filters.search}%`)
+      // Use full-text search to prevent SQL injection
+      // Searches across address, city, apn, and owner fields using the fts tsvector column
+      query = query.textSearch('fts', filters.search, {
+        type: 'websearch',
+        config: 'english'
+      })
     }
     if (filters.portfolio_id) {
       query = query.eq('portfolio_id', filters.portfolio_id)
