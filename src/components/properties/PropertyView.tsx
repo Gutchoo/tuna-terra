@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, Download } from 'lucide-react'
 import { PropertyViewToggle } from './PropertyViewToggle'
 import { PropertyCardView } from './PropertyCardView'
 import { PropertyTableView } from './PropertyTableView'
@@ -26,6 +26,7 @@ import { useCensusData } from '@/hooks/useCensusData'
 import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
+import { exportPropertiesToCSV } from '@/lib/csv-export'
 
 type ViewMode = 'cards' | 'table' | 'map'
 
@@ -34,13 +35,14 @@ interface PropertyViewProps {
   onPropertiesChange: (properties: Property[]) => void
   onError: (error: string) => void
   portfolioId?: string | null
+  portfolioName?: string
   onAddProperties?: (method?: 'csv' | 'apn' | 'address') => void
   // Demo mode override handlers
   onRefreshOverride?: (property: Property) => void
   onDeleteOverride?: (property: Property) => void
 }
 
-export function PropertyView({ properties, onPropertiesChange, onError, portfolioId, onAddProperties, onRefreshOverride, onDeleteOverride }: PropertyViewProps) {
+export function PropertyView({ properties, onPropertiesChange, onError, portfolioId, portfolioName, onAddProperties, onRefreshOverride, onDeleteOverride }: PropertyViewProps) {
   // React Query mutations for property operations
   const deleteProperty = useDeleteProperty()
   const deleteProperties = useDeleteProperties()
@@ -48,7 +50,8 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
   // Get user's role in current portfolio for permission checks
   const { data: userRole, isLoading: isLoadingRole } = usePortfolioRole(portfolioId ?? null)
-  const canEdit = userRole === 'owner' || userRole === 'editor'
+  // In demo mode (no portfolio), allow full editing. Otherwise, check role permissions
+  const canEdit = !portfolioId || userRole === 'owner' || userRole === 'editor'
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
@@ -317,6 +320,18 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     setSelectedRows(new Set())
   }
 
+  // CSV Export handler
+  const handleExportCSV = () => {
+    try {
+      const portfolioDisplayName = portfolioName || 'portfolio'
+      // Export filtered properties (respects search)
+      exportPropertiesToCSV(filteredProperties, portfolioDisplayName)
+      toast.success(`Exported ${filteredProperties.length} properties to CSV`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to export CSV')
+    }
+  }
+
   // Helper to determine which properties to show (all properties if no search matches, filtered otherwise)
   const displayProperties = filteredProperties.length === 0 && searchQuery.trim().length > 0 ? properties : filteredProperties
 
@@ -338,6 +353,18 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
             currentView={viewMode}
             onViewChange={handleViewChange}
           />
+
+          <Button
+            onClick={handleExportCSV}
+            disabled={!portfolioId || filteredProperties.length === 0}
+            variant="outline"
+            size="default"
+            className={!portfolioId ? "opacity-60 cursor-not-allowed" : ""}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export {filteredProperties.length > 0 ? `${filteredProperties.length}` : ''}
+            {filteredProperties.length === 1 ? ' Property' : ' Properties'}
+          </Button>
 
           {onAddProperties && (
             <Button

@@ -278,12 +278,15 @@ function DashboardPageContent() {
       )
     }
 
+    const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
+
     return (
       <PropertyView
         properties={properties}
         onPropertiesChange={handlePropertiesChange}
         onError={handleError}
         portfolioId={currentPortfolioId}
+        portfolioName={currentPortfolio?.name}
         onAddProperties={(method) => {
           setModalInitialMethod(method)
           setShowAddPropertiesModal(true)
