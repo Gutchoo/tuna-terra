@@ -10,6 +10,7 @@ interface PropertyCardViewProps {
   onToggleExpand: (id: string) => void
   onRefresh?: (property: Property) => void
   onDelete?: (property: Property) => void
+  onPropertyClick?: (propertyId: string) => void
   refreshingPropertyId: string | null
   censusData?: CensusDataMap
   isLoadingCensus?: boolean
@@ -23,6 +24,7 @@ export function PropertyCardView({
   onToggleExpand,
   onRefresh,
   onDelete,
+  onPropertyClick,
   refreshingPropertyId,
   censusData = {},
   isLoadingCensus = false,
@@ -54,6 +56,7 @@ export function PropertyCardView({
           onToggleExpand={onToggleExpand}
           onRefresh={onRefresh}
           onDelete={onDelete}
+          onPropertyClick={onPropertyClick}
           isRefreshing={refreshingPropertyId === property.id}
           demographics={censusData[property.id]}
           isLoadingDemographics={isLoadingCensus}

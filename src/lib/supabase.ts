@@ -63,7 +63,8 @@ export type Property = {
   // Financial & tax data
   tax_year: string | null // Tax assessment year
   parcel_value_type: string | null // Type of parcel value
-  
+  purchase_price: number | null // User-entered purchase price for financial modeling
+
   // Location data
   census_tract: string | null // Census tract identifier
   census_block: string | null // Census block identifier
@@ -170,6 +171,64 @@ export interface UserLimits {
 export type Profile = {
   id: string
   email: string
+  created_at: string
+  updated_at: string
+}
+
+// Property financials type for financial modeling data
+export interface PropertyFinancials {
+  id: string
+  property_id: string
+  portfolio_id: string
+  user_id: string
+
+  // Income Data (30-year arrays)
+  potential_rental_income: number[]
+  other_income: number[]
+  vacancy_rates: number[]
+  rental_income_growth_rate: number | null
+  default_vacancy_rate: number | null
+
+  // Operating Expenses (30-year arrays)
+  operating_expenses: number[]
+  operating_expense_type: 'percentage' | 'dollar' | ''
+  property_taxes: number[]
+  insurance: number[]
+  maintenance: number[]
+  property_management: number[]
+  utilities: number[]
+  other_expenses: number[]
+  default_operating_expense_rate: number | null
+
+  // Financing
+  financing_type: 'dscr' | 'ltv' | 'cash' | ''
+  loan_amount: number | null
+  interest_rate: number | null
+  loan_term_years: number | null
+  amortization_years: number | null
+  payments_per_year: number
+  loan_costs: number | null
+  loan_cost_type: 'percentage' | 'dollar' | ''
+  target_dscr: number | null
+  target_ltv: number | null
+
+  // Tax & Depreciation
+  property_type: 'residential' | 'commercial' | 'industrial' | ''
+  land_percentage: number | null
+  improvements_percentage: number | null
+  ordinary_income_tax_rate: number | null
+  capital_gains_tax_rate: number | null
+  depreciation_recapture_rate: number | null
+
+  // Exit Strategy
+  hold_period_years: number | null
+  disposition_price_type: 'dollar' | 'caprate' | ''
+  disposition_price: number | null
+  disposition_cap_rate: number | null
+  cost_of_sale_type: 'percentage' | 'dollar' | ''
+  cost_of_sale_amount: number | null
+  cost_of_sale_percentage: number | null
+
   created_at: string
   updated_at: string
 }

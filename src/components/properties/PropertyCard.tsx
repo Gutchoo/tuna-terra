@@ -10,10 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
-  MoreVerticalIcon, 
-  RefreshCwIcon, 
-  TrashIcon, 
+import {
+  MoreVerticalIcon,
+  RefreshCwIcon,
+  TrashIcon,
   ChevronDownIcon,
   MapPinIcon,
   CalendarIcon,
@@ -24,7 +24,8 @@ import {
   HomeIcon,
   LandmarkIcon,
   TreesIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  LayoutDashboardIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
@@ -36,6 +37,7 @@ interface PropertyCardProps {
   onToggleExpand: (id: string) => void
   onRefresh?: (property: Property) => void
   onDelete?: (property: Property) => void
+  onPropertyClick?: (propertyId: string) => void
   isRefreshing: boolean
   demographics?: CensusDemographics | null
   isLoadingDemographics?: boolean
@@ -49,6 +51,7 @@ export function PropertyCard({
   onToggleExpand,
   onRefresh,
   onDelete,
+  onPropertyClick,
   isRefreshing,
   demographics,
   isLoadingDemographics = false,
@@ -102,6 +105,18 @@ export function PropertyCard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {onPropertyClick && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onPropertyClick(property.id)
+                            }}
+                            className="focus:bg-blue-50"
+                          >
+                            <LayoutDashboardIcon className="mr-2 h-4 w-4" />
+                            View Dashboard
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation()

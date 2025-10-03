@@ -27,8 +27,9 @@ import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 import { exportPropertiesToCSV } from '@/lib/csv-export'
+import { PropertyDashboardView } from '../property-dashboard/PropertyDashboardView'
 
-type ViewMode = 'cards' | 'table' | 'map'
+type ViewMode = 'cards' | 'table' | 'map' | 'dashboard'
 
 interface PropertyViewProps {
   properties: Property[]
@@ -58,6 +59,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
+  const [dashboardPropertyId, setDashboardPropertyId] = useState<string | null>(null)
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -335,6 +337,33 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   // Helper to determine which properties to show (all properties if no search matches, filtered otherwise)
   const displayProperties = filteredProperties.length === 0 && searchQuery.trim().length > 0 ? properties : filteredProperties
 
+  // Handle property click to open dashboard
+  const handlePropertyClick = (propertyId: string) => {
+    setDashboardPropertyId(propertyId)
+    setViewMode('dashboard')
+  }
+
+  // Handle back from dashboard
+  const handleBackFromDashboard = () => {
+    setDashboardPropertyId(null)
+    setViewMode('cards') // Return to cards view by default
+  }
+
+  // If in dashboard mode, render the dashboard view
+  if (viewMode === 'dashboard' && dashboardPropertyId) {
+    const dashboardProperty = properties.find(p => p.id === dashboardPropertyId)
+    if (dashboardProperty) {
+      return (
+        <PropertyDashboardView
+          property={dashboardProperty}
+          portfolioId={portfolioId || ''}
+          portfolioName={portfolioName}
+          onBack={handleBackFromDashboard}
+        />
+      )
+    }
+  }
+
   return (
     <div>
       {/* Perfect Alignment Container - Search Input, View Switcher, Add Button */}
@@ -427,6 +456,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           onToggleExpand={handleToggleExpand}
           onRefresh={canEdit ? handleRefreshClick : undefined}
           onDelete={canEdit ? handleDeleteClick : undefined}
+          onPropertyClick={handlePropertyClick}
           refreshingPropertyId={refreshingPropertyId}
           censusData={censusData}
           isLoadingCensus={isLoadingCensus}
