@@ -4,7 +4,7 @@ import { RegridService } from '@/lib/regrid'
 import fs from 'fs'
 import path from 'path'
 
-// Property data from demo_properties.csv with descriptions
+// Curated property data for demo experience
 interface CuratedProperty {
   apn: string
   name: string
