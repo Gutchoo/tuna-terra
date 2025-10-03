@@ -101,23 +101,24 @@ export class RegridService {
     return response.json()
   }
 
-  // Search by APN with optional location filtering
-  static async searchByAPN(apn: string, state?: string, county?: string, city?: string): Promise<RegridProperty | null> {
+  // Search by APN with optional location filtering - returns all matches for disambiguation
+  static async searchByAPNWithAllResults(apn: string, state?: string, county?: string, city?: string): Promise<RegridProperty[]> {
     try {
       // Use cached test data for development testing
       if (TEST_APNS.includes(apn) && process.env.NODE_ENV === 'development') {
         console.log(`🧪 Using cached test data for APN: ${apn}`)
-        
+
         try {
           const filename = TEST_APN_MAPPING[apn]
           const testDataPath = join(process.cwd(), 'src', 'lib', 'test-data', filename)
           const testData = JSON.parse(readFileSync(testDataPath, 'utf-8'))
-          
+
           // Handle the same API response structure as live API
           const features = testData?.parcels?.features || []
           if (features.length > 0) {
             console.log(`✅ Loaded cached test data for APN: ${apn}`)
-            return await this.normalizeProperty(features[0])
+            // Return all results for disambiguation
+            return await Promise.all(features.map((f: unknown) => this.normalizeProperty(f as { id?: string | number; properties?: { fields?: Record<string, unknown> }; fields?: Record<string, unknown>; geometry?: unknown })))
           }
         } catch (fileError) {
           console.warn(`⚠️  Could not load test data for APN ${apn}, falling back to API:`, fileError instanceof Error ? fileError.message : String(fileError))
@@ -144,28 +145,33 @@ export class RegridService {
       }
 
       const data = await this.makeRequest('/parcels/apn', params)
-      
+
       // Handle the new API response structure: parcels.features[]
       const features = data?.parcels?.features || []
       if (features.length > 0) {
-        if (features.length > 1) {
-          console.log(`🎯 Found ${features.length} parcels with APN ${apn}, using highest ranked result`)
-          // Log all results for debugging
-          features.forEach((feature: unknown, index: number) => {
-            const f = feature as { properties?: { fields?: Record<string, unknown> } }
-            const fields = f.properties?.fields || {}
-            console.log(`  ${index + 1}. ${fields.address || 'No address'}, ${fields.scity || 'Unknown city'}, ${fields.state2 || 'Unknown state'} - $${fields.parval || 'N/A'}`)
-          })
-        }
-        // Return the first (highest ranked) result
-        return await this.normalizeProperty(features[0])
+        console.log(`🎯 Found ${features.length} parcels with APN ${apn}`)
+        // Log all results for debugging
+        features.forEach((feature: unknown, index: number) => {
+          const f = feature as { properties?: { fields?: Record<string, unknown> } }
+          const fields = f.properties?.fields || {}
+          console.log(`  ${index + 1}. ${fields.address || 'No address'}, ${fields.scity || 'Unknown city'}, ${fields.state2 || 'Unknown state'} - $${fields.parval || 'N/A'}`)
+        })
+
+        // Return all normalized properties for disambiguation
+        return await Promise.all(features.map((f: unknown) => this.normalizeProperty(f as { id?: string | number; properties?: { fields?: Record<string, unknown> }; fields?: Record<string, unknown>; geometry?: unknown })))
       }
-      return null
+      return []
     } catch (error) {
       console.error('Error searching by APN:', error)
       console.error('APN:', apn, 'State:', state)
       throw error
     }
+  }
+
+  // Search by APN with optional location filtering - returns single result (for backward compatibility)
+  static async searchByAPN(apn: string, state?: string, county?: string, city?: string): Promise<RegridProperty | null> {
+    const results = await this.searchByAPNWithAllResults(apn, state, county, city)
+    return results.length > 0 ? results[0] : null
   }
 
   // Search by APN with multiple results and custom tiebreaker

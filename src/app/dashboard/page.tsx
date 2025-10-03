@@ -37,9 +37,11 @@ function DashboardPageContent() {
   
   // Debug event listeners for modal control
   useEffect(() => {
-    const handleDebugOpenCsvModal = () => {
+    const handleDebugOpenModal = (e: Event) => {
+      const customEvent = e as CustomEvent
+      const method = customEvent.detail?.method as 'csv' | 'apn' | 'address' | undefined
       setShowAddPropertiesModal(true)
-      setModalInitialMethod('csv')
+      setModalInitialMethod(method)
     }
 
     const handleDebugCloseModal = () => {
@@ -49,13 +51,13 @@ function DashboardPageContent() {
 
     // Only add listeners in development
     if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_TEST_DATA !== 'false') {
-      window.addEventListener('debug-open-csv-modal', handleDebugOpenCsvModal as EventListener)
+      window.addEventListener('debug-open-csv-modal', handleDebugOpenModal as EventListener)
       window.addEventListener('debug-close-modal', handleDebugCloseModal)
     }
 
     return () => {
       isMountedRef.current = false
-      window.removeEventListener('debug-open-csv-modal', handleDebugOpenCsvModal as EventListener)
+      window.removeEventListener('debug-open-csv-modal', handleDebugOpenModal as EventListener)
       window.removeEventListener('debug-close-modal', handleDebugCloseModal)
     }
   }, [])

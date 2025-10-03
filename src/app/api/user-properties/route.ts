@@ -27,6 +27,7 @@ const createPropertySchema = z.object({
   insurance_provider: z.string().optional(),
   maintenance_history: z.string().optional(),
   use_pro_lookup: z.boolean().optional().default(true), // Add pro lookup flag
+  selectedPropertyData: z.any().optional(), // Full property data from disambiguation selection
 })
 
 const bulkCreateSchema = z.object({
@@ -275,8 +276,13 @@ async function handleSingleCreate(userId: string, body: unknown) {
 
   let regridData: RegridProperty | null = null
 
+  // If user has already selected a property from disambiguation, use that data
+  if (validatedData.selectedPropertyData) {
+    console.log('handleSingleCreate - using pre-selected property data from disambiguation')
+    regridData = validatedData.selectedPropertyData as RegridProperty
+  }
   // Only fetch Regrid data if Pro Lookup is enabled and increment usage atomically
-  if (validatedData.use_pro_lookup) {
+  else if (validatedData.use_pro_lookup) {
     // Check and increment usage before making API calls to prevent bypass
     const limitResult = await checkAndIncrementUsageServer(userId, 1)
     if (!limitResult.canProceed) {
@@ -289,7 +295,32 @@ async function handleSingleCreate(userId: string, body: unknown) {
     try {
       if (validatedData.apn) {
         console.log('handleSingleCreate - fetching by APN (Pro mode):', validatedData.apn)
-        regridData = await RegridService.searchByAPN(validatedData.apn, validatedData.state)
+
+        // Get all results to check for multiple matches
+        const allResults = await RegridService.searchByAPNWithAllResults(validatedData.apn, validatedData.state)
+
+        if (allResults.length > 1) {
+          console.log(`handleSingleCreate - found ${allResults.length} properties, returning for disambiguation`)
+          // Return multiple results for disambiguation
+          return NextResponse.json({
+            multipleResults: true,
+            properties: allResults.map(prop => ({
+              id: prop.id,
+              apn: prop.apn,
+              address: prop.address.line1,
+              city: prop.address.city,
+              state: prop.address.state,
+              zip: prop.address.zip,
+              assessed_value: prop.properties.assessed_value,
+              owner: prop.properties.owner,
+              // Include full data for later use
+              _fullData: prop
+            }))
+          })
+        } else if (allResults.length === 1) {
+          // Single result, proceed normally
+          regridData = allResults[0]
+        }
       } else if (validatedData.address) {
         console.log('handleSingleCreate - searching by address (Pro mode)')
         // Search by address
@@ -304,7 +335,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
           regridData = await RegridService.normalizeProperty(searchResults[0]._fullFeature)
         }
       }
-      
+
       console.log(`handleSingleCreate - Pro lookup successful, usage incremented`)
     } catch (error) {
       console.error('handleSingleCreate - Regrid API error:', error)

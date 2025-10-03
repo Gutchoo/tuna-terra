@@ -120,13 +120,12 @@ export function PropertyCard({
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation()
-                            onRefresh(property)
                           }}
-                          disabled={isRefreshing || !property.apn || isVirtualSampleProperty(property.id)}
-                          className="focus:bg-blue-50"
+                          disabled={true}
+                          className="opacity-50 cursor-not-allowed"
                         >
-                          <RefreshCwIcon className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                          {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                          <RefreshCwIcon className="mr-2 h-4 w-4" />
+                          Refresh Data
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => {
