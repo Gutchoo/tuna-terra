@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { CheckCircleIcon, AlertCircleIcon, LoaderIcon, CrownIcon, ArrowLeftIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCreateProperty } from '@/hooks/use-create-property'
 
@@ -38,6 +39,18 @@ interface DuplicateProperty {
   created_at: string
 }
 
+interface DisambiguationProperty {
+  id: string
+  apn: string
+  address: string
+  city: string
+  state: string
+  zip: string
+  assessed_value?: number
+  owner?: string
+  _fullData: unknown
+}
+
 
 export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = false, demoMode = false }: APNFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,8 +66,9 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
     resetDate: string
   } | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [multipleResults, setMultipleResults] = useState<DisambiguationProperty[] | null>(null)
   const router = useRouter()
-  
+
   // React Query mutation for property creation
   const createPropertyMutation = useCreateProperty()
 
@@ -73,7 +87,7 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
     // Set recently changed flag whenever APN changes
     setIsRecentlyChanged(true)
     setDuplicateProperty(null) // Clear previous results
-    
+
     const checkForDuplicate = async (apn: string) => {
       if (!apn || apn.length < 3) {
         setDuplicateProperty(null)
@@ -109,6 +123,141 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
     return () => clearTimeout(timeoutId)
   }, [apnValue, portfolioId])
 
+  // Debug: Listen for multiple results trigger
+  useEffect(() => {
+    const handleDebugMultipleResults = () => {
+      // Set the APN value first
+      form.setValue('apn', '2005844')
+
+      // Show mock disambiguation data
+      setTimeout(() => {
+        setMultipleResults([
+          {
+            id: '250457',
+            apn: '2005844',
+            address: '4829 NORCROFT DR',
+            city: 'INDIANAPOLIS',
+            state: 'IN',
+            zip: '46221',
+            assessed_value: 150300,
+            owner: 'JONES, DREW C &, MEGAN K',
+            _fullData: {}
+          },
+          {
+            id: '113684',
+            apn: '2005844',
+            address: '7212 LAVENHAM DR',
+            city: 'PLANO',
+            state: 'TX',
+            zip: '75025',
+            assessed_value: 392891,
+            owner: 'MI CASA HOLDINGS LTD',
+            _fullData: {}
+          },
+          {
+            id: '80713',
+            apn: '2005844',
+            address: '307 D\'ÎLE-DE-FRANCE RUE',
+            city: 'LONGUEUIL',
+            state: 'QC',
+            zip: 'J4H 3S4',
+            assessed_value: undefined,
+            owner: undefined,
+            _fullData: {}
+          },
+          {
+            id: '84294',
+            apn: '2005844',
+            address: '202 STILLWATER DR',
+            city: 'FLAGLER BEACH',
+            state: 'FL',
+            zip: '32136',
+            assessed_value: 182000,
+            owner: 'TID SERVICES INC',
+            _fullData: {}
+          },
+          {
+            id: '3279976',
+            apn: '2005844',
+            address: '144 MARIAN AVE',
+            city: 'FANWOOD',
+            state: 'NJ',
+            zip: '07023',
+            assessed_value: 453100,
+            owner: 'KUTCHINSKI, TODD & JENNIFER',
+            _fullData: {}
+          }
+        ])
+      }, 100)
+    }
+
+    window.addEventListener('debug-apn-multiple-results', handleDebugMultipleResults)
+    return () => window.removeEventListener('debug-apn-multiple-results', handleDebugMultipleResults)
+  }, [form])
+
+
+  const handlePropertySelection = async (property: DisambiguationProperty) => {
+    if (!portfolioId) {
+      const errorMsg = 'Please select a portfolio before adding properties.'
+      if (isModal && onError) {
+        onError(errorMsg)
+      } else {
+        setSubmitError(errorMsg)
+      }
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      // Submit with the full property data to skip Regrid API call
+      await createPropertyMutation.mutateAsync({
+        portfolio_id: portfolioId,
+        apn: property.apn,
+        address: property.address,
+        city: property.city,
+        state: property.state,
+        zip_code: property.zip,
+        use_pro_lookup: false, // Don't make another API call
+        selectedPropertyData: property._fullData, // Pass the complete data
+      })
+
+      // Success!
+      if (isModal && onSuccess) {
+        onSuccess({
+          apn: property.apn,
+          address: property.address,
+        })
+
+        // Reset form and clear disambiguation
+        form.reset()
+        setSubmitError(null)
+        setDuplicateProperty(null)
+        setMultipleResults(null)
+      } else {
+        setShowSuccess(true)
+        setSubmitError(null)
+        form.reset()
+        setMultipleResults(null)
+
+        setTimeout(() => {
+          setShowSuccess(false)
+        }, 3000)
+      }
+    } catch (error) {
+      console.error('Property selection error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add property'
+
+      if (isModal && onError) {
+        onError(errorMessage)
+      } else {
+        setSubmitError(errorMessage)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     if (!portfolioId) {
@@ -166,12 +315,20 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
         }
       } else {
         // Regular mode: use the existing create property mutation
-        await createPropertyMutation.mutateAsync({
+        const response = await createPropertyMutation.mutateAsync({
           portfolio_id: portfolioId,
           apn: data.apn,
           address: `APN: ${data.apn}`, // Fallback address - will be updated by Regrid API
           use_pro_lookup: true, // Always attempt pro lookup first
         })
+
+        // Check if we got multiple results that need disambiguation
+        if (response && typeof response === 'object' && 'multipleResults' in response && response.multipleResults) {
+          console.log('Multiple results detected, showing disambiguation')
+          setMultipleResults((response as { properties: DisambiguationProperty[] }).properties)
+          setIsSubmitting(false)
+          return
+        }
 
         // Success! The mutation handles cache invalidation automatically
         if (isModal && onSuccess) {
@@ -190,7 +347,7 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
           setShowSuccess(true)
           setSubmitError(null)
           form.reset()
-          
+
           // Hide success message after 3 seconds
           setTimeout(() => {
             setShowSuccess(false)
@@ -283,6 +440,55 @@ export function APNForm({ portfolioId, onSuccess, onError, onCancel, isModal = f
     )
   }
 
+  // Show disambiguation UI if we have multiple results
+  if (multipleResults) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4">
+          <h3 className="font-semibold">Multiple Properties Found</h3>
+          <p className="text-sm text-muted-foreground">
+            Select the property you want to add (APN: {apnValue})
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {multipleResults.map((property) => (
+            <Card
+              key={property.id}
+              className="cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+              onClick={() => handlePropertySelection(property)}
+            >
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <div className="font-semibold text-base">{property.address}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {property.city}, {property.state} {property.zip}
+                  </div>
+                  {property.assessed_value && (
+                    <div className="text-sm font-medium">
+                      ${property.assessed_value.toLocaleString()}
+                    </div>
+                  )}
+                  {property.owner && (
+                    <div className="text-xs text-muted-foreground truncate">
+                      Owner: {property.owner.length > 30 ? property.owner.substring(0, 30) + '...' : property.owner}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {isSubmitting && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <LoaderIcon className="h-4 w-4 animate-spin" />
+            Adding property...
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <Form {...form}>

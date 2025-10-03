@@ -14,6 +14,7 @@ interface CreatePropertyData {
   user_notes?: string
   insurance_provider?: string
   use_pro_lookup?: boolean
+  selectedPropertyData?: unknown
 }
 
 interface CreatePropertyResponse {
@@ -30,13 +31,13 @@ export function useCreateProperty() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: async (data: CreatePropertyData): Promise<CreatePropertyResponse> => {
+    mutationFn: async (data: CreatePropertyData): Promise<CreatePropertyResponse | { multipleResults: boolean; properties: unknown[] }> => {
       let response = await fetch('/api/user-properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      
+
       // If 429 error (limit exceeded) and we were using pro lookup, retry with basic mode
       if (response.status === 429 && data.use_pro_lookup) {
         console.log('Pro lookup limit exceeded, retrying with basic mode...')
@@ -46,35 +47,47 @@ export function useCreateProperty() {
           body: JSON.stringify({ ...data, use_pro_lookup: false }),
         })
       }
-      
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to create property')
       }
-      
-      return response.json()
+
+      const result = await response.json()
+
+      // Check if we got multiple results for disambiguation
+      if (result.multipleResults) {
+        return result
+      }
+
+      return result
     },
     onSuccess: (data, variables) => {
+      // Skip cache invalidation if this is a disambiguation response
+      if ('multipleResults' in data && data.multipleResults) {
+        return
+      }
+
       // Invalidate properties cache for the specific portfolio
       if (variables.portfolio_id) {
-        queryClient.invalidateQueries({ 
-          queryKey: queryKeys.properties(variables.portfolio_id) 
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.properties(variables.portfolio_id)
         })
       }
-      
+
       // Also invalidate general properties cache
-      queryClient.invalidateQueries({ 
-        queryKey: ['properties'] 
+      queryClient.invalidateQueries({
+        queryKey: ['properties']
       })
-      
+
       // Invalidate user limits to update the counter
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.userLimits() 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.userLimits()
       })
-      
+
       // Invalidate portfolio stats to update property counts
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.portfolios() 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.portfolios()
       })
     },
   })

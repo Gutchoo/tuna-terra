@@ -99,6 +99,22 @@ export function PropertyFlowDebugPanel() {
     window.dispatchEvent(event)
   }
 
+  const openRealApnModal = () => {
+    // Trigger the actual Add Properties Modal with APN method
+    const event = new CustomEvent('debug-open-csv-modal', {
+      detail: { method: 'apn' }
+    })
+    window.dispatchEvent(event)
+  }
+
+  const triggerMultipleResultsState = () => {
+    // Open modal with APN method, then trigger disambiguation state
+    openRealApnModal()
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('debug-apn-multiple-results'))
+    }, 100)
+  }
+
   const closeRealModal = () => {
     // Trigger closing the actual modal
     const event = new CustomEvent('debug-close-modal')
@@ -284,11 +300,11 @@ export function PropertyFlowDebugPanel() {
             </div>
           </div>
 
-          {/* Real CSV Modal State Control */}
+          {/* Real Modal State Control */}
           <div className="space-y-2 border-t pt-3">
             <div className="flex items-center gap-2">
               <Settings className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium">Real CSV Modal States</span>
+              <span className="text-sm font-medium">Real Modal States</span>
             </div>
             <div className="space-y-1">
               <div className="flex gap-1">
@@ -299,7 +315,7 @@ export function PropertyFlowDebugPanel() {
                   className="flex-1 h-7 text-xs"
                 >
                   <FileText className="h-3 w-3 mr-1" />
-                  File Validation
+                  CSV Validation
                 </Button>
                 <Button
                   onClick={triggerProcessingState}
@@ -308,9 +324,18 @@ export function PropertyFlowDebugPanel() {
                   className="flex-1 h-7 text-xs"
                 >
                   <Play className="h-3 w-3 mr-1" />
-                  Processing
+                  CSV Process
                 </Button>
               </div>
+              <Button
+                onClick={triggerMultipleResultsState}
+                size="sm"
+                variant="default"
+                className="w-full h-7 text-xs bg-purple-600 hover:bg-purple-700"
+              >
+                <FileText className="h-3 w-3 mr-1" />
+                APN Multiple Results
+              </Button>
               <div className="flex gap-1">
                 <Button
                   onClick={resetCsvState}
@@ -347,7 +372,7 @@ export function PropertyFlowDebugPanel() {
             <div className="font-medium">Perfect for testing property addition UX!</div>
             <div>Check the properties list to see cache invalidation in action.</div>
             <div className="font-medium text-orange-600">Rate Limit button shows what users see when they exceed their lookup quota!</div>
-            <div className="font-medium text-purple-600">Modal controls let you test different CSV upload states!</div>
+            <div className="font-medium text-purple-600">Modal controls let you test CSV upload and APN disambiguation states!</div>
           </div>
         </CardContent>
       )}
