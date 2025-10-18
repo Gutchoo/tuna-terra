@@ -233,6 +233,273 @@ export interface PropertyFinancials {
   updated_at: string
 }
 
+// ============================================================================
+// INCOME & EXPENSE MANAGEMENT TYPES (v2.0)
+// ============================================================================
+
+// Property Unit - Individual units within properties
+export interface PropertyUnit {
+  id: string
+  property_id: string
+  portfolio_id: string
+  user_id: string
+
+  // Unit Information
+  unit_number: string
+  unit_name: string | null
+  square_footage: number | null
+
+  // Tenant Information
+  tenant_name: string | null
+  tenant_email: string | null
+  tenant_phone: string | null
+
+  // Lease Terms
+  lease_start_date: string | null
+  lease_end_date: string | null
+  monthly_rent: number | null
+  security_deposit: number | null
+  lease_terms: string | null
+
+  // Status
+  is_occupied: boolean
+  is_active: boolean
+
+  // Metadata
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Income Transaction
+export interface IncomeTransaction {
+  id: string
+  property_id: string
+  portfolio_id: string
+  user_id: string
+  unit_id: string | null
+
+  // Transaction Details
+  transaction_date: string
+  amount: number
+  category: IncomeCategory
+  description: string
+
+  // Transaction Type
+  transaction_type: 'actual' | 'projected'
+
+  // Recurring Income
+  is_recurring: boolean
+  recurrence_frequency: RecurrenceFrequency | null
+  recurrence_start_date: string | null
+  recurrence_end_date: string | null
+  parent_transaction_id: string | null
+
+  // Metadata
+  notes: string | null
+  tags: string[] | null
+  created_at: string
+  updated_at: string
+}
+
+// Expense Transaction
+export interface ExpenseTransaction {
+  id: string
+  property_id: string
+  portfolio_id: string
+  user_id: string
+  unit_id: string | null
+
+  // Transaction Details
+  transaction_date: string
+  amount: number
+  category: ExpenseCategory
+  description: string
+
+  // Transaction Type
+  transaction_type: 'actual' | 'projected'
+
+  // Recurring Expenses
+  is_recurring: boolean
+  recurrence_frequency: RecurrenceFrequency | null
+  recurrence_start_date: string | null
+  recurrence_end_date: string | null
+  parent_transaction_id: string | null
+
+  // Vendor Information
+  vendor_name: string | null
+  vendor_contact: string | null
+
+  // Metadata
+  notes: string | null
+  tags: string[] | null
+  created_at: string
+  updated_at: string
+}
+
+// Property Document
+export interface PropertyDocument {
+  id: string
+  property_id: string
+  portfolio_id: string
+  user_id: string
+  unit_id: string | null
+
+  // Link to Transactions (optional)
+  income_transaction_id: string | null
+  expense_transaction_id: string | null
+
+  // File Information
+  file_name: string
+  file_path: string
+  file_size_bytes: number
+  file_type: string
+  storage_bucket: string
+
+  // Document Classification
+  document_type: DocumentType
+  document_category: string | null
+
+  // Metadata
+  title: string | null
+  description: string | null
+  tags: string[] | null
+
+  // Document Properties
+  document_date: string | null
+  expiration_date: string | null
+
+  // OCR/AI Processing (future enhancement)
+  ocr_text: string | null
+  ai_extracted_data: Record<string, unknown> | null
+
+  // Status
+  is_processed: boolean
+  processing_status: 'pending' | 'processing' | 'completed' | 'failed'
+
+  // Timestamps
+  uploaded_at: string
+  created_at: string
+  updated_at: string
+}
+
+// ============================================================================
+// ENUMS & TYPE ALIASES
+// ============================================================================
+
+// Income Categories
+export type IncomeCategory =
+  | 'rental_income'
+  | 'parking_income'
+  | 'storage_income'
+  | 'pet_fees'
+  | 'late_fees'
+  | 'utility_reimbursement'
+  | 'laundry_income'
+  | 'other_income'
+
+// Expense Categories
+export type ExpenseCategory =
+  | 'repairs_maintenance'
+  | 'property_taxes'
+  | 'insurance'
+  | 'utilities'
+  | 'property_management'
+  | 'hoa_fees'
+  | 'landscaping'
+  | 'pest_control'
+  | 'cleaning'
+  | 'legal_fees'
+  | 'accounting_fees'
+  | 'advertising'
+  | 'capital_expenditure'
+  | 'other_expense'
+
+// Document Types
+export type DocumentType =
+  | 'invoice'
+  | 'receipt'
+  | 'work_order'
+  | 'insurance_policy'
+  | 'tax_document'
+  | 'lease_agreement'
+  | 'inspection_report'
+  | 'property_photo'
+  | 'floor_plan'
+  | 'other'
+
+// Recurrence Frequency
+export type RecurrenceFrequency =
+  | 'weekly'
+  | 'bi_weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'semi_annual'
+  | 'annual'
+
+// ============================================================================
+// REPORT TYPES
+// ============================================================================
+
+// Profit & Loss Report
+export interface ProfitLossReport {
+  period: {
+    start_date: string
+    end_date: string
+  }
+  income: {
+    by_category: Record<IncomeCategory, number>
+    total: number
+  }
+  expenses: {
+    by_category: Record<ExpenseCategory, number>
+    total: number
+  }
+  noi: number
+  units?: Array<{
+    unit_id: string
+    unit_number: string
+    income: number
+    expenses: number
+    net_income: number
+  }>
+}
+
+// Cash Flow Report
+export interface CashFlowReport {
+  periods: Array<{
+    period_start: string
+    period_end: string
+    income: number
+    expenses: number
+    net_cash_flow: number
+  }>
+  total_income: number
+  total_expenses: number
+  total_net_cash_flow: number
+}
+
+// Unit Performance Report
+export interface UnitPerformanceReport {
+  property_total: {
+    income: number
+    expenses: number
+    noi: number
+  }
+  units: Array<{
+    unit_id: string
+    unit_number: string
+    unit_name: string | null
+    square_footage: number | null
+    monthly_rent: number | null
+    income: number
+    expenses: number
+    noi: number
+    noi_per_sqft: number | null
+    occupancy_rate: number | null
+  }>
+}
+
 // Database schema type
 export type Database = {
   public: {

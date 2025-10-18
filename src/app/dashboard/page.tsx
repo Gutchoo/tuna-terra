@@ -1,17 +1,18 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Suspense, useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { PropertyView } from '@/components/properties/PropertyView'
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
 import { VirtualSamplePortfolioState } from '@/components/welcome/VirtualSamplePortfolioState'
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { PropertyFlowDebugPanel } from '@/components/debug/PropertyFlowDebugPanel'
 import { PortfolioStatusDebugPanel } from '@/components/debug/PortfolioStatusDebugPanel'
+import { PropertiesSidebar } from '@/components/properties/PropertiesSidebar'
+import { PropertiesSiteHeader } from '@/components/properties/PropertiesSiteHeader'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { toast } from 'sonner'
 import { useDefaultPortfolio, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
@@ -298,83 +299,82 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      
-      {/* Dashboard Header */}
-      <DashboardHeader
-        onPortfolioChange={(portfolioId) => {
-          // Note: DashboardHeader handles URL updates directly
-          // This callback is just for potential future use
-          console.log('Portfolio changed to:', portfolioId)
-        }}
-      />
+    <SidebarProvider>
+      <PropertiesSidebar />
+      <SidebarInset>
+        <PropertiesSiteHeader />
 
-      {/* Conditional layout - empty states get full height, content gets card wrapper */}
-      {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
-        <div className="flex-1 flex flex-col">
-          {renderContent()}
-        </div>
-      ) : (
-        <div className="p-6">
-          <Card>
-            <CardContent className="pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          {/* Main Content Area */}
+          {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
+            <div className="flex-1 flex flex-col">
               {renderContent()}
-            </CardContent>
-          </Card>
+            </div>
+          ) : (
+            <div className="flex-1">
+              {renderContent()}
+            </div>
+          )}
         </div>
-      )}
 
-      <AddPropertiesModal
-        open={showAddPropertiesModal}
-        onOpenChange={(open) => {
-          setShowAddPropertiesModal(open)
-          // Reset the initial method when modal is closed
-          if (!open) {
-            setModalInitialMethod(undefined)
-          }
-        }}
-        portfolioId={currentPortfolioId}
-        initialMethod={modalInitialMethod}
-        onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
-      />
-      <CreatePortfolioModal
-        open={showCreatePortfolioModal}
-        onOpenChange={setShowCreatePortfolioModal}
-      />
+        <AddPropertiesModal
+          open={showAddPropertiesModal}
+          onOpenChange={(open) => {
+            setShowAddPropertiesModal(open)
+            // Reset the initial method when modal is closed
+            if (!open) {
+              setModalInitialMethod(undefined)
+            }
+          }}
+          portfolioId={currentPortfolioId}
+          initialMethod={modalInitialMethod}
+          onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
+        />
+        <CreatePortfolioModal
+          open={showCreatePortfolioModal}
+          onOpenChange={setShowCreatePortfolioModal}
+        />
 
-      {/* Floating Debug Panels */}
-      <PortfolioStatusDebugPanel />
-      <PropertyFlowDebugPanel />
-    </div>
+        {/* Floating Debug Panels */}
+        <PortfolioStatusDebugPanel />
+        <PropertyFlowDebugPanel />
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col min-h-screen">
-        {/* Header Skeleton - always show during loading since we don't know portfolio state yet */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-48 bg-muted rounded animate-pulse" />
-                <div className="h-6 w-24 bg-muted rounded animate-pulse" />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-32 bg-muted rounded animate-pulse" />
-                <div className="h-9 w-28 bg-muted rounded animate-pulse" />
+      <SidebarProvider>
+        <div className="flex h-screen w-full">
+          {/* Sidebar Skeleton */}
+          <div className="w-64 border-r bg-background p-4">
+            <div className="h-10 bg-muted rounded animate-pulse mb-6" />
+            <div className="space-y-2">
+              <div className="h-8 bg-muted rounded animate-pulse" />
+              <div className="h-8 bg-muted rounded animate-pulse" />
+              <div className="h-8 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="flex-1 flex flex-col">
+            {/* Header Skeleton */}
+            <div className="h-12 border-b bg-background/95 backdrop-blur px-4 flex items-center">
+              <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            </div>
+
+            {/* Content Skeleton */}
+            <div className="flex-1 flex flex-col justify-center p-4">
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading dashboard...</p>
               </div>
             </div>
           </div>
         </div>
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
+      </SidebarProvider>
     }>
       <DashboardPageContent />
     </Suspense>

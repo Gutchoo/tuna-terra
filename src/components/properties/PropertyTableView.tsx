@@ -46,6 +46,7 @@ interface PropertyTableViewProps {
   onSelectAll: (selected: boolean) => void
   onRefresh?: (property: Property) => void
   onDelete?: (property: Property) => void
+  onPropertyClick?: (propertyId: string) => void // New: click handler for opening drawer
   refreshingPropertyId: string | null
   visibleColumns: Set<keyof Property | string> // Allow virtual columns
   censusData?: CensusDataMap // Optional census data
@@ -61,6 +62,7 @@ export function PropertyTableView({
   onSelectAll,
   onRefresh,
   onDelete,
+  onPropertyClick,
   refreshingPropertyId,
   visibleColumns,
   censusData = {},
@@ -462,9 +464,16 @@ export function PropertyTableView({
           
           <TableBody>
             {sortedProperties.map((property) => (
-              <TableRow 
+              <TableRow
                 key={property.id}
-                className={selectedRows.has(property.id) ? 'bg-muted/50' : ''}
+                className={`${selectedRows.has(property.id) ? 'bg-muted/50' : ''} ${onPropertyClick ? 'cursor-pointer hover:bg-muted/30' : ''}`}
+                onClick={(e) => {
+                  // Only trigger if not clicking checkbox or action menu
+                  const target = e.target as HTMLElement
+                  if (!target.closest('button') && !target.closest('[role="checkbox"]') && onPropertyClick) {
+                    onPropertyClick(property.id)
+                  }
+                }}
               >
                 <TableCell>
                   <Checkbox

@@ -28,6 +28,7 @@ import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 import { exportPropertiesToCSV } from '@/lib/csv-export'
 import { PropertyDashboardView } from '../property-dashboard/PropertyDashboardView'
+import { PropertyDrawer } from './PropertyDrawer'
 
 type ViewMode = 'cards' | 'table' | 'map' | 'dashboard'
 
@@ -56,10 +57,13 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
   const [dashboardPropertyId, setDashboardPropertyId] = useState<string | null>(null)
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerPropertyId, setDrawerPropertyId] = useState<string | null>(null)
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -177,16 +181,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     setSearchQuery(query)
   }
 
-  // Card expansion
-  const handleToggleExpand = (id: string) => {
-    const newExpanded = new Set(expandedCards)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedCards(newExpanded)
-  }
 
   // Row selection
   const handleRowSelect = (id: string, selected: boolean) => {
@@ -337,10 +331,22 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   // Helper to determine which properties to show (all properties if no search matches, filtered otherwise)
   const displayProperties = filteredProperties.length === 0 && searchQuery.trim().length > 0 ? properties : filteredProperties
 
-  // Handle property click to open dashboard
+  // Get selected property for drawer
+  const drawerProperty = drawerPropertyId ? properties.find(p => p.id === drawerPropertyId) : undefined
+
+  // Handle property click to open drawer
   const handlePropertyClick = (propertyId: string) => {
-    setDashboardPropertyId(propertyId)
-    setViewMode('dashboard')
+    setDrawerPropertyId(propertyId)
+    setDrawerOpen(true)
+  }
+
+  // Handle drawer close
+  const handleDrawerClose = (open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      // Optional: clear property ID after animation completes
+      setTimeout(() => setDrawerPropertyId(null), 300)
+    }
   }
 
   // Handle back from dashboard
@@ -452,14 +458,9 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
         {viewMode === 'cards' ? (
         <PropertyCardView
           properties={displayProperties}
-          expandedCards={expandedCards}
-          onToggleExpand={handleToggleExpand}
           onRefresh={canEdit ? handleRefreshClick : undefined}
           onDelete={canEdit ? handleDeleteClick : undefined}
           onPropertyClick={handlePropertyClick}
-          refreshingPropertyId={refreshingPropertyId}
-          censusData={censusData}
-          isLoadingCensus={isLoadingCensus}
           canEdit={canEdit}
           userRole={userRole}
         />
@@ -468,7 +469,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           <FullScreenMapView
             properties={displayProperties}
             selectedPropertyId={selectedPropertyId}
-            onPropertySelect={setSelectedPropertyId}
+            onPropertySelect={handlePropertyClick}
             onPropertiesChange={onPropertiesChange}
             onError={onError}
             censusData={censusData}
@@ -483,6 +484,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           onSelectAll={handleSelectAll}
           onRefresh={canEdit ? handleRefreshClick : undefined}
           onDelete={canEdit ? handleDeleteClick : undefined}
+          onPropertyClick={handlePropertyClick}
           refreshingPropertyId={refreshingPropertyId}
           visibleColumns={visibleColumns}
           censusData={censusData}
@@ -532,7 +534,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Multiple Properties</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedRows.size} properties? 
+              Are you sure you want to delete {selectedRows.size} properties?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -548,6 +550,15 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Property Drawer */}
+      <PropertyDrawer
+        open={drawerOpen}
+        onOpenChange={handleDrawerClose}
+        propertyId={drawerPropertyId}
+        portfolioId={portfolioId}
+        property={drawerProperty}
+      />
       </div>
     </div>
   )
