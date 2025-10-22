@@ -194,9 +194,9 @@ export function AuthModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg top-[45%]">
         <DialogHeader>
-          <div className="flex justify-center mb-4">
+          <DialogTitle className="flex justify-center mb-4">
             <span className="font-semibold text-lg">Tuna Terra</span>
-          </div>
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={(value) => setMode(value as AuthMode)} className="w-full">
