@@ -64,16 +64,18 @@ export function PropertyDrawer({
             </SheetHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <TabsList className="grid w-full grid-cols-6">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="units">Units</TabsTrigger>
-                <TabsTrigger value="income">Income</TabsTrigger>
-                <TabsTrigger value="expenses">Expenses</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="financials">Financials</TabsTrigger>
-              </TabsList>
+              <div className="px-4">
+                <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="units">Units</TabsTrigger>
+                  <TabsTrigger value="income">Income</TabsTrigger>
+                  <TabsTrigger value="expenses">Expenses</TabsTrigger>
+                  <TabsTrigger value="documents">Documents</TabsTrigger>
+                  <TabsTrigger value="financials">Financials</TabsTrigger>
+                </TabsList>
+              </div>
 
-              <div className="mt-6">
+              <div className="mt-6 px-4">
                 <TabsContent value="overview" className="space-y-4">
                   <OverviewTab property={property} propertyId={propertyId} />
                 </TabsContent>
