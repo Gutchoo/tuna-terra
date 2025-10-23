@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase'
+import { VIRTUAL_SAMPLE_PORTFOLIO } from '@/lib/sample-portfolio'
 
 interface SupabaseError {
   code?: string
@@ -15,6 +16,11 @@ export function usePortfolioRole(portfolioId: string | null) {
     queryKey: ['portfolio-role', portfolioId],
     queryFn: async () => {
       if (!portfolioId) return null
+
+      // Handle virtual sample portfolio - it's frontend-only with hardcoded viewer role
+      if (portfolioId === VIRTUAL_SAMPLE_PORTFOLIO.id) {
+        return 'viewer' as const
+      }
 
       // First try to get role from user_accessible_portfolios view
       const { data: portfolioData, error } = await supabase

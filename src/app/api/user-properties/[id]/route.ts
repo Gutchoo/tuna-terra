@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { DatabaseService } from '@/lib/db'
 import { z } from 'zod'
+import { sanitizePropertyForClient } from '@/lib/api/sanitizers'
 
 const updatePropertySchema = z.object({
   user_notes: z.string().optional(),
@@ -38,7 +39,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ property })
+    return NextResponse.json({ property: sanitizePropertyForClient(property) })
   } catch (error) {
     console.error('Get property error:', error)
     return NextResponse.json(
@@ -97,7 +98,7 @@ export async function PUT(
       updated_at: new Date().toISOString()
     })
 
-    return NextResponse.json({ property })
+    return NextResponse.json({ property: sanitizePropertyForClient(property) })
   } catch (error) {
     console.error('Update property error:', error)
     

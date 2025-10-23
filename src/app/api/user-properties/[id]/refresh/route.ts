@@ -3,6 +3,7 @@ import { getUserId } from '@/lib/auth'
 import { DatabaseService } from '@/lib/db'
 import { RegridService, type RegridProperty } from '@/lib/regrid'
 import type { Property } from '@/lib/supabase'
+import { sanitizePropertyForClient } from '@/lib/api/sanitizers'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -143,8 +144,8 @@ export async function POST(
 
     console.log(`✅ Property refreshed successfully: ${id}`)
 
-    return NextResponse.json({ 
-      property: updatedProperty,
+    return NextResponse.json({
+      property: sanitizePropertyForClient(updatedProperty),
       message: 'Property data refreshed successfully'
     })
   } catch (error) {

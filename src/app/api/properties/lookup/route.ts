@@ -4,6 +4,7 @@ import { getUserId } from '@/lib/auth'
 import { checkAndIncrementUsageServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
 import { propertyLookupSchema, createErrorResponse } from '@/lib/validation'
+import { sanitizePropertyForClient } from '@/lib/api/sanitizers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,11 +66,11 @@ export async function POST(request: NextRequest) {
 
     // Use the full feature data to create a complete property object
     if (bestMatch._fullFeature) {
-      const property = RegridService.normalizeProperty(bestMatch._fullFeature)
+      const property = await RegridService.normalizeProperty(bestMatch._fullFeature)
       const confidence = 'score' in bestMatch ? bestMatch.score : 1.0
-      return NextResponse.json({ 
-        property,
-        confidence 
+      return NextResponse.json({
+        property: sanitizePropertyForClient(property as import('@/lib/supabase').Property),
+        confidence
       })
     }
     

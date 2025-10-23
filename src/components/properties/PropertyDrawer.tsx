@@ -53,19 +53,18 @@ export function PropertyDrawer({
         side="right"
       >
         {property ? (
-          <>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <SheetHeader className="border-b pb-4">
-              <SheetTitle className="text-xl font-semibold">
-                {property.address}
-              </SheetTitle>
-              <SheetDescription>
-                {property.city}, {property.state} {property.zip_code}
-              </SheetDescription>
-            </SheetHeader>
-
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <div className="px-4">
-                <TabsList>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <SheetTitle className="text-xl font-semibold">
+                    {property.address}
+                  </SheetTitle>
+                  <SheetDescription>
+                    {property.city}, {property.state} {property.zip_code}
+                  </SheetDescription>
+                </div>
+                <TabsList className="shrink-0">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="units">Units</TabsTrigger>
                   <TabsTrigger value="income">Income</TabsTrigger>
@@ -74,34 +73,34 @@ export function PropertyDrawer({
                   <TabsTrigger value="financials">Financials</TabsTrigger>
                 </TabsList>
               </div>
+            </SheetHeader>
 
-              <div className="mt-6 px-4">
-                <TabsContent value="overview" className="space-y-4">
-                  <OverviewTab property={property} propertyId={propertyId} />
-                </TabsContent>
+            <div className="mt-6 px-4">
+              <TabsContent value="overview" className="space-y-4">
+                <OverviewTab property={property} propertyId={propertyId} />
+              </TabsContent>
 
-                <TabsContent value="units" className="space-y-4">
-                  <UnitsTab property={property} propertyId={propertyId} />
-                </TabsContent>
+              <TabsContent value="units" className="space-y-4">
+                <UnitsTab property={property} propertyId={propertyId} />
+              </TabsContent>
 
-                <TabsContent value="income" className="space-y-4">
-                  <IncomeTab property={property} propertyId={propertyId} />
-                </TabsContent>
+              <TabsContent value="income" className="space-y-4">
+                <IncomeTab property={property} propertyId={propertyId} />
+              </TabsContent>
 
-                <TabsContent value="expenses" className="space-y-4">
-                  <ExpensesTab property={property} propertyId={propertyId} />
-                </TabsContent>
+              <TabsContent value="expenses" className="space-y-4">
+                <ExpensesTab property={property} propertyId={propertyId} />
+              </TabsContent>
 
-                <TabsContent value="documents" className="space-y-4">
-                  <DocumentsTabPlaceholder propertyId={propertyId} />
-                </TabsContent>
+              <TabsContent value="documents" className="space-y-4">
+                <DocumentsTabPlaceholder propertyId={propertyId} />
+              </TabsContent>
 
-                <TabsContent value="financials" className="space-y-4">
-                  <FinancialsTabPlaceholder property={property} />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </>
+              <TabsContent value="financials" className="space-y-4">
+                <FinancialsTabPlaceholder property={property} />
+              </TabsContent>
+            </div>
+          </Tabs>
         ) : (
           <PropertyDrawerSkeleton />
         )}

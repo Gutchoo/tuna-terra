@@ -7,6 +7,7 @@ import { cookies } from 'next/headers'
 import { z } from 'zod'
 import type { Property } from '@/lib/supabase'
 import { checkUserLimitsServer, createLimitExceededResponse, checkAndIncrementUsageServer } from '@/lib/limits'
+import { sanitizePropertyForClient, sanitizePropertiesForClient } from '@/lib/api/sanitizers'
 
 // Utility function to clean APN by removing all dashes
 function cleanAPN(apn: string | null | undefined): string | null {
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
     }
 
 
-    return NextResponse.json({ properties: properties || [] })
+    return NextResponse.json({ properties: sanitizePropertiesForClient(properties || []) })
   } catch (error) {
     console.error('Get user properties error:', error)
     return NextResponse.json(
@@ -439,7 +440,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
       throw new Error('Property creation returned null - possible RLS policy issue')
     }
     
-    return NextResponse.json({ property })
+    return NextResponse.json({ property: sanitizePropertyForClient(property) })
   } catch (dbError) {
     console.error('handleSingleCreate - database error:', dbError)
     console.error('handleSingleCreate - failed property data:', JSON.stringify(propertyData, null, 2))
@@ -570,7 +571,7 @@ async function handleBulkCreate(userId: string, body: unknown) {
       remaining: number
     }
   } = {
-    created: results,
+    created: sanitizePropertiesForClient(results),
     errors,
     summary: {
       total: properties.length,
