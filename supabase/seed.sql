@@ -407,6 +407,134 @@ INSERT INTO properties (
   -122.3972,
   false,
   NOW() - INTERVAL '18 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '2400 Fulton Street',
+  'San Francisco',
+  'CA',
+  '94118',
+  '4444-555-666',
+  'Golden Gate Properties',
+  2005,
+  1850000.00,
+  37.7694,
+  -122.4862,
+  false,
+  NOW() - INTERVAL '16 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '1500 Broadway',
+  'Oakland',
+  'CA',
+  '94612',
+  '5555-666-777',
+  'Bay Area Investments',
+  2012,
+  980000.00,
+  37.8044,
+  -122.2711,
+  false,
+  NOW() - INTERVAL '14 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '3200 El Camino Real',
+  'Palo Alto',
+  'CA',
+  '94306',
+  '6666-777-888',
+  'Peninsula Holdings',
+  2019,
+  3450000.00,
+  37.4275,
+  -122.1697,
+  false,
+  NOW() - INTERVAL '12 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '750 University Avenue',
+  'Berkeley',
+  'CA',
+  '94710',
+  '7777-888-999',
+  'Campus Real Estate LLC',
+  2008,
+  1650000.00,
+  37.8715,
+  -122.2730,
+  false,
+  NOW() - INTERVAL '10 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '8900 Santa Monica Boulevard',
+  'West Hollywood',
+  'CA',
+  '90069',
+  '8888-999-000',
+  'Sunset Strip Properties',
+  2017,
+  4200000.00,
+  34.0900,
+  -118.3850,
+  false,
+  NOW() - INTERVAL '8 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '1250 Ocean Avenue',
+  'Santa Monica',
+  'CA',
+  '90401',
+  '9999-000-111',
+  'Coastal Ventures Inc',
+  2014,
+  5750000.00,
+  34.0195,
+  -118.4912,
+  false,
+  NOW() - INTERVAL '6 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '4600 Park Boulevard',
+  'San Diego',
+  'CA',
+  '92116',
+  '0000-111-222',
+  'SoCal Property Group',
+  2011,
+  1420000.00,
+  32.7157,
+  -117.1611,
+  false,
+  NOW() - INTERVAL '4 days'
+),
+(
+  '00000000-0000-0000-0000-000000000009',
+  '00000000-0000-0000-0000-000000000001',
+  '2850 Colorado Avenue',
+  'Santa Monica',
+  'CA',
+  '90404',
+  '1111-222-333',
+  'Westside Realty Partners',
+  2020,
+  3980000.00,
+  34.0280,
+  -118.4746,
+  false,
+  NOW() - INTERVAL '2 days'
 )
 ON CONFLICT DO NOTHING;
 
@@ -602,7 +730,7 @@ ON CONFLICT (user_id, lesson_slug) DO NOTHING;
 -- Email: test2@example.com | Password: tunaterra123
 -- Email: test3@example.com | Password: tunaterra123
 --
--- User 1: 2 portfolios, 3 properties, 1 lesson completed
+-- User 1: 2 portfolios, 11 properties (10 in default, 1 in commercial), 1 lesson completed
 -- User 2: 1 portfolio, 1 property, 2 lessons completed
 -- User 3: 1 portfolio, 1 property, 0 lessons completed
 --

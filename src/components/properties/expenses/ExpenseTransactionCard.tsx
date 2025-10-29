@@ -164,7 +164,7 @@ export function ExpenseTransactionCard({
           {/* Amount and Actions */}
           <div className="flex items-start gap-2">
             <div className="text-right">
-              <p className="text-base font-semibold text-red-600 tabular-nums">
+              <p className="text-base font-semibold tabular-nums">
                 -{formatCurrency(transaction.amount)}
               </p>
             </div>

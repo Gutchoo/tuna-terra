@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     // Sanitize results if they are Property objects
     const sanitizedResults = Array.isArray(results) && results.length > 0 && 'property_data' in results[0]
-      ? sanitizePropertiesForClient(results as import('@/lib/supabase').Property[])
+      ? sanitizePropertiesForClient(results as unknown as import('@/lib/supabase').Property[])
       : results
 
     return NextResponse.json({
@@ -124,8 +124,8 @@ export async function POST(request: NextRequest) {
     // This ensures credits are consumed when expensive Regrid API calls are made
 
     // Sanitize results if they are Property objects
-    const sanitizedBatchResults = Array.isArray(results) && results.length > 0 && 'property_data' in results[0]
-      ? sanitizePropertiesForClient(results as import('@/lib/supabase').Property[])
+    const sanitizedBatchResults = Array.isArray(results) && (results as any[]).length > 0 && 'property_data' in (results as any[])[0]
+      ? sanitizePropertiesForClient(results as unknown as import('@/lib/supabase').Property[])
       : results
 
     return NextResponse.json({

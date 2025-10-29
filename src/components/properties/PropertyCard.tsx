@@ -79,16 +79,16 @@ export function PropertyCard({
   }
 
   return (
-    <Card className="transition-all duration-300 hover:shadow-lg">
+    <Card className="py-3 gap-0 transition-all duration-300 hover:shadow-lg">
       {/* Card Header - Always Visible */}
-      <div className="px-fluid-md sm:px-fluid-lg py-fluid-md">
+      <div className="px-4 sm:px-5 py-0">
         {/* Main Content with Title, Chevron, and Menu on same line */}
         <div 
           className="cursor-pointer"
           onClick={() => onToggleExpand(property.id)}
         >
           <div className="flex items-start justify-between">
-            <div className="space-y-fluid-sm flex-1 min-w-0">
+            <div className="space-y-2 flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-fluid-lg font-semibold hover:text-primary transition-colors truncate pr-2">
                   {property.address}
@@ -105,18 +105,6 @@ export function PropertyCard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {onPropertyClick && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onPropertyClick(property.id)
-                            }}
-                            className="focus:bg-blue-50"
-                          >
-                            <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-                            View Dashboard
-                          </DropdownMenuItem>
-                        )}
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation()
@@ -174,7 +162,7 @@ export function PropertyCard({
         </div>
         
         {/* Quick Stats - Always Visible */}
-        <div className="mt-fluid-md grid grid-cols-2 md:grid-cols-4 gap-fluid-sm">
+        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="text-center">
             <p className="text-fluid-xs text-muted-foreground">Assessed Value</p>
             <p className="text-fluid-sm font-medium">

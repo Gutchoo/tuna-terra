@@ -59,6 +59,15 @@ export function UnitsTab({ property, propertyId }: UnitsTabProps) {
         )}
       </div>
 
+      {/* Helpful Info Banner */}
+      {units.length > 0 && (
+        <div className="rounded-lg border bg-muted/50 p-3">
+          <p className="text-xs text-muted-foreground">
+            Units are automatically marked as occupied when rental income is assigned to them in the Income tab.
+          </p>
+        </div>
+      )}
+
       {/* Units List */}
       {units.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -67,7 +76,7 @@ export function UnitsTab({ property, propertyId }: UnitsTabProps) {
           </div>
           <h3 className="mt-4 text-lg font-semibold">No units yet</h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-            Start tracking individual units by adding your first unit to this property.
+            Track individual units for this property. Occupancy is automatically tracked when you assign rental income to units.
           </p>
           {canEdit && (
             <Button onClick={() => setAddDialogOpen(true)} className="mt-4">

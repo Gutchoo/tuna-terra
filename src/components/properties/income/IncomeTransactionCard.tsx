@@ -149,7 +149,7 @@ export function IncomeTransactionCard({
           {/* Amount and Actions */}
           <div className="flex items-start gap-2">
             <div className="text-right">
-              <p className="text-base font-semibold text-green-600 tabular-nums">
+              <p className="text-base font-semibold tabular-nums">
                 +{formatCurrency(transaction.amount)}
               </p>
             </div>

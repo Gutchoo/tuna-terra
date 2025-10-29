@@ -54,17 +54,17 @@ export function PropertyDrawer({
       >
         {property ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <SheetHeader className="border-b pb-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <SheetTitle className="text-xl font-semibold">
-                    {property.address}
-                  </SheetTitle>
-                  <SheetDescription>
-                    {property.city}, {property.state} {property.zip_code}
-                  </SheetDescription>
-                </div>
-                <TabsList className="shrink-0">
+            <SheetHeader className="pb-4 space-y-4">
+              <div className="flex-1 min-w-0 text-center">
+                <SheetTitle className="text-xl font-semibold">
+                  {property.address}
+                </SheetTitle>
+                <SheetDescription>
+                  {property.city}, {property.state} {property.zip_code}
+                </SheetDescription>
+              </div>
+              <div className="flex justify-center">
+                <TabsList>
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="units">Units</TabsTrigger>
                   <TabsTrigger value="income">Income</TabsTrigger>
@@ -75,7 +75,7 @@ export function PropertyDrawer({
               </div>
             </SheetHeader>
 
-            <div className="mt-6 px-4">
+            <div className="mt-2 px-4">
               <TabsContent value="overview" className="space-y-4">
                 <OverviewTab property={property} propertyId={propertyId} />
               </TabsContent>

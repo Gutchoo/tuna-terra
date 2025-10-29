@@ -16,7 +16,6 @@ import {
   MapPinIcon,
   DollarSignIcon,
   UserIcon,
-  LayoutDashboardIcon,
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
@@ -58,10 +57,10 @@ export function CompactPropertyCard({
 
   return (
     <Card
-      className="group relative overflow-hidden rounded-lg border bg-card hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer"
+      className="group relative overflow-hidden rounded-lg border bg-card hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer max-w-sm py-2"
       onClick={handleCardClick}
     >
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-2 space-y-2">
         {/* Header with title and action menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -97,13 +96,6 @@ export function CompactPropertyCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" onClick={handleMenuClick}>
-                <DropdownMenuItem
-                  onClick={() => onPropertyClick(property.id)}
-                  className="focus:bg-blue-50"
-                >
-                  <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-                  View Dashboard
-                </DropdownMenuItem>
                 <DropdownMenuItem disabled className="opacity-50 cursor-not-allowed">
                   <RefreshCwIcon className="mr-2 h-4 w-4" />
                   Refresh Data

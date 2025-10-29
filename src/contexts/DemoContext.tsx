@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react'
-import type { Property } from '@/lib/supabase'
+import type { Property, FieldOverrides } from '@/lib/supabase'
 
 interface DemoState {
   isDemoMode: boolean
@@ -72,7 +72,14 @@ function createDemoProperty(baseData: unknown): Property {
     // Financial & tax data
     tax_year: (data.tax_year as string) || null,
     parcel_value_type: (data.parcel_value_type as string) || null,
-    
+    purchase_price: (data.purchase_price as number) || null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: (data.purchase_date as string) || null,
+    sold_date: (data.sold_date as string) || null,
+    sold_price: (data.sold_price as number) || null,
+    field_overrides: (data.field_overrides as FieldOverrides) || null,
+
     // Location data
     census_tract: (data.census_tract as string) || null,
     census_block: (data.census_block as string) || null,

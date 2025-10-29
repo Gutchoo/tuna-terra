@@ -60,8 +60,8 @@ export function IncomeTab({ property, propertyId }: IncomeTabProps) {
       {/* Transaction List */}
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
-            <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+          <div className="rounded-full bg-muted p-3">
+            <TrendingUp className="h-6 w-6" />
           </div>
           <h3 className="mt-4 text-lg font-semibold">No income transactions yet</h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-sm">

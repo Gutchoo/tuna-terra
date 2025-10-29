@@ -28,26 +28,11 @@ export function UnitSelector({
   includePropertyLevel = true,
   disabled = false,
 }: UnitSelectorProps) {
-  // Smart logic: Only show selector if property has units
-  const hasUnits = property.num_units && property.num_units > 0
-
-  // Fetch units if property has them
+  // Always fetch units for the property
   const { data: unitsResponse, isLoading } = usePropertyUnits(
-    hasUnits ? property.id : null,
+    property.id,
     { is_active: true }
   )
-
-  // If property has no units, hide the selector and auto-assign to property-level
-  React.useEffect(() => {
-    if (!hasUnits && value !== null) {
-      onChange(null) // Auto-assign to property-level
-    }
-  }, [hasUnits, value, onChange])
-
-  // Don't render anything for single-unit properties
-  if (!hasUnits) {
-    return null
-  }
 
   const units = unitsResponse?.data || []
 
@@ -74,8 +59,7 @@ export function UnitSelector({
           {units.map((unit) => (
             <SelectItem key={unit.id} value={unit.id}>
               {unit.unit_number}
-              {unit.unit_name && ` - ${unit.unit_name}`}
-              {unit.tenant_name && ` (${unit.tenant_name})`}
+              {unit.is_occupied ? " (Occupied)" : " (Vacant)"}
             </SelectItem>
           ))}
           {units.length === 0 && !isLoading && (
@@ -87,7 +71,7 @@ export function UnitSelector({
       </Select>
       {units.length === 0 && !isLoading && (
         <p className="text-xs text-muted-foreground">
-          Create units in the Units tab to assign transactions to specific units
+          Create units in the Units tab to track occupancy. Units are automatically marked occupied when rental income is assigned.
         </p>
       )}
     </div>

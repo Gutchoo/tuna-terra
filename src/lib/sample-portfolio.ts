@@ -198,6 +198,14 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tax_year: null,
     parcel_value_type: 'ASSESSED',
     
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
+
     // Location data
     census_tract: '06001982100',
     census_block: '060019821001001',
@@ -616,6 +624,14 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
     
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
+
     // Location data
     census_tract: '06037980028',
     census_block: '060379800281018',
@@ -1080,6 +1096,14 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
     
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
+
     // Location data
     census_tract: '06037701902',
     census_block: '060377019023020',

@@ -76,14 +76,14 @@ export function sanitizePropertyForClient(property: Property): SanitizedProperty
       population: (embeddedDemographics.population as number) ?? null,
       unemployment_rate: (embeddedDemographics.unemployment_rate as number) ?? null,
       median_age: (embeddedDemographics.median_age as number) ?? null,
-      age_brackets: (embeddedDemographics.age_brackets as SanitizedProperty['demographics']['age_brackets']) ?? null,
+      age_brackets: (embeddedDemographics.age_brackets as any) ?? null,
       total_housing_units: (embeddedDemographics.total_housing_units as number) ?? null,
       owner_occupied_units: (embeddedDemographics.owner_occupied_units as number) ?? null,
       renter_occupied_units: (embeddedDemographics.renter_occupied_units as number) ?? null,
       median_rent: (embeddedDemographics.median_rent as number) ?? null,
       avg_household_size_owner: (embeddedDemographics.avg_household_size_owner as number) ?? null,
       avg_household_size_renter: (embeddedDemographics.avg_household_size_renter as number) ?? null,
-      education_details: (embeddedDemographics.education_details as SanitizedProperty['demographics']['education_details']) ?? null,
+      education_details: (embeddedDemographics.education_details as any) ?? null,
     }
   }
 

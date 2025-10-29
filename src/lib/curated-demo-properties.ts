@@ -93,6 +93,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '36061007600',
@@ -327,6 +334,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2024',
     parcel_value_type: 'ASSESSED',
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '06075061501',
@@ -1032,6 +1046,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
+
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '06037311700',
@@ -2027,6 +2049,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     tax_year: null,
     parcel_value_type: 'ASSESSED',
 
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
+
     // Location data
     census_tract: '06085508102',
     census_block: '060855081021020',
@@ -2606,6 +2636,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2023',
     parcel_value_type: 'ASSESSED',
+
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '17031839100',
@@ -3457,6 +3495,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     tax_year: '',
     parcel_value_type: '',
 
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
+
     // Location data
     census_tract: '',
     census_block: '',
@@ -4200,6 +4246,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '36061009400',
@@ -6105,6 +6158,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    purchase_price: null,
+
+    // Acquisition & Disposition tracking
+    purchase_date: null,
+    sold_date: null,
+    sold_price: null,
+    field_overrides: null,
 
     // Location data
     census_tract: '53061041304',

@@ -23,6 +23,17 @@ export const createServerSupabaseClient = () => {
 // Import census types
 import type { CensusDemographics } from '@/hooks/useCensusData'
 
+// Field Override tracking type
+export interface FieldOverride {
+  original: unknown // Original value from Regrid
+  overridden_at: string // ISO timestamp when override occurred
+  overridden_by: string // User ID who made the override
+}
+
+export type FieldOverrides = {
+  [fieldName: string]: FieldOverride
+}
+
 // Database types
 export type Property = {
   id: string
@@ -64,6 +75,12 @@ export type Property = {
   tax_year: string | null // Tax assessment year
   parcel_value_type: string | null // Type of parcel value
   purchase_price: number | null // User-entered purchase price for financial modeling
+
+  // Acquisition & Disposition tracking
+  purchase_date: string | null // User-entered acquisition date (ISO date)
+  sold_date: string | null // User-entered disposition date (ISO date)
+  sold_price: number | null // User-entered sale price
+  field_overrides: FieldOverrides | null // Tracks manually overridden Regrid fields
 
   // Location data
   census_tract: string | null // Census tract identifier
@@ -238,6 +255,7 @@ export interface PropertyFinancials {
 // ============================================================================
 
 // Property Unit - Individual units within properties
+// NOTE: Simplified interface - only unit_number and notes are actively used in UI
 export interface PropertyUnit {
   id: string
   property_id: string
@@ -245,16 +263,16 @@ export interface PropertyUnit {
   user_id: string
 
   // Unit Information
-  unit_number: string
-  unit_name: string | null
-  square_footage: number | null
+  unit_number: string // Primary identifier - can be number, name, or combination (e.g., "101", "Unit A", "Main House")
+  unit_name: string | null // DEPRECATED: Field kept for backward compatibility but hidden from UI
+  square_footage: number | null // DEPRECATED: Field kept for backward compatibility but hidden from UI
 
-  // Tenant Information
+  // Tenant Information - DEPRECATED: All tenant fields kept for backward compatibility but hidden from UI
   tenant_name: string | null
   tenant_email: string | null
   tenant_phone: string | null
 
-  // Lease Terms
+  // Lease Terms - DEPRECATED: All lease fields kept for backward compatibility but hidden from UI
   lease_start_date: string | null
   lease_end_date: string | null
   monthly_rent: number | null
@@ -262,11 +280,11 @@ export interface PropertyUnit {
   lease_terms: string | null
 
   // Status
-  is_occupied: boolean
+  is_occupied: boolean // AUTO-COMPUTED: Automatically set to true via database trigger when unit has rental income transactions
   is_active: boolean
 
   // Metadata
-  notes: string | null
+  notes: string | null // Optional notes about the unit
   created_at: string
   updated_at: string
 }

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       const property = await RegridService.normalizeProperty(bestMatch._fullFeature)
       const confidence = 'score' in bestMatch ? bestMatch.score : 1.0
       return NextResponse.json({
-        property: sanitizePropertyForClient(property as import('@/lib/supabase').Property),
+        property: sanitizePropertyForClient(property as unknown as import('@/lib/supabase').Property),
         confidence
       })
     }

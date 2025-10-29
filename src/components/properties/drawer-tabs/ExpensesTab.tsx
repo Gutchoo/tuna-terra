@@ -60,8 +60,8 @@ export function ExpensesTab({ property, propertyId }: ExpensesTabProps) {
       {/* Transaction List */}
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
-            <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
+          <div className="rounded-full bg-muted p-3">
+            <TrendingDown className="h-6 w-6" />
           </div>
           <h3 className="mt-4 text-lg font-semibold">No expense transactions yet</h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-sm">

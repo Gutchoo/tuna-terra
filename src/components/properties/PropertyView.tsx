@@ -30,7 +30,7 @@ import { exportPropertiesToCSV } from '@/lib/csv-export'
 import { PropertyDashboardView } from '../property-dashboard/PropertyDashboardView'
 import { PropertyDrawer } from './PropertyDrawer'
 
-type ViewMode = 'cards' | 'table' | 'map' | 'dashboard'
+type ViewMode = 'cards' | 'table' | 'map'
 
 interface PropertyViewProps {
   properties: Property[]
@@ -353,21 +353,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const handleBackFromDashboard = () => {
     setDashboardPropertyId(null)
     setViewMode('cards') // Return to cards view by default
-  }
-
-  // If in dashboard mode, render the dashboard view
-  if (viewMode === 'dashboard' && dashboardPropertyId) {
-    const dashboardProperty = properties.find(p => p.id === dashboardPropertyId)
-    if (dashboardProperty) {
-      return (
-        <PropertyDashboardView
-          property={dashboardProperty}
-          portfolioId={portfolioId || ''}
-          portfolioName={portfolioName}
-          onBack={handleBackFromDashboard}
-        />
-      )
-    }
   }
 
   return (

@@ -5,19 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   DollarSign,
   TrendingDown,
   TrendingUp,
   FileText,
-  Building2,
   AlertCircle,
   Calendar,
+  Pencil,
   MapPin,
+  Hash,
   User,
-  Hash
+  Building2,
 } from "lucide-react"
 import { usePropertyOverview } from "@/hooks/use-property-overview"
+import { PropertyOverviewEditModal } from "@/components/properties/PropertyOverviewEditModal"
 import type { Property } from "@/lib/supabase"
 
 interface OverviewTabProps {
@@ -27,6 +30,7 @@ interface OverviewTabProps {
 
 export function OverviewTab({ property, propertyId }: OverviewTabProps) {
   const { data: overviewData, isLoading, error } = usePropertyOverview(propertyId)
+  const [editModalOpen, setEditModalOpen] = React.useState(false)
 
   if (isLoading) {
     return <OverviewSkeleton />
@@ -77,13 +81,13 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
     <div className="space-y-6">
       {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="py-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-0">
             <CardTitle className="text-sm font-medium">Income YTD</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold">
               {formatCurrency(metrics.totalIncomeYTD)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -92,13 +96,13 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="py-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-0">
             <CardTitle className="text-sm font-medium">Expenses YTD</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
+            <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold">
               {formatCurrency(metrics.totalExpensesYTD)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -107,13 +111,13 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="py-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-0">
             <CardTitle className="text-sm font-medium">NOI YTD</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600" />
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${metrics.noiYTD >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+            <div className="text-2xl font-bold">
               {formatCurrency(metrics.noiYTD)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -122,8 +126,8 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="py-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-0">
             <CardTitle className="text-sm font-medium">Documents</CardTitle>
             <FileText className="h-4 w-4 text-gray-600" />
           </CardHeader>
@@ -138,121 +142,161 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
         </Card>
       </div>
 
-      {/* Property Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Property Details</CardTitle>
+      {/* Property Overview Card */}
+      <Card className="py-4">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-0">
+          <CardTitle className="text-base">Property Overview</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setEditModalOpen(true)}
+            className="h-8 w-8"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Location */}
+            {/* Address */}
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>Location</span>
+                <span>Address</span>
               </div>
               <div className="text-sm pl-6">
-                <p>{property.address || 'N/A'}</p>
-                <p>{property.city}, {property.state} {property.zip_code}</p>
-                <p className="text-muted-foreground">{property.county} County</p>
+                <p className="font-medium">{property.address || 'N/A'}</p>
+                <p className="text-muted-foreground">
+                  {property.city}, {property.state} {property.zip_code}
+                </p>
+              </div>
+            </div>
+
+            {/* Parcel/APN */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Hash className="h-4 w-4" />
+                <span>Parcel / APN</span>
+              </div>
+              <div className="text-sm pl-6 font-mono">
+                {property.apn || 'N/A'}
               </div>
             </div>
 
             {/* Owner */}
-            {property.owner && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>Owner</span>
-                </div>
-                <div className="text-sm pl-6">
-                  <p>{property.owner}</p>
-                  {property.owner_mailing_address && (
-                    <p className="text-muted-foreground text-xs mt-1">
-                      {property.owner_mailing_address}
-                    </p>
-                  )}
-                </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Owner</span>
               </div>
-            )}
-
-            {/* APN */}
-            {property.apn && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Hash className="h-4 w-4" />
-                  <span>APN</span>
-                </div>
-                <div className="text-sm pl-6 font-mono">
-                  {property.apn}
-                </div>
+              <div className="text-sm pl-6">
+                {property.owner || 'N/A'}
               </div>
-            )}
+            </div>
 
-            {/* Physical Details */}
-            {(property.lot_size_acres || property.year_built || property.num_stories) && (
+            {/* Purchase Price / Purchase Date */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                <span>Purchase Price / Purchase Date</span>
+              </div>
+              <div className="text-sm pl-6 font-medium">
+                {property.purchase_price ? formatCurrency(property.purchase_price) : 'N/A'} / {property.purchase_date ? formatDate(property.purchase_date) : 'No date'}
+              </div>
+            </div>
+
+            {/* Disposition Price / Disposition Date */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                <span>Disposition Price / Disposition Date</span>
+              </div>
+              <div className="text-sm pl-6 font-medium">
+                {property.sold_price ? formatCurrency(property.sold_price) : 'N/A'} / {property.sold_date ? formatDate(property.sold_date) : 'No date'}
+              </div>
+            </div>
+
+            {/* Assessed Value */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                <span>Assessed Value</span>
+              </div>
+              <div className="text-sm pl-6 font-semibold">
+                {property.assessed_value ? formatCurrency(property.assessed_value) : 'N/A'}
+              </div>
+            </div>
+
+            {/* Lot Size */}
+            {property.lot_size_acres && (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Building2 className="h-4 w-4" />
-                  <span>Physical Details</span>
-                </div>
-                <div className="text-sm pl-6 space-y-0.5">
-                  {property.lot_size_acres && (
-                    <p>Lot: {Number(property.lot_size_acres).toFixed(2)} acres</p>
-                  )}
-                  {property.year_built && (
-                    <p>Built: {property.year_built}</p>
-                  )}
-                  {property.num_stories && (
-                    <p>Stories: {property.num_stories}</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Valuation */}
-            {property.assessed_value && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <DollarSign className="h-4 w-4" />
-                  <span>Assessed Value</span>
+                  <span>Lot Size</span>
                 </div>
                 <div className="text-sm pl-6">
-                  <p className="font-semibold">{formatCurrency(property.assessed_value)}</p>
-                  {property.improvement_value && property.land_value && (
-                    <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                      <p>Improvements: {formatCurrency(property.improvement_value)}</p>
-                      <p>Land: {formatCurrency(property.land_value)}</p>
-                    </div>
-                  )}
+                  {Number(property.lot_size_acres).toFixed(2)} acres
                 </div>
               </div>
             )}
 
-            {/* Use & Zoning */}
-            {(property.use_description || property.zoning) && (
+            {/* Use Description */}
+            {property.use_description && (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <FileText className="h-4 w-4" />
-                  <span>Use & Zoning</span>
+                  <span>Use Description</span>
                 </div>
-                <div className="text-sm pl-6 space-y-0.5">
-                  {property.use_description && (
-                    <p>{property.use_description}</p>
-                  )}
-                  {property.zoning && (
-                    <p className="text-muted-foreground">{property.zoning}</p>
-                  )}
+                <div className="text-sm pl-6">{property.use_description}</div>
+              </div>
+            )}
+
+            {/* Zoning */}
+            {property.zoning && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <FileText className="h-4 w-4" />
+                  <span>Zoning</span>
                 </div>
+                <div className="text-sm pl-6">{property.zoning}</div>
+              </div>
+            )}
+
+            {/* Number of Units */}
+            {property.num_units && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Building2 className="h-4 w-4" />
+                  <span>Units</span>
+                </div>
+                <div className="text-sm pl-6">{property.num_units}</div>
+              </div>
+            )}
+
+            {/* County */}
+            {property.county && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>County</span>
+                </div>
+                <div className="text-sm pl-6">{property.county}</div>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
+      {/* Property Overview Edit Modal */}
+      <PropertyOverviewEditModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        property={property}
+        propertyId={propertyId}
+      />
+
       {/* Recent Activity */}
-      <Card>
-        <CardHeader>
+      <Card className="py-4">
+        <CardHeader className="pt-0">
           <CardTitle className="text-base">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
@@ -270,11 +314,7 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
                   className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                      transaction.type === 'income'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center bg-muted">
                       {transaction.type === 'income' ? (
                         <TrendingUp className="h-4 w-4" />
                       ) : (
@@ -295,9 +335,7 @@ export function OverviewTab({ property, propertyId }: OverviewTabProps) {
                       </div>
                     </div>
                   </div>
-                  <div className={`text-sm font-semibold tabular-nums ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}>
+                  <div className="text-sm font-semibold tabular-nums">
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatCurrency(transaction.amount)}
                   </div>
