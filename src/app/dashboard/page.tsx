@@ -3,16 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { Suspense, useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { PropertyView } from '@/components/properties/PropertyView'
+import { ResizableDashboardLayout } from '@/components/properties/dashboard/ResizableDashboardLayout'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
 import { VirtualSamplePortfolioState } from '@/components/welcome/VirtualSamplePortfolioState'
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { PropertyFlowDebugPanel } from '@/components/debug/PropertyFlowDebugPanel'
 import { PortfolioStatusDebugPanel } from '@/components/debug/PortfolioStatusDebugPanel'
-import { PropertiesSidebar } from '@/components/properties/PropertiesSidebar'
-import { PropertiesSiteHeader } from '@/components/properties/PropertiesSiteHeader'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { DashboardHeader } from '@/components/properties/DashboardHeader'
 import { toast } from 'sonner'
 import { useDefaultPortfolio, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
@@ -67,10 +65,8 @@ function DashboardPageContent() {
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
   const updateLastUsedPortfolio = useUpdateLastUsedPortfolio()
   
-  // Debug: Log what we're passing to useProperties
-  console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
-  
-  // Fetch properties for all portfolios (virtual sample portfolio will return sample data)
+  // Properties are now fetched inside ResizableDashboardLayout - no longer needed here
+  // Check if portfolio has properties for empty state rendering
   const { data: properties = [], isLoading: propertiesLoading, error: propertiesError } = useProperties(
     currentPortfolioId
   )
@@ -188,15 +184,7 @@ function DashboardPageContent() {
     }
   }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio])
 
-  const handlePropertiesChange = () => {
-    // Properties are now managed by React Query
-    // Individual property operations should invalidate the cache instead
-  }
-
-  const handleError = (errorMessage: string) => {
-    // Error handling is now managed by React Query
-    console.error('[DASHBOARD] Property error:', errorMessage)
-  }
+  // Removed unused handlers - dashboard layout manages its own state
 
   const renderContent = () => {
     // Debug: Log current state for troubleshooting
@@ -281,100 +269,77 @@ function DashboardPageContent() {
       )
     }
 
-    const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
-
     return (
-      <PropertyView
-        properties={properties}
-        onPropertiesChange={handlePropertiesChange}
-        onError={handleError}
+      <ResizableDashboardLayout
         portfolioId={currentPortfolioId}
-        portfolioName={currentPortfolio?.name}
-        onAddProperties={(method) => {
-          setModalInitialMethod(method)
-          setShowAddPropertiesModal(true)
-        }}
       />
     )
   }
 
   return (
-    <SidebarProvider>
-      <PropertiesSidebar />
-      <SidebarInset>
-        <PropertiesSiteHeader />
+    <div className="flex flex-col h-screen">
+      <DashboardHeader />
 
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {/* Main Content Area */}
-          {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
-            <div className="flex-1 flex flex-col">
-              {renderContent()}
-            </div>
-          ) : (
-            <div className="flex-1">
-              {renderContent()}
-            </div>
-          )}
-        </div>
+      <div className="flex-1 overflow-hidden">
+        {/* Main Content Area - Full height for dashboard */}
+        {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
+          <div className="h-full flex flex-col p-4">
+            {renderContent()}
+          </div>
+        ) : (
+          <div className="h-full">
+            {renderContent()}
+          </div>
+        )}
+      </div>
 
-        <AddPropertiesModal
-          open={showAddPropertiesModal}
-          onOpenChange={(open) => {
-            setShowAddPropertiesModal(open)
-            // Reset the initial method when modal is closed
-            if (!open) {
-              setModalInitialMethod(undefined)
-            }
-          }}
-          portfolioId={currentPortfolioId}
-          initialMethod={modalInitialMethod}
-          onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
-        />
-        <CreatePortfolioModal
-          open={showCreatePortfolioModal}
-          onOpenChange={setShowCreatePortfolioModal}
-        />
+      <AddPropertiesModal
+        open={showAddPropertiesModal}
+        onOpenChange={(open) => {
+          setShowAddPropertiesModal(open)
+          // Reset the initial method when modal is closed
+          if (!open) {
+            setModalInitialMethod(undefined)
+          }
+        }}
+        portfolioId={currentPortfolioId}
+        initialMethod={modalInitialMethod}
+        onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
+      />
+      <CreatePortfolioModal
+        open={showCreatePortfolioModal}
+        onOpenChange={setShowCreatePortfolioModal}
+      />
 
-        {/* Floating Debug Panels */}
-        <PortfolioStatusDebugPanel />
-        <PropertyFlowDebugPanel />
-      </SidebarInset>
-    </SidebarProvider>
+      {/* Floating Debug Panels */}
+      <PortfolioStatusDebugPanel />
+      <PropertyFlowDebugPanel />
+    </div>
   )
 }
 
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <SidebarProvider>
-        <div className="flex h-screen w-full">
-          {/* Sidebar Skeleton */}
-          <div className="w-64 border-r bg-background p-4">
-            <div className="h-10 bg-muted rounded animate-pulse mb-6" />
-            <div className="space-y-2">
-              <div className="h-8 bg-muted rounded animate-pulse" />
-              <div className="h-8 bg-muted rounded animate-pulse" />
-              <div className="h-8 bg-muted rounded animate-pulse" />
-            </div>
+      <div className="flex flex-col h-screen">
+        {/* Header Skeleton */}
+        <div className="h-14 border-b bg-background px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 bg-muted rounded animate-pulse" />
+            <div className="h-5 w-24 bg-muted rounded animate-pulse" />
           </div>
+          <div className="h-10 w-64 bg-muted rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
+        </div>
 
-          {/* Main Content Skeleton */}
-          <div className="flex-1 flex flex-col">
-            {/* Header Skeleton */}
-            <div className="h-12 border-b bg-background/95 backdrop-blur px-4 flex items-center">
-              <div className="h-6 w-32 bg-muted rounded animate-pulse" />
-            </div>
-
-            {/* Content Skeleton */}
-            <div className="flex-1 flex flex-col justify-center p-4">
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading dashboard...</p>
-              </div>
-            </div>
+        {/* Content Skeleton */}
+        <div className="flex-1 flex flex-col justify-center p-4">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading dashboard...</p>
           </div>
         </div>
-      </SidebarProvider>
+      </div>
     }>
       <DashboardPageContent />
     </Suspense>
