@@ -1,8 +1,6 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { X, Minimize2, Maximize2 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -93,17 +91,9 @@ export function PropertyOverviewPanel({
   ]
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
+    <Card className="h-full flex flex-col py-3 gap-3">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-sm font-medium">Property Overview</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={onToggleVisibility}
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </CardHeader>
       <CardContent className="space-y-3 overflow-y-auto flex-1">
         {infoItems.map((item, index) => (

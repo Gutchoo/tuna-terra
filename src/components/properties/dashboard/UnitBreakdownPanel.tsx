@@ -1,11 +1,8 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, Minimize2, Maximize2 } from 'lucide-react'
 import type { PropertyUnit } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
 
 interface UnitBreakdownPanelProps {
   propertyId: string | null
@@ -83,17 +80,9 @@ export function UnitBreakdownPanel({
   const occupancyRate = totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
+    <Card className="h-full flex flex-col py-3 gap-3">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-sm font-medium">Unit Breakdown</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={onToggleVisibility}
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </CardHeader>
       <CardContent className="overflow-y-auto flex-1">
         {units.length === 0 ? (
