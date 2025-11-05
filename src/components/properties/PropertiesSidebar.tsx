@@ -230,7 +230,14 @@ export function PropertiesSidebar({ ...props }: React.ComponentProps<typeof Side
                 return (
                   <SidebarMenuItem key={section.id}>
                     <SidebarMenuButton
-                      onClick={() => router.push(section.href)}
+                      onClick={() => {
+                        // Preserve portfolio context for dashboard routes
+                        if (section.href.startsWith('/dashboard')) {
+                          router.push(`${section.href}${currentPortfolioId ? `?portfolio_id=${currentPortfolioId}` : ''}`)
+                        } else {
+                          router.push(section.href)
+                        }
+                      }}
                       tooltip={section.description}
                     >
                       <Icon className="size-4" />

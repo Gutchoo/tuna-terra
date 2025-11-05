@@ -3,7 +3,6 @@ import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
 import { checkAndIncrementUsageServer, createLimitExceededResponse } from '@/lib/limits'
 import { applyRateLimit, DEFAULT_CONFIGS } from '@/lib/rateLimiter'
-import { sanitizePropertiesForClient } from '@/lib/api/sanitizers'
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,13 +59,8 @@ export async function GET(request: NextRequest) {
     // Note: Usage has already been incremented above to prevent bypass vulnerabilities
     // This ensures credits are consumed when expensive Regrid API calls are made
 
-    // Sanitize results if they are Property objects
-    const sanitizedResults = Array.isArray(results) && results.length > 0 && 'property_data' in results[0]
-      ? sanitizePropertiesForClient(results as import('@/lib/supabase').Property[])
-      : results
-
     return NextResponse.json({
-      results: sanitizedResults,
+      results, // Return raw Regrid data
       usage: limitCheck.canProceed ? {
         used: limitCheck.currentUsed,
         limit: limitCheck.limit,
@@ -123,13 +117,8 @@ export async function POST(request: NextRequest) {
     // Note: Usage has already been incremented above to prevent bypass vulnerabilities
     // This ensures credits are consumed when expensive Regrid API calls are made
 
-    // Sanitize results if they are Property objects
-    const sanitizedBatchResults = Array.isArray(results) && results.length > 0 && 'property_data' in results[0]
-      ? sanitizePropertiesForClient(results as import('@/lib/supabase').Property[])
-      : results
-
     return NextResponse.json({
-      results: sanitizedBatchResults,
+      results, // Return raw Regrid data
       usage: {
         used: limitCheck.currentUsed,
         limit: limitCheck.limit,

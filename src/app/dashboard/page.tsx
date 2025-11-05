@@ -170,7 +170,8 @@ function DashboardPageContent() {
     // 3. The portfolio exists in user's portfolios
     // 4. It's not the virtual sample portfolio
     // 5. The portfolio is not already marked as default/last-used (prevent redundant calls)
-    if (currentPortfolioId && !portfoliosLoading && portfolios && portfolios.length > 0) {
+    // 6. The mutation is not already in progress (prevent duplicate API calls)
+    if (currentPortfolioId && !portfoliosLoading && portfolios && portfolios.length > 0 && !updateLastUsedPortfolio.isPending) {
       const currentPortfolioData = portfolios.find(p => p.id === currentPortfolioId)
 
       if (currentPortfolioData &&
@@ -181,7 +182,7 @@ function DashboardPageContent() {
         console.log('[DASHBOARD] Setting new last-used portfolio:', currentPortfolioId)
       }
     }
-  }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio])
+  }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio.isPending])
 
   const handlePropertiesChange = () => {
     console.log('[DASHBOARD] handlePropertiesChange called - invalidating properties cache')
