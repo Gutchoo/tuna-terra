@@ -50,6 +50,7 @@
     "papaparse": "^5.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-dropzone": "^14.3.8",
     "react-google-autocomplete": "^2.7.5",
     "react-hook-form": "^7.62.0",
     "react-intersection-observer": "^9.16.0",

@@ -64,6 +64,7 @@ export type Property = {
   tax_year: string | null // Tax assessment year
   parcel_value_type: string | null // Type of parcel value
   purchase_price: number | null // User-entered purchase price for financial modeling
+  purchase_date: string | null // User-entered purchase date for tracking acquisition (ISO date string)
 
   // Location data
   census_tract: string | null // Census tract identifier
@@ -85,6 +86,14 @@ export type Property = {
   tags: string[] | null
   insurance_provider: string | null
   maintenance_history: string | null
+
+  // Management & Financing (User-editable)
+  management_company: string | null // Property management company
+  mortgage_amount: number | null // Current mortgage/debt amount
+  lender_name: string | null // Lending institution name
+  loan_rate: number | null // Interest rate percentage
+  loan_maturity_date: string | null // Loan maturity date (ISO date)
+
   is_sample: boolean // Whether this is a sample property for demonstration
   portfolio_id: string | null // Portfolio this property belongs to
   created_at: string
@@ -427,6 +436,37 @@ export type DocumentType =
   | 'property_photo'
   | 'floor_plan'
   | 'other'
+
+// Document-related request/response types
+export interface DocumentUploadRequest {
+  file: File
+  title?: string
+  document_type: DocumentType
+  description?: string
+  document_date?: string
+  tags?: string[]
+}
+
+export interface DocumentMetadataUpdate {
+  title?: string
+  description?: string
+  document_type?: DocumentType
+  tags?: string[]
+  document_date?: string
+  expiration_date?: string
+}
+
+export interface DocumentWithSignedUrl extends PropertyDocument {
+  signedUrl: string
+  expiresAt: number
+}
+
+export interface DocumentListResponse {
+  documents: PropertyDocument[]
+  total: number
+  page: number
+  limit: number
+}
 
 // Recurrence Frequency
 export type RecurrenceFrequency =

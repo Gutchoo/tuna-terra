@@ -10,13 +10,11 @@ import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { PropertyFlowDebugPanel } from '@/components/debug/PropertyFlowDebugPanel'
 import { PortfolioStatusDebugPanel } from '@/components/debug/PortfolioStatusDebugPanel'
-import { PropertiesSidebar } from '@/components/properties/PropertiesSidebar'
-import { PropertiesSiteHeader } from '@/components/properties/PropertiesSiteHeader'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { toast } from 'sonner'
 import { useDefaultPortfolio, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
 import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
+import { useQueryClient } from '@tanstack/react-query'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -66,7 +64,8 @@ function DashboardPageContent() {
   // Use optimized hooks for data fetching
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
   const updateLastUsedPortfolio = useUpdateLastUsedPortfolio()
-  
+  const queryClient = useQueryClient()
+
   // Debug: Log what we're passing to useProperties
   console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
   
@@ -92,16 +91,12 @@ function DashboardPageContent() {
       if (portfolio) {
         console.log('[DASHBOARD] Portfolio created successfully:', portfolio.name)
         hasShownToastRef.current = true
-        
-        toast.success('Portfolio created successfully!', {
-          description: `"${portfolio.name}" is ready for your properties`
-        })
-        
+
         // Clean up URL without triggering navigation
         const newUrl = new URL(window.location.href)
         newUrl.searchParams.delete('created')
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
-        
+
         // Reset states for valid portfolio
         setIsRedirecting(false)
         return
@@ -189,8 +184,9 @@ function DashboardPageContent() {
   }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio])
 
   const handlePropertiesChange = () => {
-    // Properties are now managed by React Query
-    // Individual property operations should invalidate the cache instead
+    console.log('[DASHBOARD] handlePropertiesChange called - invalidating properties cache')
+    // Invalidate React Query cache to refetch fresh data
+    queryClient.invalidateQueries({ queryKey: ['properties'] })
   }
 
   const handleError = (errorMessage: string) => {
@@ -299,82 +295,52 @@ function DashboardPageContent() {
   }
 
   return (
-    <SidebarProvider>
-      <PropertiesSidebar />
-      <SidebarInset>
-        <PropertiesSiteHeader />
-
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {/* Main Content Area */}
-          {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
-            <div className="flex-1 flex flex-col">
-              {renderContent()}
-            </div>
-          ) : (
-            <div className="flex-1">
-              {renderContent()}
-            </div>
-          )}
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8">
+      {/* Main Content Area */}
+      {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
+        <div className="flex-1 flex flex-col">
+          {renderContent()}
         </div>
+      ) : (
+        <div className="flex-1">
+          {renderContent()}
+        </div>
+      )}
 
-        <AddPropertiesModal
-          open={showAddPropertiesModal}
-          onOpenChange={(open) => {
-            setShowAddPropertiesModal(open)
-            // Reset the initial method when modal is closed
-            if (!open) {
-              setModalInitialMethod(undefined)
-            }
-          }}
-          portfolioId={currentPortfolioId}
-          initialMethod={modalInitialMethod}
-          onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
-        />
-        <CreatePortfolioModal
-          open={showCreatePortfolioModal}
-          onOpenChange={setShowCreatePortfolioModal}
-        />
+      <AddPropertiesModal
+        open={showAddPropertiesModal}
+        onOpenChange={(open) => {
+          setShowAddPropertiesModal(open)
+          // Reset the initial method when modal is closed
+          if (!open) {
+            setModalInitialMethod(undefined)
+          }
+        }}
+        portfolioId={currentPortfolioId}
+        initialMethod={modalInitialMethod}
+        onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
+      />
+      <CreatePortfolioModal
+        open={showCreatePortfolioModal}
+        onOpenChange={setShowCreatePortfolioModal}
+      />
 
-        {/* Floating Debug Panels */}
-        <PortfolioStatusDebugPanel />
-        <PropertyFlowDebugPanel />
-      </SidebarInset>
-    </SidebarProvider>
+      {/* Floating Debug Panels */}
+      <PortfolioStatusDebugPanel />
+      <PropertyFlowDebugPanel />
+    </div>
   )
 }
 
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <SidebarProvider>
-        <div className="flex h-screen w-full">
-          {/* Sidebar Skeleton */}
-          <div className="w-64 border-r bg-background p-4">
-            <div className="h-10 bg-muted rounded animate-pulse mb-6" />
-            <div className="space-y-2">
-              <div className="h-8 bg-muted rounded animate-pulse" />
-              <div className="h-8 bg-muted rounded animate-pulse" />
-              <div className="h-8 bg-muted rounded animate-pulse" />
-            </div>
-          </div>
-
-          {/* Main Content Skeleton */}
-          <div className="flex-1 flex flex-col">
-            {/* Header Skeleton */}
-            <div className="h-12 border-b bg-background/95 backdrop-blur px-4 flex items-center">
-              <div className="h-6 w-32 bg-muted rounded animate-pulse" />
-            </div>
-
-            {/* Content Skeleton */}
-            <div className="flex-1 flex flex-col justify-center p-4">
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading dashboard...</p>
-              </div>
-            </div>
-          </div>
+      <div className="flex-1 flex flex-col justify-center p-4">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
-      </SidebarProvider>
+      </div>
     }>
       <DashboardPageContent />
     </Suspense>

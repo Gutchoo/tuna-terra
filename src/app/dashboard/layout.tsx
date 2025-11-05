@@ -1,9 +1,14 @@
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Dashboard pages now use SidebarProvider which provides its own layout
-  // This layout just passes through the children
-  return <>{children}</>
+  return (
+    <div className="min-h-screen flex flex-col">
+      <DashboardHeader />
+      <div className="flex-1">{children}</div>
+    </div>
+  )
 }

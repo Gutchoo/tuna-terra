@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { DatabaseService } from '@/lib/db'
-import { uploadFile, validateFile } from '@/lib/storage'
+import { validateDocumentFile } from '@/lib/documents'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -144,7 +144,7 @@ export async function POST(
     }
 
     // Validate file
-    const validation = validateFile(file)
+    const validation = validateDocumentFile(file)
     if (!validation.valid) {
       return NextResponse.json(
         { error: validation.error },
@@ -157,12 +157,23 @@ export async function POST(
     const documentId = crypto.randomUUID()
     const filePath = `${portfolio_id}/${propertyId}/${unitPath}/${documentId}/${file.name}`
 
-    // Upload file to Supabase Storage
-    const uploadResult = await uploadFile(file, filePath)
+    // Convert File to ArrayBuffer for server-side upload
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
 
-    if (!uploadResult.success) {
+    // Upload file to Supabase Storage using server-side client
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('property-documents')
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError)
       return NextResponse.json(
-        { error: uploadResult.error || 'Failed to upload file' },
+        { error: uploadError.message || 'Failed to upload file' },
         { status: 500 }
       )
     }

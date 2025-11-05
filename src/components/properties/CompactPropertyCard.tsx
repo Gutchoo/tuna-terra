@@ -11,12 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   MoreVerticalIcon,
-  RefreshCwIcon,
   TrashIcon,
   MapPinIcon,
-  DollarSignIcon,
   UserIcon,
-  LayoutDashboardIcon,
+  HashIcon,
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
@@ -61,26 +59,13 @@ export function CompactPropertyCard({
       className="group relative overflow-hidden rounded-lg border bg-card hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer"
       onClick={handleCardClick}
     >
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="pt-2 pb-2 pr-2 pl-3 space-y-2">
         {/* Header with title and action menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            {hasAddress ? (
-              <>
-                <h3 className="text-base font-semibold truncate group-hover:text-primary transition-colors">
-                  {property.address}
-                </h3>
-                {property.apn && (
-                  <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                    {property.apn}
-                  </p>
-                )}
-              </>
-            ) : (
-              <h3 className="text-base font-semibold truncate group-hover:text-primary transition-colors">
-                {property.apn || 'Unknown Property'}
-              </h3>
-            )}
+            <h3 className="text-base font-semibold truncate group-hover:text-primary transition-colors">
+              {hasAddress ? property.address : (property.apn || 'Unknown Property')}
+            </h3>
           </div>
 
           {/* Action Menu */}
@@ -98,17 +83,6 @@ export function CompactPropertyCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" onClick={handleMenuClick}>
                 <DropdownMenuItem
-                  onClick={() => onPropertyClick(property.id)}
-                  className="focus:bg-blue-50"
-                >
-                  <LayoutDashboardIcon className="mr-2 h-4 w-4" />
-                  View Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled className="opacity-50 cursor-not-allowed">
-                  <RefreshCwIcon className="mr-2 h-4 w-4" />
-                  Refresh Data
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={() => onDelete(property)}
                   className="text-red-600 focus:text-red-600 focus:bg-red-50"
                   disabled={isVirtualSampleProperty(property.id)}
@@ -120,6 +94,16 @@ export function CompactPropertyCard({
             </DropdownMenu>
           )}
         </div>
+
+        {/* APN */}
+        {property.apn && (
+          <div className="flex items-center gap-2 text-sm">
+            <HashIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="font-mono truncate">
+              {property.apn}
+            </span>
+          </div>
+        )}
 
         {/* Location */}
         {(property.city || property.state || property.zip_code) && (
@@ -140,21 +124,6 @@ export function CompactPropertyCard({
             <span className="truncate" title={property.owner}>
               {property.owner}
             </span>
-          </div>
-        )}
-
-        {/* Assessed Value */}
-        <div className="flex items-center gap-2 text-sm">
-          <DollarSignIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span className="font-medium">
-            {formatCurrency(property.assessed_value)}
-          </span>
-        </div>
-
-        {/* Badges */}
-        {property.qoz_status === 'Yes' && (
-          <div className="pt-1">
-            <Badge variant="secondary" className="text-xs">QOZ</Badge>
           </div>
         )}
       </CardContent>

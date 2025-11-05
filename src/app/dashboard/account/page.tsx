@@ -339,7 +339,7 @@ function AccountPageContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Account Settings</h1>
         </div>
@@ -362,15 +362,17 @@ function AccountPageContent() {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Please sign in to access your account settings.</p>
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Please sign in to access your account settings.</p>
+        </div>
       </div>
     )
   }
 
   return (
     <TooltipProvider>
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Account Settings</h1>

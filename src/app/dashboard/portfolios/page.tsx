@@ -187,7 +187,7 @@ export default function PortfoliosPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Portfolios</h1>
@@ -271,31 +271,15 @@ export default function PortfoliosPage() {
 
   // Filter portfolios that user owns for selection (use filtered list, exclude sample portfolios)
   const ownedPortfolios = filteredPortfolios.filter(p => p.membership_role === 'owner' && !isVirtualSamplePortfolio(p.id))
-  const allOwnedSelected = ownedPortfolios.length > 0 && 
-    ownedPortfolios.every(p => selectedPortfolios.has(p.id))
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Portfolios</h1>
-            <p className="text-muted-foreground">
-              Manage your property portfolios and sharing settings
-            </p>
-          </div>
-          {ownedPortfolios.length > 0 && (
-            <div className="flex items-center gap-2 ml-8">
-              <Checkbox
-                checked={allOwnedSelected}
-                onCheckedChange={handleSelectAll}
-                aria-label="Select all portfolios"
-              />
-              <span className="text-sm text-muted-foreground">
-                Select all ({ownedPortfolios.length})
-              </span>
-            </div>
-          )}
+        <div>
+          <h1 className="text-3xl font-bold">Portfolios</h1>
+          <p className="text-muted-foreground">
+            Manage your property portfolios and sharing settings
+          </p>
         </div>
         <Button onClick={handleCreatePortfolio} className="flex items-center gap-2">
           <PlusIcon className="h-4 w-4" />
@@ -310,12 +294,14 @@ export default function PortfoliosPage() {
       )}
 
       {/* Search Bar */}
-      <SearchBar
-        onSearchChange={handleSearchChange}
-        placeholder="Search portfolios by name, description, or role..."
-        resultsCount={filteredPortfolios.length}
-        totalCount={portfolios.length}
-      />
+      <div className="max-w-md">
+        <SearchBar
+          onSearchChange={handleSearchChange}
+          placeholder="Search portfolios by name, description, or role..."
+          resultsCount={filteredPortfolios.length}
+          totalCount={portfolios.length}
+        />
+      </div>
 
       {/* Empty state for no search results */}
       {filteredPortfolios.length === 0 && searchQuery.trim() && (

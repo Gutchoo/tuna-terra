@@ -28,7 +28,7 @@ import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 import { exportPropertiesToCSV } from '@/lib/csv-export'
 import { PropertyDashboardView } from '../property-dashboard/PropertyDashboardView'
-import { PropertyDrawer } from './PropertyDrawer'
+import { PropertyModal } from './PropertyModal'
 
 type ViewMode = 'cards' | 'table' | 'map' | 'dashboard'
 
@@ -349,6 +349,32 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     }
   }
 
+  // Handle property update from modal
+  const handlePropertyUpdate = async (propertyId: string, updates: Partial<Property>) => {
+    console.log('[PropertyView] handlePropertyUpdate called', { propertyId, updates })
+
+    // Call the API to update the property
+    const response = await fetch(`/api/properties/${propertyId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update property')
+    }
+
+    const { property: updatedProperty } = await response.json()
+    console.log('[PropertyView] API returned updated property:', updatedProperty)
+
+    // Update the properties array with the updated property
+    const updatedProperties = properties.map(p =>
+      p.id === propertyId ? { ...p, ...updatedProperty } : p
+    )
+    console.log('[PropertyView] Calling onPropertiesChange with updated properties')
+    onPropertiesChange(updatedProperties)
+  }
+
   // Handle back from dashboard
   const handleBackFromDashboard = () => {
     setDashboardPropertyId(null)
@@ -551,13 +577,14 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Property Drawer */}
-      <PropertyDrawer
+      {/* Property Modal */}
+      <PropertyModal
         open={drawerOpen}
         onOpenChange={handleDrawerClose}
         propertyId={drawerPropertyId}
         portfolioId={portfolioId}
         property={drawerProperty}
+        onPropertyUpdate={handlePropertyUpdate}
       />
       </div>
     </div>

@@ -77,7 +77,16 @@ export async function PATCH(
       'apn',
       'year_built',
       'zoning',
-      'purchase_price'
+      'purchase_price',
+      'purchase_date',
+      'sale_date',
+      'last_sale_price',
+      'insurance_provider',
+      'management_company',
+      'mortgage_amount',
+      'lender_name',
+      'loan_rate',
+      'loan_maturity_date'
     ]
 
     // Filter body to only include allowed fields
