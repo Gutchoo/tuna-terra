@@ -1,7 +1,27 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Property } from './supabase'
-import type { CensusData } from './census'
+
+// DEPRECATED: CensusData type definition preserved for deprecated census methods
+// Original definition was in ./census.ts (removed)
+type CensusData = {
+  geoid: string
+  year: number
+  median_income: number | null
+  mean_income: number | null
+  households: number | null
+  population: number | null
+  unemployment_rate: number | null
+  median_age: number | null
+  age_brackets: Record<string, number> | null
+  total_housing_units: number | null
+  owner_occupied_units: number | null
+  renter_occupied_units: number | null
+  median_rent: number | null
+  avg_household_size_owner: number | null
+  avg_household_size_renter: number | null
+  education_details: Record<string, number> | null
+}
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -202,8 +222,12 @@ export class DatabaseService {
   }
 
   // === Census Data Methods ===
+  // DEPRECATED: Census API integration has been removed
+  // These methods are preserved for potential future restoration
+  // Database tables (census_data, places, states) remain intact but unused
 
   /**
+   * @deprecated Census API integration removed - method preserved for potential restoration
    * Find a place by city and state for Census data lookup
    */
   static async findPlaceByCity(city: string, state: string) {
@@ -229,6 +253,7 @@ export class DatabaseService {
   }
 
   /**
+   * @deprecated Census API integration removed - method preserved for potential restoration
    * Get cached Census data for a place and year
    */
   static async getCachedCensusData(geoid: string, year: number): Promise<CensusData | null> {
@@ -250,6 +275,7 @@ export class DatabaseService {
   }
 
   /**
+   * @deprecated Census API integration removed - method preserved for potential restoration
    * Store Census data in the database (upsert)
    */
   static async storeCensusData(censusData: CensusData) {
@@ -288,6 +314,7 @@ export class DatabaseService {
   }
 
   /**
+   * @deprecated Census API integration removed - method preserved for potential restoration
    * Get property with associated demographic data
    */
   static async getPropertyWithDemographics(propertyId: string, userId: string) {

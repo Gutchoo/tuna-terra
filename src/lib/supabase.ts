@@ -20,9 +20,6 @@ export const createServerSupabaseClient = () => {
   throw new Error('createServerSupabaseClient from lib/supabase is deprecated. Use local createServerClient implementations in API routes instead.')
 }
 
-// Import census types
-import type { CensusDemographics } from '@/hooks/useCensusData'
-
 // Database types
 export type Property = {
   id: string
@@ -65,6 +62,7 @@ export type Property = {
   parcel_value_type: string | null // Type of parcel value
   purchase_price: number | null // User-entered purchase price for financial modeling
   purchase_date: string | null // User-entered purchase date for tracking acquisition (ISO date string)
+  sale_price: number | null // User-entered sale price (different from last_sale_price which is Regrid legacy data)
 
   // Location data
   census_tract: string | null // Census tract identifier
@@ -100,9 +98,10 @@ export type Property = {
   updated_at: string
 }
 
-// Enhanced property type with demographics data (client-side only)
+// DEPRECATED: Enhanced property type with demographics data (client-side only)
+// Census API integration removed - kept for backward compatibility
 export interface PropertyWithDemographics extends Property {
-  demographics?: CensusDemographics | null
+  demographics?: Record<string, any> | null
 }
 
 // Portfolio-related types

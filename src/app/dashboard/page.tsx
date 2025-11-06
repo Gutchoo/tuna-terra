@@ -27,7 +27,6 @@ function DashboardPageContent() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   const [showCreatePortfolioModal, setShowCreatePortfolioModal] = useState(false)
-  const [modalInitialMethod, setModalInitialMethod] = useState<'csv' | 'apn' | 'address' | undefined>(undefined)
   
   // Use refs to prevent unnecessary effect re-runs and track state
   const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
@@ -36,11 +35,8 @@ function DashboardPageContent() {
   
   // Debug event listeners for modal control
   useEffect(() => {
-    const handleDebugOpenModal = (e: Event) => {
-      const customEvent = e as CustomEvent
-      const method = customEvent.detail?.method as 'csv' | 'apn' | 'address' | undefined
+    const handleDebugOpenModal = () => {
       setShowAddPropertiesModal(true)
-      setModalInitialMethod(method)
     }
 
     const handleDebugCloseModal = () => {
@@ -267,11 +263,10 @@ function DashboardPageContent() {
     if (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) {
       const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
       return (
-        <EmptyPropertiesState 
+        <EmptyPropertiesState
           portfolioId={currentPortfolioId}
           portfolioName={currentPortfolio?.name}
-          onAddProperties={(method) => {
-            setModalInitialMethod(method)
+          onAddProperties={() => {
             setShowAddPropertiesModal(true)
           }}
         />
@@ -287,8 +282,7 @@ function DashboardPageContent() {
         onError={handleError}
         portfolioId={currentPortfolioId}
         portfolioName={currentPortfolio?.name}
-        onAddProperties={(method) => {
-          setModalInitialMethod(method)
+        onAddProperties={() => {
           setShowAddPropertiesModal(true)
         }}
       />
@@ -310,15 +304,8 @@ function DashboardPageContent() {
 
       <AddPropertiesModal
         open={showAddPropertiesModal}
-        onOpenChange={(open) => {
-          setShowAddPropertiesModal(open)
-          // Reset the initial method when modal is closed
-          if (!open) {
-            setModalInitialMethod(undefined)
-          }
-        }}
+        onOpenChange={setShowAddPropertiesModal}
         portfolioId={currentPortfolioId}
-        initialMethod={modalInitialMethod}
         onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
       />
       <CreatePortfolioModal

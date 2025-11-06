@@ -98,6 +98,16 @@ function createDemoProperty(baseData: unknown): Property {
     maintenance_history: null,
     is_sample: false,
     portfolio_id: 'demo-portfolio',
+
+    // Property management fields
+    purchase_price: null,
+    purchase_date: null,
+    management_company: null,
+    mortgage_amount: null,
+    lender_name: null,
+    loan_rate: null,
+    loan_maturity_date: null,
+
     created_at: now,
     updated_at: now
   }

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { DatabaseService } from '@/lib/db'
-import { RegridService, type RegridProperty } from '@/lib/regrid'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import type { Property } from '@/lib/supabase'
-import { checkUserLimitsServer, createLimitExceededResponse, checkAndIncrementUsageServer } from '@/lib/limits'
 import { sanitizePropertyForClient, sanitizePropertiesForClient } from '@/lib/api/sanitizers'
 
 // Utility function to clean APN by removing all dashes
@@ -16,19 +14,16 @@ function cleanAPN(apn: string | null | undefined): string | null {
 }
 
 const createPropertySchema = z.object({
-  regrid_id: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : undefined),
   apn: z.string().optional(),
   address: z.string().min(1),
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  portfolio_id: z.string().uuid().optional(), // Add portfolio_id support
+  portfolio_id: z.string().uuid().optional(),
   user_notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
   insurance_provider: z.string().optional(),
   maintenance_history: z.string().optional(),
-  use_pro_lookup: z.boolean().optional().default(true), // Add pro lookup flag
-  selectedPropertyData: z.any().optional(), // Full property data from disambiguation selection
 })
 
 const bulkCreateSchema = z.object({
@@ -48,7 +43,7 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state')
     const tags = searchParams.get('tags')?.split(',').filter(Boolean)
     const search = searchParams.get('search')
-    const portfolioId = searchParams.get('portfolio_id') // Add portfolio filtering
+    const portfolioId = searchParams.get('portfolio_id')
 
     const filters = {
       city: city || undefined,
@@ -72,9 +67,7 @@ export async function GET(request: NextRequest) {
       }
     )
 
-
     // Use RLS policies to get properties user can access
-    // The policies handle both owned and shared portfolios automatically
     let query = supabase
       .from('properties')
       .select('*')
@@ -92,8 +85,6 @@ export async function GET(request: NextRequest) {
       query = query.ilike('state', `%${filters.state}%`)
     }
     if (filters.search) {
-      // Use full-text search to prevent SQL injection
-      // Searches across address, city, apn, and owner fields using the fts tsvector column
       query = query.textSearch('fts', filters.search, {
         type: 'websearch',
         config: 'english'
@@ -114,7 +105,6 @@ export async function GET(request: NextRequest) {
       console.error('Error fetching properties:', error)
       return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 })
     }
-
 
     return NextResponse.json({ properties: sanitizePropertiesForClient(properties || []) })
   } catch (error) {
@@ -143,15 +133,13 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Create property error:', error)
-    
-    // Provide more specific error messages
+
     let errorMessage = 'Failed to create property'
     let statusCode = 500
-    
+
     if (error instanceof Error) {
       errorMessage = error.message
-      
-      // Check for specific error types
+
       if (error.message.includes('validation')) {
         statusCode = 400
       } else if (error.message.includes('Unauthorized')) {
@@ -161,7 +149,7 @@ export async function POST(request: NextRequest) {
         errorMessage = 'Authentication issue - please sign out and back in'
       }
     }
-    
+
     return NextResponse.json(
       { error: errorMessage },
       { status: statusCode }
@@ -171,13 +159,13 @@ export async function POST(request: NextRequest) {
 
 async function handleSingleCreate(userId: string, body: unknown) {
   console.log('handleSingleCreate - received body:', JSON.stringify(body, null, 2))
-  
+
   const validatedData = createPropertySchema.parse(body)
   console.log('handleSingleCreate - validated data:', JSON.stringify(validatedData, null, 2))
 
   // Determine the target portfolio
   let targetPortfolioId = validatedData.portfolio_id
-  
+
   if (!targetPortfolioId) {
     // If no portfolio specified, get user's default portfolio
     console.log('handleSingleCreate - no portfolio specified, finding default portfolio')
@@ -193,22 +181,21 @@ async function handleSingleCreate(userId: string, body: unknown) {
         },
       }
     )
-    
+
     const { data: defaultPortfolio } = await supabase
       .from('portfolios')
       .select('id')
       .eq('owner_id', userId)
       .eq('is_default', true)
       .single()
-    
+
     if (defaultPortfolio) {
       targetPortfolioId = defaultPortfolio.id
       console.log('handleSingleCreate - using default portfolio:', targetPortfolioId)
     } else {
       // Create default portfolio automatically
       console.log('handleSingleCreate - no default portfolio found, creating one')
-      
-      // Get user email for portfolio name
+
       const { data: { user } } = await supabase.auth.getUser()
       const userEmail = user?.email || 'User'
 
@@ -246,7 +233,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
         },
       }
     )
-    
+
     // Check if user owns the portfolio
     const { data: ownedPortfolio } = await supabase
       .from('portfolios')
@@ -255,7 +242,7 @@ async function handleSingleCreate(userId: string, body: unknown) {
       .eq('owner_id', userId)
       .single()
 
-    // Check if user is a member of the portfolio  
+    // Check if user is a member of the portfolio
     const { data: membershipData } = await supabase
       .from('portfolio_memberships')
       .select('role, accepted_at')
@@ -263,188 +250,67 @@ async function handleSingleCreate(userId: string, body: unknown) {
       .eq('user_id', userId)
       .not('accepted_at', 'is', null)
       .single()
-    
+
     if (!ownedPortfolio && !membershipData) {
       throw new Error('Portfolio not found or access denied')
     }
-    
+
     const userRole = ownedPortfolio ? 'owner' : membershipData?.role
-    
+
     if (!userRole || !['owner', 'editor'].includes(userRole)) {
       throw new Error('Insufficient permissions to add properties to this portfolio')
     }
   }
 
-  let regridData: RegridProperty | null = null
-
-  // If user has already selected a property from disambiguation, use that data
-  if (validatedData.selectedPropertyData) {
-    console.log('handleSingleCreate - using pre-selected property data from disambiguation')
-    regridData = validatedData.selectedPropertyData as RegridProperty
-  }
-  // Only fetch Regrid data if Pro Lookup is enabled and increment usage atomically
-  else if (validatedData.use_pro_lookup) {
-    // Check and increment usage before making API calls to prevent bypass
-    const limitResult = await checkAndIncrementUsageServer(userId, 1)
-    if (!limitResult.canProceed) {
-      return NextResponse.json(
-        createLimitExceededResponse(limitResult),
-        { status: 429 }
-      )
-    }
-
-    try {
-      if (validatedData.apn) {
-        console.log('handleSingleCreate - fetching by APN (Pro mode):', validatedData.apn)
-
-        // Get all results to check for multiple matches
-        const allResults = await RegridService.searchByAPNWithAllResults(validatedData.apn, validatedData.state)
-
-        if (allResults.length > 1) {
-          console.log(`handleSingleCreate - found ${allResults.length} properties, returning for disambiguation`)
-          // Return multiple results for disambiguation
-          return NextResponse.json({
-            multipleResults: true,
-            properties: allResults.map(prop => ({
-              id: prop.id,
-              apn: prop.apn,
-              address: prop.address.line1,
-              city: prop.address.city,
-              state: prop.address.state,
-              zip: prop.address.zip,
-              assessed_value: prop.properties.assessed_value,
-              owner: prop.properties.owner,
-              // Include full data for later use
-              _fullData: prop
-            }))
-          })
-        } else if (allResults.length === 1) {
-          // Single result, proceed normally
-          regridData = allResults[0]
-        }
-      } else if (validatedData.address) {
-        console.log('handleSingleCreate - searching by address (Pro mode)')
-        // Search by address
-        const searchResults = await RegridService.searchByAddress(
-          validatedData.address,
-          validatedData.city,
-          validatedData.state,
-          1
-        )
-        if (searchResults.length > 0 && searchResults[0]._fullFeature) {
-          console.log('handleSingleCreate - found address results, using full feature data')
-          regridData = await RegridService.normalizeProperty(searchResults[0]._fullFeature)
-        }
-      }
-
-      console.log(`handleSingleCreate - Pro lookup successful, usage incremented`)
-    } catch (error) {
-      console.error('handleSingleCreate - Regrid API error:', error)
-      // API call failed but usage was already incremented - this is acceptable
-      // as we want to prevent abuse and the user attempted a legitimate lookup
-    }
-  } else {
-    console.log('handleSingleCreate - Basic mode enabled, skipping Regrid API calls')
-  }
-
-  // Prepare property data for database
-  // Note: user_id will be automatically set by database DEFAULT auth.uid() 
+  // Prepare property data for database (manual entry only)
   console.log('handleSingleCreate - preparing property data')
   const propertyData = {
-    regrid_id: regridData?.id || null,
-    apn: cleanAPN(regridData?.apn || validatedData.apn),
-    address: regridData?.address?.line1 || validatedData.address,
-    city: regridData?.address?.city || validatedData.city || null,
-    state: regridData?.address?.state || validatedData.state || null,
-    zip_code: regridData?.address?.zip || validatedData.zip_code || null,
-    geometry: regridData?.geometry || null,
-    lat: regridData?.centroid?.lat || null,
-    lng: regridData?.centroid?.lng || null,
-    
-    // Enhanced property data from Regrid API
-    year_built: regridData?.properties?.year_built || null,
-    owner: regridData?.properties?.owner || null,
-    last_sale_price: regridData?.properties?.last_sale_price || null,
-    sale_date: regridData?.properties?.sale_date || null,
-    county: regridData?.properties?.county || null,
-    qoz_status: regridData?.properties?.qoz_status || null,
-    improvement_value: regridData?.properties?.improvement_value || null,
-    land_value: regridData?.properties?.land_value || null,
-    assessed_value: regridData?.properties?.assessed_value || null,
-    
-    // Extended property details from Regrid API
-    use_code: regridData?.properties?.use_code || null,
-    use_description: regridData?.properties?.use_description || null,
-    zoning: regridData?.properties?.zoning || null,
-    zoning_description: regridData?.properties?.zoning_description || null,
-    num_stories: regridData?.properties?.num_stories || null,
-    num_units: regridData?.properties?.num_units || null,
-    num_rooms: regridData?.properties?.num_rooms || null,
-    subdivision: regridData?.properties?.subdivision || null,
-    lot_size_acres: regridData?.properties?.lot_acres || null,
-    lot_size_sqft: regridData?.properties?.lot_size_sqft || null,
-    
-    // Financial & tax data
-    tax_year: regridData?.properties?.tax_year || null,
-    parcel_value_type: regridData?.properties?.parcel_value_type || null,
-    
-    // Location data
-    census_tract: regridData?.properties?.census_tract || null,
-    census_block: regridData?.properties?.census_block || null,
-    qoz_tract: regridData?.properties?.qoz_tract || null,
-    
-    // Data freshness tracking
-    last_refresh_date: regridData?.properties?.last_refresh_date || null,
-    regrid_updated_at: regridData?.properties?.regrid_updated_at || null,
-    
-    // Owner mailing address
-    owner_mailing_address: regridData?.properties?.owner_mailing_address || null,
-    owner_mail_city: regridData?.properties?.owner_mail_city || null,
-    owner_mail_state: regridData?.properties?.owner_mail_state || null,
-    owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
-    
-    property_data: regridData || null,
-    portfolio_id: targetPortfolioId || null, // Assign property to portfolio
+    apn: cleanAPN(validatedData.apn),
+    address: validatedData.address,
+    city: validatedData.city || null,
+    state: validatedData.state || null,
+    zip_code: validatedData.zip_code || null,
+    portfolio_id: targetPortfolioId || null,
     user_notes: validatedData.user_notes || null,
     tags: validatedData.tags || null,
     insurance_provider: validatedData.insurance_provider || null,
     maintenance_history: validatedData.maintenance_history || null,
   }
-  
+
   console.log('handleSingleCreate - property data prepared:', JSON.stringify(propertyData, null, 2))
 
   try {
-    // Server-side duplicate check as additional safeguard - only check within the same portfolio
+    // Server-side duplicate check - only check within the same portfolio
     if (propertyData.apn) {
       console.log('handleSingleCreate - checking for duplicate APN within portfolio:', propertyData.apn, 'in portfolio:', targetPortfolioId)
       const existingProperties = await DatabaseService.getFilteredProperties(userId, {
         search: propertyData.apn,
         portfolio_id: targetPortfolioId
       })
-      
+
       const exactMatch = existingProperties.find(
         property => property.apn?.toLowerCase() === propertyData.apn?.toLowerCase()
       )
-      
+
       if (exactMatch) {
         console.log('handleSingleCreate - duplicate APN found within same portfolio, rejecting creation')
         throw new Error('A property with this APN already exists in this portfolio')
       }
     }
-    
+
     console.log('handleSingleCreate - creating property in database')
     const property = await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
     console.log('handleSingleCreate - property created successfully:', property.id)
-    
+
     if (!property) {
       throw new Error('Property creation returned null - possible RLS policy issue')
     }
-    
+
     return NextResponse.json({ property: sanitizePropertyForClient(property) })
   } catch (dbError) {
     console.error('handleSingleCreate - database error:', dbError)
     console.error('handleSingleCreate - failed property data:', JSON.stringify(propertyData, null, 2))
-    
+
     const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error'
     throw new Error(`Database error: ${errorMessage}`)
   }
@@ -454,30 +320,29 @@ async function handleBulkCreate(userId: string, body: unknown) {
   const validatedData = bulkCreateSchema.parse(body)
   const { properties, source } = validatedData
 
-  // Pre-filter duplicates to avoid unnecessary API calls and usage increments
+  // Pre-filter duplicates
   const filteredProperties = []
   const duplicateErrors = []
-  
+
   if (properties.length > 0 && properties[0].apn) {
-    console.log('Bulk create: Pre-filtering duplicates before API calls')
-    
+    console.log('Bulk create: Pre-filtering duplicates before creation')
+
     for (const [index, propertyInput] of properties.entries()) {
       if (!propertyInput.apn) {
         filteredProperties.push({ index, propertyInput })
         continue
       }
-      
+
       try {
-        // Check for duplicates using the same portfolio_id from the property input
         const existingProperties = await DatabaseService.getFilteredProperties(userId, {
           search: propertyInput.apn,
           portfolio_id: propertyInput.portfolio_id
         })
-        
+
         const exactMatch = existingProperties.find(
           property => property.apn?.toLowerCase() === propertyInput.apn?.toLowerCase()
         )
-        
+
         if (exactMatch) {
           duplicateErrors.push({
             index,
@@ -490,49 +355,22 @@ async function handleBulkCreate(userId: string, body: unknown) {
         }
       } catch (error) {
         console.warn(`Failed duplicate check for APN ${propertyInput.apn}:`, error)
-        // If duplicate check fails, allow the property through to avoid blocking legitimate uploads
         filteredProperties.push({ index, propertyInput })
       }
     }
-    
+
     console.log(`Duplicate filtering: ${duplicateErrors.length} duplicates found, ${filteredProperties.length} properties to process`)
   } else {
-    // No APNs to check, process all properties
     filteredProperties.push(...properties.map((propertyInput, index) => ({ index, propertyInput })))
   }
 
-  // Count how many properties actually need pro lookups
-  const proLookupCount = filteredProperties.filter(({ propertyInput }) =>
-    propertyInput.use_pro_lookup !== false
-  ).length
-
-  // Only check limits for properties that will actually use pro lookups
-  if (proLookupCount > 0) {
-    const limitCheck = await checkUserLimitsServer(userId, proLookupCount)
-    if (!limitCheck.canProceed) {
-      return NextResponse.json(
-        createLimitExceededResponse(limitCheck),
-        { status: 429 }
-      )
-    }
-  }
-
   const results = []
-  const errors = [...duplicateErrors] // Start with duplicate errors
-  let successfulLookupCount = 0 // Track successful API lookups for usage increment
-  
+  const errors = [...duplicateErrors]
+
   for (const { index, propertyInput } of filteredProperties) {
     try {
-      // Use the individual property's pro lookup setting (defaults to true if not specified)
-      const useProLookup = propertyInput.use_pro_lookup !== false
-      const enrichedInput = { ...propertyInput, use_pro_lookup: useProLookup }
-      const result = await createSinglePropertyFromInput(userId, enrichedInput)
+      const result = await createSinglePropertyFromInput(userId, propertyInput)
       results.push(result.property)
-
-      // Track successful lookups that actually used the Regrid API
-      if (result.usedRegridApi) {
-        successfulLookupCount++
-      }
     } catch (error) {
       console.error(`Error creating property at index ${index}:`, error)
       errors.push({
@@ -544,33 +382,8 @@ async function handleBulkCreate(userId: string, body: unknown) {
     }
   }
 
-  // Increment usage counter only for successful Regrid API lookups
-  if (successfulLookupCount > 0) {
-    try {
-      await checkAndIncrementUsageServer(userId, successfulLookupCount)
-      console.log(`Incremented usage by ${successfulLookupCount} for successful CSV lookups`)
-    } catch (error) {
-      console.error('Failed to increment usage after successful lookups:', error)
-      // Don't fail the request - properties were already created
-    }
-  }
-
   // Prepare response
-  const response: {
-    created: unknown[]
-    errors: unknown[]
-    summary: {
-      total: number
-      successful: number
-      failed: number
-      source?: 'csv' | 'manual' | 'api'
-    }
-    usage?: {
-      used: number
-      limit: number
-      remaining: number
-    }
-  } = {
+  const response = {
     created: sanitizePropertiesForClient(results),
     errors,
     summary: {
@@ -581,27 +394,16 @@ async function handleBulkCreate(userId: string, body: unknown) {
     }
   }
 
-  // Include usage info if any properties used pro lookups
-  if (proLookupCount > 0) {
-    const limitCheck = await checkUserLimitsServer(userId, 0) // Get current usage
-    response.usage = {
-      used: limitCheck.currentUsed,
-      limit: limitCheck.limit,
-      remaining: limitCheck.remaining
-    }
-  }
-
   return NextResponse.json(response)
 }
 
-async function createSinglePropertyFromInput(userId: string, input: unknown): Promise<{ property: Property; usedRegridApi: boolean }> {
+async function createSinglePropertyFromInput(userId: string, input: unknown): Promise<{ property: Property }> {
   const validatedInput = createPropertySchema.parse(input)
 
   // Determine the target portfolio
   let targetPortfolioId = validatedInput.portfolio_id
-  
+
   if (!targetPortfolioId) {
-    // If no portfolio specified, get user's default portfolio
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -614,107 +416,28 @@ async function createSinglePropertyFromInput(userId: string, input: unknown): Pr
         },
       }
     )
-    
+
     const { data: defaultPortfolio } = await supabase
       .from('portfolios')
       .select('id')
       .eq('owner_id', userId)
       .eq('is_default', true)
       .single()
-    
+
     if (!defaultPortfolio) {
       throw new Error('No default portfolio found. Please create a portfolio first.')
     }
-    
+
     targetPortfolioId = defaultPortfolio.id
-  }
-
-  let regridData: RegridProperty | null = null
-  let usedRegridApi = false
-
-  // Only fetch Regrid data if Pro Lookup is enabled
-  // NOTE: Usage tracking is handled by the calling function for bulk operations
-  if (validatedInput.use_pro_lookup) {
-    try {
-      if (validatedInput.apn) {
-        regridData = await RegridService.searchByAPN(validatedInput.apn, validatedInput.state)
-        usedRegridApi = true // API call was made
-      } else {
-        const searchResults = await RegridService.searchByAddress(
-          validatedInput.address,
-          validatedInput.city,
-          validatedInput.state,
-          1
-        )
-        if (searchResults.length > 0 && searchResults[0]._fullFeature) {
-          regridData = await RegridService.normalizeProperty(searchResults[0]._fullFeature)
-        }
-        usedRegridApi = true // API call was made
-      }
-    } catch (error) {
-      // Log but don't fail - we can still create the property without Regrid data
-      console.warn('Failed to fetch Regrid data:', error)
-      // usedRegridApi remains false if API call failed
-    }
-  } else {
-    console.log('Basic mode enabled for bulk create, skipping Regrid API calls')
   }
 
   const propertyData = {
     portfolio_id: targetPortfolioId,
-    regrid_id: regridData?.id || null,
-    apn: cleanAPN(regridData?.apn || validatedInput.apn),
-    address: regridData?.address?.line1 || validatedInput.address,
-    city: regridData?.address?.city || validatedInput.city || null,
-    state: regridData?.address?.state || validatedInput.state || null,
-    zip_code: regridData?.address?.zip || validatedInput.zip_code || null,
-    geometry: regridData?.geometry || null,
-    lat: regridData?.centroid?.lat || null,
-    lng: regridData?.centroid?.lng || null,
-    
-    // Enhanced property data from Regrid API
-    year_built: regridData?.properties?.year_built || null,
-    owner: regridData?.properties?.owner || null,
-    last_sale_price: regridData?.properties?.last_sale_price || null,
-    sale_date: regridData?.properties?.sale_date || null,
-    county: regridData?.properties?.county || null,
-    qoz_status: regridData?.properties?.qoz_status || null,
-    improvement_value: regridData?.properties?.improvement_value || null,
-    land_value: regridData?.properties?.land_value || null,
-    assessed_value: regridData?.properties?.assessed_value || null,
-    
-    // Extended property details from Regrid API
-    use_code: regridData?.properties?.use_code || null,
-    use_description: regridData?.properties?.use_description || null,
-    zoning: regridData?.properties?.zoning || null,
-    zoning_description: regridData?.properties?.zoning_description || null,
-    num_stories: regridData?.properties?.num_stories || null,
-    num_units: regridData?.properties?.num_units || null,
-    num_rooms: regridData?.properties?.num_rooms || null,
-    subdivision: regridData?.properties?.subdivision || null,
-    lot_size_acres: regridData?.properties?.lot_acres || null,
-    lot_size_sqft: regridData?.properties?.lot_size_sqft || null,
-    
-    // Financial & tax data
-    tax_year: regridData?.properties?.tax_year || null,
-    parcel_value_type: regridData?.properties?.parcel_value_type || null,
-    
-    // Location data
-    census_tract: regridData?.properties?.census_tract || null,
-    census_block: regridData?.properties?.census_block || null,
-    qoz_tract: regridData?.properties?.qoz_tract || null,
-    
-    // Data freshness tracking
-    last_refresh_date: regridData?.properties?.last_refresh_date || null,
-    regrid_updated_at: regridData?.properties?.regrid_updated_at || null,
-    
-    // Owner mailing address
-    owner_mailing_address: regridData?.properties?.owner_mailing_address || null,
-    owner_mail_city: regridData?.properties?.owner_mail_city || null,
-    owner_mail_state: regridData?.properties?.owner_mail_state || null,
-    owner_mail_zip: regridData?.properties?.owner_mail_zip || null,
-    
-    property_data: regridData || null,
+    apn: cleanAPN(validatedInput.apn),
+    address: validatedInput.address,
+    city: validatedInput.city || null,
+    state: validatedInput.state || null,
+    zip_code: validatedInput.zip_code || null,
     user_notes: validatedInput.user_notes || null,
     tags: validatedInput.tags || null,
     insurance_provider: validatedInput.insurance_provider || null,
@@ -722,9 +445,8 @@ async function createSinglePropertyFromInput(userId: string, input: unknown): Pr
   }
 
   const createdProperty = await DatabaseService.createProperty(propertyData as unknown as Omit<Property, "id" | "user_id" | "created_at" | "updated_at">)
-  
+
   return {
-    property: createdProperty,
-    usedRegridApi
+    property: createdProperty
   }
 }

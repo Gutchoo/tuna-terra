@@ -22,7 +22,6 @@ import {
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 import { useDeleteProperty, useDeleteProperties, useRefreshProperty } from '@/hooks/use-properties'
-import { useCensusData } from '@/hooks/useCensusData'
 import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
@@ -83,17 +82,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  // Census data hook
-  const { censusData, isLoading: isLoadingCensus, error: censusError } = useCensusData(properties)
-
-  // Handle census data errors
-  useEffect(() => {
-    if (censusError) {
-      console.warn('Census data error:', censusError)
-      // Don't show toast for census errors as it's not critical to property display
-    }
-  }, [censusError])
 
   // Load saved view preference
   useEffect(() => {
@@ -411,7 +399,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
         <div className="flex items-center gap-3">
           <PropertyViewToggle
-            currentView={viewMode}
+            currentView={viewMode === 'dashboard' ? 'cards' : viewMode}
             onViewChange={handleViewChange}
           />
 
@@ -498,8 +486,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
             onPropertySelect={handlePropertyClick}
             onPropertiesChange={onPropertiesChange}
             onError={onError}
-            censusData={censusData}
-            isLoadingCensus={isLoadingCensus}
           />
         </div>
       ) : (
@@ -513,8 +499,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           onPropertyClick={handlePropertyClick}
           refreshingPropertyId={refreshingPropertyId}
           visibleColumns={visibleColumns}
-          censusData={censusData}
-          isLoadingCensus={isLoadingCensus}
           canEdit={canEdit}
           userRole={userRole}
         />

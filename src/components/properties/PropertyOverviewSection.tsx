@@ -94,29 +94,41 @@ export function PropertyOverviewSection({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {/* Address */}
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-0.5">Address</p>
-            <p className="text-sm">{property.address || 'N/A'}</p>
-          </div>
+          {/* Address - Editable */}
+          <InlineEditField
+            label="Address"
+            value={property.address}
+            onSave={(value) => handleFieldSave('address', value)}
+            canEdit={canEdit}
+            placeholder="Add address"
+          />
 
-          {/* City, State, ZIP in compact grid */}
+          {/* City, State, ZIP - Editable */}
           <div className="grid grid-cols-3 gap-3">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-0.5">City</p>
-              <p className="text-sm">{property.city || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-0.5">State</p>
-              <p className="text-sm">{property.state || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-0.5">ZIP</p>
-              <p className="text-sm">{property.zip_code || 'N/A'}</p>
-            </div>
+            <InlineEditField
+              label="City"
+              value={property.city}
+              onSave={(value) => handleFieldSave('city', value)}
+              canEdit={canEdit}
+              placeholder="Add city"
+            />
+            <InlineEditField
+              label="State"
+              value={property.state}
+              onSave={(value) => handleFieldSave('state', value)}
+              canEdit={canEdit}
+              placeholder="Add state"
+            />
+            <InlineEditField
+              label="ZIP"
+              value={property.zip_code}
+              onSave={(value) => handleFieldSave('zip_code', value)}
+              canEdit={canEdit}
+              placeholder="Add ZIP"
+            />
           </div>
 
-          {/* County and APN in two columns */}
+          {/* County and APN - Editable */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t">
             {property.county && (
               <div>
@@ -124,12 +136,13 @@ export function PropertyOverviewSection({
                 <p className="text-sm">{property.county}</p>
               </div>
             )}
-            {property.apn && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">Parcel (APN)</p>
-                <p className="text-sm font-mono">{property.apn}</p>
-              </div>
-            )}
+            <InlineEditField
+              label="Parcel (APN)"
+              value={property.apn}
+              onSave={(value) => handleFieldSave('apn', value)}
+              canEdit={canEdit}
+              placeholder="Add APN"
+            />
           </div>
 
           {/* Owner - Editable */}
@@ -202,8 +215,8 @@ export function PropertyOverviewSection({
               />
               <InlineEditField
                 label="Sale Price"
-                value={property.last_sale_price}
-                onSave={(value) => handleFieldSave('last_sale_price', value)}
+                value={property.sale_price}
+                onSave={(value) => handleFieldSave('sale_price', value)}
                 canEdit={canEdit}
                 type="number"
                 placeholder="Add sale price"

@@ -29,7 +29,6 @@ import {
 import type { Property } from '@/lib/supabase'
 import { AVAILABLE_COLUMNS } from './ColumnSelector'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
-import type { CensusDataMap } from '@/hooks/useCensusData'
 
 type SortField = keyof Property | string
 type SortDirection = 'asc' | 'desc' | null
@@ -49,8 +48,6 @@ interface PropertyTableViewProps {
   onPropertyClick?: (propertyId: string) => void // New: click handler for opening drawer
   refreshingPropertyId: string | null
   visibleColumns: Set<keyof Property | string> // Allow virtual columns
-  censusData?: CensusDataMap // Optional census data
-  isLoadingCensus?: boolean // Loading state for census data
   canEdit?: boolean
   userRole?: 'owner' | 'editor' | 'viewer' | null
 }
@@ -65,8 +62,6 @@ export function PropertyTableView({
   onPropertyClick,
   refreshingPropertyId,
   visibleColumns,
-  censusData = {},
-  isLoadingCensus = false,
   canEdit = true,
   userRole
 }: PropertyTableViewProps) {
@@ -93,100 +88,9 @@ export function PropertyTableView({
   }
 
   const renderCellContent = (property: Property, columnKey: keyof Property | string) => {
-    // Handle virtual demographics columns
-    const virtualColumns = [
-      'median_income', 'mean_income', 'households', 'population', 'median_age',
-      'total_housing_units', 'median_rent', 'owner_occupied_units', 'renter_occupied_units',
-      'avg_household_size_owner', 'avg_household_size_renter',
-      'bachelor_rate_25_34', 'bachelor_rate_35_44', 'bachelor_rate_45_64'
-    ]
-    
-    if (typeof columnKey === 'string' && virtualColumns.includes(columnKey)) {
-      const demographics = censusData[property.id]
-      
-      if (isLoadingCensus) {
-        return <span className="text-muted-foreground text-xs">Loading...</span>
-      }
-      
-      if (!demographics) {
-        return <span className="text-muted-foreground">-</span>
-      }
-      
-      // Handle basic demographics
-      if (['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(columnKey)) {
-        const demographicValue = demographics[columnKey as keyof typeof demographics]
-        
-        switch (columnKey) {
-          case 'median_income':
-          case 'mean_income':
-            return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
-          case 'households':
-          case 'population':
-            return <span className="font-mono text-sm">{formatNumber(demographicValue as number)}</span>
-          case 'median_age':
-            return demographicValue ? (
-              <span className="font-mono text-sm">{demographicValue as number} years</span>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )
-          default:
-            return <span className="text-muted-foreground">-</span>
-        }
-      }
-      
-      // Handle housing demographics
-      if (['total_housing_units', 'median_rent', 'owner_occupied_units', 'renter_occupied_units', 'avg_household_size_owner', 'avg_household_size_renter'].includes(columnKey)) {
-        const demographicValue = demographics[columnKey as keyof typeof demographics]
-        
-        switch (columnKey) {
-          case 'median_rent':
-            return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
-          case 'total_housing_units':
-          case 'owner_occupied_units':
-          case 'renter_occupied_units':
-            return <span className="font-mono text-sm">{formatNumber(demographicValue as number)}</span>
-          case 'avg_household_size_owner':
-          case 'avg_household_size_renter':
-            return demographicValue ? (
-              <span className="font-mono text-sm">{Number(demographicValue).toFixed(1)}</span>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )
-          default:
-            return <span className="text-muted-foreground">-</span>
-        }
-      }
-      
-      // Handle education demographics
-      if (['bachelor_rate_25_34', 'bachelor_rate_35_44', 'bachelor_rate_45_64'].includes(columnKey)) {
-        const educationDetails = demographics.education_details
-        if (!educationDetails) {
-          return <span className="text-muted-foreground">-</span>
-        }
-        
-        let value: number | null = null
-        switch (columnKey) {
-          case 'bachelor_rate_25_34':
-            value = educationDetails.pct_bachelor_plus_25_34
-            break
-          case 'bachelor_rate_35_44':
-            value = educationDetails.pct_bachelor_plus_35_44
-            break
-          case 'bachelor_rate_45_64':
-            value = educationDetails.pct_bachelor_plus_45_64
-            break
-        }
-        
-        return value ? (
-          <span className="font-mono text-sm">{value.toFixed(1)}%</span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )
-      }
-      
-      return <span className="text-muted-foreground">-</span>
-    }
-    
+    // DISABLED: Virtual demographics columns rendering removed
+    // Census API integration has been removed - demographic columns are disabled
+
     // Handle regular property columns
     const value = property[columnKey as keyof Property]
     
@@ -279,26 +183,17 @@ export function PropertyTableView({
 
   const sortedProperties = [...properties].sort((a, b) => {
     if (!sortConfig.field || !sortConfig.direction) return 0
-    
-    let aVal: unknown
-    let bVal: unknown
-    
-    // Handle virtual demographics columns
-    if (typeof sortConfig.field === 'string' && ['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(sortConfig.field)) {
-      const aDemographics = censusData[a.id]
-      const bDemographics = censusData[b.id]
-      aVal = aDemographics?.[sortConfig.field as keyof typeof aDemographics] || null
-      bVal = bDemographics?.[sortConfig.field as keyof typeof bDemographics] || null
-    } else {
-      // Handle regular property fields
-      aVal = a[sortConfig.field as keyof Property]
-      bVal = b[sortConfig.field as keyof Property]
-    }
-    
+
+    // DISABLED: Virtual demographics sorting removed - Census API integration removed
+
+    // Handle regular property fields
+    const aVal = a[sortConfig.field as keyof Property]
+    const bVal = b[sortConfig.field as keyof Property]
+
     if ((aVal === null || aVal === undefined) && (bVal === null || bVal === undefined)) return 0
     if (aVal === null || aVal === undefined) return sortConfig.direction === 'asc' ? 1 : -1
     if (bVal === null || bVal === undefined) return sortConfig.direction === 'asc' ? -1 : 1
-    
+
     if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1
     if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1
     return 0

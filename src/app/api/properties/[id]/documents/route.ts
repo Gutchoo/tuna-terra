@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { DatabaseService } from '@/lib/db'
 import { validateDocumentFile } from '@/lib/documents'
+import { sanitizeFilename } from '@/lib/storage'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -152,10 +153,11 @@ export async function POST(
       )
     }
 
-    // Generate storage path
+    // Generate storage path with sanitized filename
     const unitPath = unit_id || 'property-level'
     const documentId = crypto.randomUUID()
-    const filePath = `${portfolio_id}/${propertyId}/${unitPath}/${documentId}/${file.name}`
+    const sanitizedFileName = sanitizeFilename(file.name)
+    const filePath = `${portfolio_id}/${propertyId}/${unitPath}/${documentId}/${sanitizedFileName}`
 
     // Convert File to ArrayBuffer for server-side upload
     const arrayBuffer = await file.arrayBuffer()
@@ -178,6 +180,16 @@ export async function POST(
       )
     }
 
+    // Use the actual path returned by Supabase Storage
+    const actualStoragePath = uploadData.path
+    console.log(`Document uploaded successfully:`, {
+      originalFileName: file.name,
+      sanitizedFileName,
+      expectedPath: filePath,
+      actualPath: actualStoragePath,
+      documentId
+    })
+
     // Create document record in database
     const document = await DatabaseService.createDocument({
       property_id: propertyId,
@@ -189,7 +201,7 @@ export async function POST(
       title,
       description: description || undefined,
       file_name: file.name,
-      file_path: filePath,
+      file_path: actualStoragePath,
       file_size_bytes: file.size,
       file_type: file.type,
       tags

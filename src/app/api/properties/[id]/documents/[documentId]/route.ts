@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { DatabaseService } from '@/lib/db'
-import { deleteFile } from '@/lib/storage'
+import { getSignedUrl, deleteFile } from '@/lib/storage'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -57,15 +57,19 @@ export async function GET(
       )
     }
 
-    // Generate signed URL for download (valid for 1 hour) using server-side client
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('property-documents')
-      .createSignedUrl(document.file_path, 3600)
+    console.log(`Attempting to retrieve document:`, {
+      documentId,
+      fileName: document.file_name,
+      filePath: document.file_path,
+      fileType: document.file_type
+    })
 
-    if (signedUrlError || !signedUrlData) {
-      console.error('Signed URL error:', signedUrlError)
+    // Generate signed URL for download (valid for 1 hour)
+    const signedUrlResult = await getSignedUrl(document.file_path, 3600)
+
+    if (!signedUrlResult.url || signedUrlResult.error) {
       return NextResponse.json(
-        { error: signedUrlError?.message || 'Failed to generate download URL' },
+        { error: signedUrlResult.error || 'Failed to generate download URL' },
         { status: 500 }
       )
     }
@@ -73,7 +77,7 @@ export async function GET(
     return NextResponse.json({
       data: {
         ...document,
-        signed_url: signedUrlData.signedUrl
+        signed_url: signedUrlResult.url
       }
     })
   } catch (error) {

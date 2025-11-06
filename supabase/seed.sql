@@ -13,6 +13,8 @@
 -- Test User 3: test3@example.com
 
 -- User 1: test1@example.com
+-- Pre-hashed password for 'tunaterra123' using bcrypt
+-- Hash generated with: $2a$10$rMUjzL8Uu9w8P5lMj0iAjeXFXmj5oMq8gCVOcXKGf5PUjBqvHHQ3i
 INSERT INTO auth.users (
   id,
   instance_id,
@@ -41,7 +43,7 @@ INSERT INTO auth.users (
   '00000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000000',
   'test1@example.com',
-  crypt('tunaterra123', gen_salt('bf')),
+  '$2a$10$rMUjzL8Uu9w8P5lMj0iAjeXFXmj5oMq8gCVOcXKGf5PUjBqvHHQ3i',
   NOW(),
   '', '', '', '', '', NULL, '', '', '',
   NOW(),
@@ -83,6 +85,7 @@ INSERT INTO auth.identities (
 ON CONFLICT (provider, provider_id) DO NOTHING;
 
 -- User 2: test2@example.com
+-- Pre-hashed password for 'tunaterra123' using bcrypt
 INSERT INTO auth.users (
   id,
   instance_id,
@@ -111,7 +114,7 @@ INSERT INTO auth.users (
   '00000000-0000-0000-0000-000000000002',
   '00000000-0000-0000-0000-000000000000',
   'test2@example.com',
-  crypt('tunaterra123', gen_salt('bf')),
+  '$2a$10$rMUjzL8Uu9w8P5lMj0iAjeXFXmj5oMq8gCVOcXKGf5PUjBqvHHQ3i',
   NOW(),
   '', '', '', '', '', NULL, '', '', '',
   NOW(),
@@ -153,6 +156,7 @@ INSERT INTO auth.identities (
 ON CONFLICT (provider, provider_id) DO NOTHING;
 
 -- User 3: test3@example.com
+-- Pre-hashed password for 'tunaterra123' using bcrypt
 INSERT INTO auth.users (
   id,
   instance_id,
@@ -181,7 +185,7 @@ INSERT INTO auth.users (
   '00000000-0000-0000-0000-000000000003',
   '00000000-0000-0000-0000-000000000000',
   'test3@example.com',
-  crypt('tunaterra123', gen_salt('bf')),
+  '$2a$10$rMUjzL8Uu9w8P5lMj0iAjeXFXmj5oMq8gCVOcXKGf5PUjBqvHHQ3i',
   NOW(),
   '', '', '', '', '', NULL, '', '', '',
   NOW(),
@@ -221,44 +225,6 @@ INSERT INTO auth.identities (
   gen_random_uuid()
 )
 ON CONFLICT (provider, provider_id) DO NOTHING;
-
--- =============================================================================
--- USER LIMITS
--- =============================================================================
--- Note: This will be auto-created by trigger, but we can ensure it exists
-INSERT INTO user_limits (
-  user_id,
-  tier,
-  property_lookups_used,
-  property_lookups_limit,
-  total_lookups_lifetime,
-  join_date
-) VALUES
-(
-  '00000000-0000-0000-0000-000000000001',
-  'free',
-  3, -- Show some usage
-  10,
-  15, -- Lifetime usage
-  NOW() - INTERVAL '30 days'
-),
-(
-  '00000000-0000-0000-0000-000000000002',
-  'free',
-  1, -- Minimal usage
-  10,
-  5,
-  NOW() - INTERVAL '20 days'
-),
-(
-  '00000000-0000-0000-0000-000000000003',
-  'free',
-  0, -- No usage yet
-  10,
-  0,
-  NOW() - INTERVAL '10 days'
-)
-ON CONFLICT (user_id) DO NOTHING;
 
 -- =============================================================================
 -- PORTFOLIOS
@@ -564,36 +530,6 @@ INSERT INTO portfolio_memberships (
 ON CONFLICT (portfolio_id, user_id) DO NOTHING;
 
 -- =============================================================================
--- EDUCATION PROGRESS
--- =============================================================================
--- Add some completed lessons for test users
-INSERT INTO user_education_progress (
-  user_id,
-  lesson_slug,
-  completed_at,
-  created_at
-) VALUES
-(
-  '00000000-0000-0000-0000-000000000001',
-  'noi-fundamentals',
-  NOW() - INTERVAL '10 days',
-  NOW() - INTERVAL '10 days'
-),
-(
-  '00000000-0000-0000-0000-000000000002',
-  'noi-fundamentals',
-  NOW() - INTERVAL '8 days',
-  NOW() - INTERVAL '8 days'
-),
-(
-  '00000000-0000-0000-0000-000000000002',
-  'cap-rate-fundamentals',
-  NOW() - INTERVAL '5 days',
-  NOW() - INTERVAL '5 days'
-)
-ON CONFLICT (user_id, lesson_slug) DO NOTHING;
-
--- =============================================================================
 -- SEED DATA SUMMARY
 -- =============================================================================
 -- Test User Credentials (all use same password):
@@ -602,9 +538,9 @@ ON CONFLICT (user_id, lesson_slug) DO NOTHING;
 -- Email: test2@example.com | Password: tunaterra123
 -- Email: test3@example.com | Password: tunaterra123
 --
--- User 1: 2 portfolios, 3 properties, 1 lesson completed
--- User 2: 1 portfolio, 1 property, 2 lessons completed
--- User 3: 1 portfolio, 1 property, 0 lessons completed
+-- User 1: 2 portfolios, 3 properties
+-- User 2: 1 portfolio, 1 property
+-- User 3: 1 portfolio, 1 property
 --
 -- All users also see the Virtual Sample Portfolio (frontend-only)
 -- Supabase Studio: http://127.0.0.1:54323

@@ -6,21 +6,17 @@ import { createClient } from '@/lib/supabase'
 
 export const STORAGE_BUCKET = 'property-documents'
 
-// Maximum file size: 50MB
-export const MAX_FILE_SIZE = 50 * 1024 * 1024
+// Maximum file size: 10MB (matches bucket configuration)
+export const MAX_FILE_SIZE = 10 * 1024 * 1024
 
-// Allowed file types
+// Allowed file types (matches bucket configuration)
 export const ALLOWED_FILE_TYPES = {
   // Images
   'image/png': ['.png'],
   'image/jpeg': ['.jpg', '.jpeg'],
-  'image/webp': ['.webp'],
 
   // Documents
   'application/pdf': ['.pdf'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-  'text/csv': ['.csv'],
 } as const
 
 // ============================================================================
@@ -60,7 +56,7 @@ export function validateFile(file: File): FileValidationResult {
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
-      error: `File type ${file.type} is not allowed. Allowed types: PDF, images (PNG, JPG, JPEG, WEBP), documents (DOCX, XLSX, CSV)`
+      error: `File type ${file.type} is not allowed. Allowed types: PDF, PNG, JPG, JPEG`
     }
   }
 

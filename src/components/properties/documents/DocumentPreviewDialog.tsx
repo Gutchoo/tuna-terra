@@ -50,7 +50,7 @@ export function DocumentPreviewDialog({
   const typeLabel = getDocumentTypeLabel(document.document_type)
   const isImage = isImageFile(document.file_type)
   const isPdf = isPdfFile(document.file_type)
-  const signedUrl = data?.data?.signedUrl
+  const signedUrl = data?.data?.signed_url
 
   const handleDownload = () => {
     if (signedUrl) {

@@ -5,7 +5,6 @@ import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Property } from '@/lib/supabase'
 import { MapOverlayTable } from './MapOverlayTable'
-import type { CensusDataMap } from '@/hooks/useCensusData'
 
 interface FullScreenMapViewProps {
   properties: Property[]
@@ -13,8 +12,6 @@ interface FullScreenMapViewProps {
   onPropertySelect: (id: string) => void
   onPropertiesChange: (properties: Property[]) => void
   onError: (error: string) => void
-  censusData: CensusDataMap
-  isLoadingCensus: boolean
 }
 
 // Set the Mapbox access token
@@ -26,9 +23,7 @@ export function FullScreenMapView({
   selectedPropertyId,
   onPropertySelect,
   onPropertiesChange,
-  onError,
-  censusData,
-  isLoadingCensus
+  onError
 }: FullScreenMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -548,8 +543,6 @@ export function FullScreenMapView({
           onRefreshProperty={handleRefreshProperty}
           onDeleteProperty={handleDeleteProperty}
           refreshingPropertyId={refreshingPropertyId}
-          censusData={censusData}
-          isLoadingCensus={isLoadingCensus}
         />
       )}
     </div>

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { RegridService } from '@/lib/regrid'
 import { getUserId } from '@/lib/auth'
 import { createClient } from '@supabase/supabase-js'
 
@@ -27,11 +26,17 @@ export async function GET(
       )
     }
 
-    const property = await RegridService.getPropertyById(id)
+    // Query property by ID - RLS policies will ensure user has access via portfolio membership
+    const { data: property, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    if (!property) {
+    if (error) {
+      console.error('Get property error:', error)
       return NextResponse.json(
-        { error: 'Property not found' },
+        { error: 'Property not found or unauthorized' },
         { status: 404 }
       )
     }
@@ -67,7 +72,7 @@ export async function PATCH(
 
     const body = await request.json()
 
-    // Allowed fields for update
+    // Allowed fields for update (only fields that exist in properties table)
     const allowedFields = [
       'address',
       'city',
@@ -79,14 +84,18 @@ export async function PATCH(
       'zoning',
       'purchase_price',
       'purchase_date',
+      'sale_price',
       'sale_date',
       'last_sale_price',
       'insurance_provider',
       'management_company',
-      'mortgage_amount',
-      'lender_name',
-      'loan_rate',
-      'loan_maturity_date'
+      'user_notes',
+      'tags',
+      'maintenance_history',
+      'owner_mailing_address',
+      'owner_mail_city',
+      'owner_mail_state',
+      'owner_mail_zip'
     ]
 
     // Filter body to only include allowed fields
@@ -104,17 +113,21 @@ export async function PATCH(
       )
     }
 
-    // Update the property
+    // Update the property - RLS policy 'editors_can_update_properties' will ensure
+    // user has 'owner' or 'editor' role in the portfolio via user_accessible_portfolios view
     const { data, error } = await supabase
       .from('properties')
       .update(updates)
       .eq('id', id)
-      .eq('user_id', userId)
       .select()
       .single()
 
     if (error) {
-      throw error
+      console.error('Update property error:', error)
+      return NextResponse.json(
+        { error: 'Failed to update property' },
+        { status: 500 }
+      )
     }
 
     if (!data) {
