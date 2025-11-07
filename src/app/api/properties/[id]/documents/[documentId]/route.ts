@@ -162,16 +162,50 @@ export async function DELETE(
       )
     }
 
-    // Delete from storage first
-    const deleteResult = await deleteFile(document.file_path)
+    console.log('[DELETE API] Starting document deletion:', {
+      documentId,
+      fileName: document.file_name,
+      filePath: document.file_path,
+      propertyId: document.property_id,
+      portfolioId: document.portfolio_id,
+      userId: user.id,
+      timestamp: new Date().toISOString()
+    })
+
+    // Delete from storage first - pass authenticated server client for RLS policy compliance
+    const deleteResult = await deleteFile(document.file_path, supabase)
 
     if (!deleteResult.success) {
-      console.warn('Failed to delete file from storage:', deleteResult.error)
-      // Continue with database deletion even if storage deletion fails
+      console.error('[DELETE API] Storage deletion failed, aborting database deletion:', {
+        documentId,
+        filePath: document.file_path,
+        error: deleteResult.error,
+        timestamp: new Date().toISOString()
+      })
+
+      // FAIL THE REQUEST - do not delete from database if storage deletion fails
+      return NextResponse.json(
+        {
+          error: `Failed to delete file from storage: ${deleteResult.error}`,
+          details: 'The database record has not been modified. Please check storage bucket permissions and RLS policies.'
+        },
+        { status: 500 }
+      )
     }
+
+    console.log('[DELETE API] Storage deletion successful, proceeding with database deletion:', {
+      documentId,
+      filePath: document.file_path,
+      timestamp: new Date().toISOString()
+    })
 
     // Delete from database (soft delete)
     await DatabaseService.deleteDocument(documentId)
+
+    console.log('[DELETE API] Document deletion complete:', {
+      documentId,
+      timestamp: new Date().toISOString()
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -244,25 +244,61 @@ export async function downloadFile(
 
 /**
  * Delete a file from storage
+ *
+ * @param filePath - The path to the file in storage
+ * @param supabaseClient - Optional authenticated Supabase client (for server-side operations)
+ *                         If not provided, creates a new browser client (for client-side operations)
  */
 export async function deleteFile(
-  filePath: string
+  filePath: string,
+  supabaseClient?: any
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = createClient()
+    console.log('[STORAGE] Attempting to delete file:', {
+      bucket: STORAGE_BUCKET,
+      filePath,
+      authenticated: !!supabaseClient,
+      timestamp: new Date().toISOString()
+    })
 
-    const { error } = await supabase.storage
+    // Use provided authenticated client or create new browser client
+    const supabase = supabaseClient || createClient()
+
+    const { data, error } = await supabase.storage
       .from(STORAGE_BUCKET)
       .remove([filePath])
 
     if (error) {
-      console.error('Delete error:', error)
+      console.error('[STORAGE] Delete failed:', {
+        filePath,
+        bucket: STORAGE_BUCKET,
+        authenticated: !!supabaseClient,
+        errorMessage: error.message,
+        errorCode: (error as any).statusCode,
+        errorDetails: error,
+        timestamp: new Date().toISOString()
+      })
       return { success: false, error: error.message }
     }
 
+    console.log('[STORAGE] Delete successful:', {
+      filePath,
+      bucket: STORAGE_BUCKET,
+      authenticated: !!supabaseClient,
+      data,
+      timestamp: new Date().toISOString()
+    })
+
     return { success: true }
   } catch (error) {
-    console.error('Delete file error:', error)
+    console.error('[STORAGE] Delete file exception:', {
+      filePath,
+      bucket: STORAGE_BUCKET,
+      authenticated: !!supabaseClient,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

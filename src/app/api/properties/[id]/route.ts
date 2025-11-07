@@ -1,11 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
-import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+async function createServerSupabaseClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+}
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +42,14 @@ export async function GET(
         { error: 'Property ID is required' },
         { status: 400 }
       )
+    }
+
+    const supabase = await createServerSupabaseClient()
+
+    // Authenticate user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Query property by ID - RLS policies will ensure user has access via portfolio membership
@@ -68,6 +94,14 @@ export async function PATCH(
         { error: 'Property ID is required' },
         { status: 400 }
       )
+    }
+
+    const supabase = await createServerSupabaseClient()
+
+    // Authenticate user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()

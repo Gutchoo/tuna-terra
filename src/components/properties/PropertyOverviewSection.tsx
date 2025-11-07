@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
   Building2,
   Landmark,
@@ -10,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import { InlineEditField } from './InlineEditField';
+import { InlineEditTextarea } from './InlineEditTextarea';
 import type { Property } from '@/lib/supabase';
 
 interface PropertyOverviewSectionProps {
@@ -203,74 +205,103 @@ export function PropertyOverviewSection({
             />
           </div>
 
-          {/* Management - Editable */}
-          <div className="pt-2 border-t space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Management</p>
-            <InlineEditField
-              label="Insurance Provider"
-              value={getCurrentValue('insurance_provider')}
-              onChange={(value) => handleFieldChange('insurance_provider', value)}
-              isEditMode={isEditMode}
-              canEdit={canEdit}
-              placeholder="Add insurance company"
-            />
-            <InlineEditField
-              label="Property Management Company"
-              value={getCurrentValue('management_company')}
-              onChange={(value) => handleFieldChange('management_company', value)}
-              isEditMode={isEditMode}
-              canEdit={canEdit}
-              placeholder="Add management company"
-            />
+          {/* Management & Transactions - Horizontal Layout with Vertical Separators */}
+          <div className="pt-2 border-t">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Management & Transactions</p>
+
+            {/* Mobile: Vertical Stack, Desktop: Horizontal with Separators */}
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 md:gap-6">
+
+              {/* Management Column */}
+              <div className="space-y-3">
+                <InlineEditField
+                  label="Insurance Provider"
+                  value={getCurrentValue('insurance_provider')}
+                  onChange={(value) => handleFieldChange('insurance_provider', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  placeholder="Add insurance company"
+                />
+                <InlineEditField
+                  label="Property Management"
+                  value={getCurrentValue('management_company')}
+                  onChange={(value) => handleFieldChange('management_company', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  placeholder="Add management company"
+                />
+              </div>
+
+              {/* Separator - Horizontal on mobile, Vertical on desktop */}
+              <Separator className="md:hidden" />
+              <Separator orientation="vertical" className="hidden md:block h-auto" />
+
+              {/* Purchase Column */}
+              <div className="space-y-3">
+                <InlineEditField
+                  label="Purchase Date"
+                  value={getCurrentValue('purchase_date')}
+                  onChange={(value) => handleFieldChange('purchase_date', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  type="date"
+                  placeholder="Add purchase date"
+                  formatDisplay={formatDate}
+                />
+                <InlineEditField
+                  label="Purchase Price"
+                  value={getCurrentValue('purchase_price')}
+                  onChange={(value) => handleFieldChange('purchase_price', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  type="number"
+                  placeholder="Add purchase price"
+                  formatDisplay={formatCurrency}
+                />
+              </div>
+
+              {/* Separator - Horizontal on mobile, Vertical on desktop */}
+              <Separator className="md:hidden" />
+              <Separator orientation="vertical" className="hidden md:block h-auto" />
+
+              {/* Sale Column */}
+              <div className="space-y-3">
+                <InlineEditField
+                  label="Sale Date"
+                  value={getCurrentValue('sale_date')}
+                  onChange={(value) => handleFieldChange('sale_date', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  type="date"
+                  placeholder="Add sale date"
+                  formatDisplay={formatDate}
+                />
+                <InlineEditField
+                  label="Sale Price"
+                  value={getCurrentValue('sale_price')}
+                  onChange={(value) => handleFieldChange('sale_price', value)}
+                  isEditMode={isEditMode}
+                  canEdit={canEdit}
+                  type="number"
+                  placeholder="Add sale price"
+                  formatDisplay={formatCurrency}
+                />
+              </div>
+
+            </div>
           </div>
 
-          {/* Purchase & Sale Information - Editable */}
-          <div className="pt-2 border-t space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Purchase & Sale</p>
-            <div className="grid grid-cols-2 gap-3">
-              <InlineEditField
-                label="Purchase Date"
-                value={getCurrentValue('purchase_date')}
-                onChange={(value) => handleFieldChange('purchase_date', value)}
-                isEditMode={isEditMode}
-                canEdit={canEdit}
-                type="date"
-                placeholder="Add purchase date"
-                formatDisplay={formatDate}
-              />
-              <InlineEditField
-                label="Purchase Price"
-                value={getCurrentValue('purchase_price')}
-                onChange={(value) => handleFieldChange('purchase_price', value)}
-                isEditMode={isEditMode}
-                canEdit={canEdit}
-                type="number"
-                placeholder="Add purchase price"
-                formatDisplay={formatCurrency}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <InlineEditField
-                label="Sale Date"
-                value={getCurrentValue('sale_date')}
-                onChange={(value) => handleFieldChange('sale_date', value)}
-                isEditMode={isEditMode}
-                canEdit={canEdit}
-                type="date"
-                placeholder="Add sale date"
-                formatDisplay={formatDate}
-              />
-              <InlineEditField
-                label="Sale Price"
-                value={getCurrentValue('sale_price')}
-                onChange={(value) => handleFieldChange('sale_price', value)}
-                isEditMode={isEditMode}
-                canEdit={canEdit}
-                type="number"
-                placeholder="Add sale price"
-                formatDisplay={formatCurrency}
-              />
-            </div>
+          {/* Notes Section */}
+          <div className="pt-2 border-t">
+            <InlineEditTextarea
+              label="Notes"
+              value={getCurrentValue('user_notes')}
+              onChange={(value) => handleFieldChange('user_notes', value)}
+              isEditMode={isEditMode}
+              canEdit={canEdit}
+              placeholder="Add notes about this property..."
+              rows={4}
+            />
           </div>
         </CardContent>
       </Card>

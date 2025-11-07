@@ -32,6 +32,14 @@ export const AVAILABLE_COLUMNS: TableColumn[] = [
 
   // Property details (keeping owner field for legacy data)
   { key: 'owner', label: 'Owner', category: 'property', defaultVisible: true },
+  { key: 'insurance_provider', label: 'Insurance Provider', category: 'property', defaultVisible: false },
+  { key: 'property_management', label: 'Property Management', category: 'property', defaultVisible: false },
+
+  // Financial data
+  { key: 'purchase_price', label: 'Purchase Price', category: 'financial', defaultVisible: false },
+  { key: 'purchase_date', label: 'Purchase Date', category: 'financial', defaultVisible: false },
+  { key: 'sale_price', label: 'Sale Price', category: 'financial', defaultVisible: false },
+  { key: 'sale_date', label: 'Sale Date', category: 'financial', defaultVisible: false },
 
   // DISABLED: Demographics (virtual columns) - Census API integration removed
   // To restore: uncomment these lines and restore Census API integration
@@ -55,9 +63,7 @@ export const AVAILABLE_COLUMNS: TableColumn[] = [
   // { key: 'bachelor_rate_45_64', label: 'Bachelor Rate (45-64)', category: 'demographics', defaultVisible: false, virtual: true },
 
   // Other
-  { key: 'created_at', label: 'Added', category: 'other', defaultVisible: true },
   { key: 'user_notes', label: 'Notes', category: 'other', defaultVisible: false },
-  { key: 'tags', label: 'Tags', category: 'other', defaultVisible: false },
 ]
 
 interface ColumnSelectorProps {
