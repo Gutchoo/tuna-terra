@@ -1,31 +1,22 @@
 'use client'
 
-import { PropertyCard } from './PropertyCard'
+import { CompactPropertyCard } from './CompactPropertyCard'
 import type { Property } from '@/lib/supabase'
-import type { CensusDataMap } from '@/hooks/useCensusData'
 
 interface PropertyCardViewProps {
   properties: Property[]
-  expandedCards: Set<string>
-  onToggleExpand: (id: string) => void
   onRefresh?: (property: Property) => void
   onDelete?: (property: Property) => void
-  refreshingPropertyId: string | null
-  censusData?: CensusDataMap
-  isLoadingCensus?: boolean
+  onPropertyClick: (propertyId: string) => void
   canEdit?: boolean
   userRole?: 'owner' | 'editor' | 'viewer' | null
 }
 
 export function PropertyCardView({
   properties,
-  expandedCards,
-  onToggleExpand,
   onRefresh,
   onDelete,
-  refreshingPropertyId,
-  censusData = {},
-  isLoadingCensus = false,
+  onPropertyClick,
   canEdit = true,
   userRole
 }: PropertyCardViewProps) {
@@ -45,20 +36,15 @@ export function PropertyCardView({
   }
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 2xl:grid-cols-6 gap-4 w-full">
       {properties.map((property) => (
-        <PropertyCard
+        <CompactPropertyCard
           key={property.id}
           property={property}
-          isExpanded={expandedCards.has(property.id)}
-          onToggleExpand={onToggleExpand}
+          onPropertyClick={onPropertyClick}
           onRefresh={onRefresh}
           onDelete={onDelete}
-          isRefreshing={refreshingPropertyId === property.id}
-          demographics={censusData[property.id]}
-          isLoadingDemographics={isLoadingCensus}
           canEdit={canEdit}
-          userRole={userRole}
         />
       ))}
     </div>

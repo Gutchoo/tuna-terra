@@ -27,7 +27,6 @@ import {
 } from 'lucide-react'
 import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
 import type { Property } from '@/lib/supabase'
-import type { CensusDataMap } from '@/hooks/useCensusData'
 
 interface MapOverlayTableProps {
   properties: Property[]
@@ -36,8 +35,6 @@ interface MapOverlayTableProps {
   onRefreshProperty: (property: Property) => void
   onDeleteProperty: (property: Property) => void
   refreshingPropertyId: string | null
-  censusData: CensusDataMap
-  isLoadingCensus: boolean
 }
 
 // Default minimal columns for map overlay
@@ -69,9 +66,7 @@ export function MapOverlayTable({
   onPropertySelect,
   onRefreshProperty,
   onDeleteProperty,
-  refreshingPropertyId,
-  censusData,
-  isLoadingCensus
+  refreshingPropertyId
 }: MapOverlayTableProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property | string>>(() => {
@@ -204,34 +199,9 @@ export function MapOverlayTable({
   }
 
   const renderCellContent = (property: Property, columnKey: keyof Property | string) => {
-    // Handle virtual demographics columns
-    if (typeof columnKey === 'string' && ['median_income', 'mean_income', 'households', 'population', 'median_age'].includes(columnKey)) {
-      const demographics = censusData[property.id]
-      
-      if (isLoadingCensus) {
-        return <span className="text-muted-foreground text-xs">Loading...</span>
-      }
-      
-      if (!demographics) {
-        return <span className="text-muted-foreground">-</span>
-      }
-      
-      const demographicValue = demographics[columnKey as keyof typeof demographics]
-      
-      switch (columnKey) {
-        case 'median_income':
-        case 'mean_income':
-          return <span className="font-mono text-sm">{formatCurrency(demographicValue as number)}</span>
-        case 'households':
-        case 'population':
-          return formatNumber(demographicValue as number)
-        case 'median_age':
-          return demographicValue ? `${demographicValue} years` : '-'
-        default:
-          return String(demographicValue) || '-'
-      }
-    }
-    
+    // DISABLED: Virtual demographics columns rendering removed
+    // Census API integration has been removed - demographic columns are disabled
+
     const value = property[columnKey as keyof Property]
     
     switch (columnKey) {

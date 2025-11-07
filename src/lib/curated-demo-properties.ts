@@ -3,7 +3,7 @@
 
 import type { Property } from '@/lib/supabase'
 
-export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | 'portfolio_id' | 'created_at' | 'updated_at'> {
+export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | 'portfolio_id' | 'created_at' | 'updated_at' | 'purchase_price' | 'purchase_date' | 'management_company' | 'mortgage_amount' | 'user_notes' | 'tags' | 'insurance_provider' | 'maintenance_history' | 'lender_name' | 'loan_rate' | 'loan_maturity_date'> {
   curatedMetadata: {
     name: string
     description: string
@@ -93,6 +93,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    sale_price: null,
 
     // Location data
     census_tract: '36061007600',
@@ -110,10 +111,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '10120',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -327,6 +324,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2024',
     parcel_value_type: 'ASSESSED',
+    sale_price: null,
 
     // Location data
     census_tract: '06075061501',
@@ -344,10 +342,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '94111',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -1032,6 +1026,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
+    sale_price: null,
 
     // Location data
     census_tract: '06037311700',
@@ -1049,10 +1044,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '91209-0313',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -2026,6 +2017,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: null,
     parcel_value_type: 'ASSESSED',
+    sale_price: null,
 
     // Location data
     census_tract: '06085508102',
@@ -2043,10 +2035,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '95032',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -2606,6 +2594,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2023',
     parcel_value_type: 'ASSESSED',
+    sale_price: null,
 
     // Location data
     census_tract: '17031839100',
@@ -2623,10 +2612,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '60690-3879',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -3456,6 +3441,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '',
     parcel_value_type: '',
+    sale_price: null,
 
     // Location data
     census_tract: '',
@@ -3473,10 +3459,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -4200,6 +4182,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    sale_price: null,
 
     // Location data
     census_tract: '36061009400',
@@ -4217,10 +4200,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '10017-3217',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
@@ -6105,6 +6084,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'MARKET',
+    sale_price: null,
 
     // Location data
     census_tract: '53061041304',
@@ -6122,10 +6102,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: '30355-0427',
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data

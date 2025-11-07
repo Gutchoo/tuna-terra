@@ -22,11 +22,11 @@ import {
 import type { Property } from '@/lib/supabase'
 import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 import { useDeleteProperty, useDeleteProperties, useRefreshProperty } from '@/hooks/use-properties'
-import { useCensusData } from '@/hooks/useCensusData'
 import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 import { exportPropertiesToCSV } from '@/lib/csv-export'
+import { PropertyModal } from './PropertyModal'
 
 type ViewMode = 'cards' | 'table' | 'map'
 
@@ -55,9 +55,12 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerPropertyId, setDrawerPropertyId] = useState<string | null>(null)
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -77,17 +80,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  // Census data hook
-  const { censusData, isLoading: isLoadingCensus, error: censusError } = useCensusData(properties)
-
-  // Handle census data errors
-  useEffect(() => {
-    if (censusError) {
-      console.warn('Census data error:', censusError)
-      // Don't show toast for census errors as it's not critical to property display
-    }
-  }, [censusError])
 
   // Load saved view preference
   useEffect(() => {
@@ -175,16 +167,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     setSearchQuery(query)
   }
 
-  // Card expansion
-  const handleToggleExpand = (id: string) => {
-    const newExpanded = new Set(expandedCards)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedCards(newExpanded)
-  }
 
   // Row selection
   const handleRowSelect = (id: string, selected: boolean) => {
@@ -335,6 +317,56 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   // Helper to determine which properties to show (all properties if no search matches, filtered otherwise)
   const displayProperties = filteredProperties.length === 0 && searchQuery.trim().length > 0 ? properties : filteredProperties
 
+  // Get selected property for drawer
+  const drawerProperty = drawerPropertyId ? properties.find(p => p.id === drawerPropertyId) : undefined
+
+  // Handle property click to open drawer
+  const handlePropertyClick = (propertyId: string) => {
+    setDrawerPropertyId(propertyId)
+    setDrawerOpen(true)
+  }
+
+  // Handle property selection in map view - only updates selection, doesn't open modal
+  const handleMapPropertySelect = (propertyId: string) => {
+    setSelectedPropertyId(propertyId)
+    // Don't open drawer in map view - let the map center on the property instead
+  }
+
+  // Handle drawer close
+  const handleDrawerClose = (open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      // Optional: clear property ID after animation completes
+      setTimeout(() => setDrawerPropertyId(null), 300)
+    }
+  }
+
+  // Handle property update from modal
+  const handlePropertyUpdate = async (propertyId: string, updates: Partial<Property>) => {
+    console.log('[PropertyView] handlePropertyUpdate called', { propertyId, updates })
+
+    // Call the API to update the property
+    const response = await fetch(`/api/properties/${propertyId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update property')
+    }
+
+    const { property: updatedProperty } = await response.json()
+    console.log('[PropertyView] API returned updated property:', updatedProperty)
+
+    // Update the properties array with the updated property
+    const updatedProperties = properties.map(p =>
+      p.id === propertyId ? { ...p, ...updatedProperty } : p
+    )
+    console.log('[PropertyView] Calling onPropertiesChange with updated properties')
+    onPropertiesChange(updatedProperties)
+  }
+
   return (
     <div>
       {/* Perfect Alignment Container - Search Input, View Switcher, Add Button */}
@@ -423,13 +455,9 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
         {viewMode === 'cards' ? (
         <PropertyCardView
           properties={displayProperties}
-          expandedCards={expandedCards}
-          onToggleExpand={handleToggleExpand}
           onRefresh={canEdit ? handleRefreshClick : undefined}
           onDelete={canEdit ? handleDeleteClick : undefined}
-          refreshingPropertyId={refreshingPropertyId}
-          censusData={censusData}
-          isLoadingCensus={isLoadingCensus}
+          onPropertyClick={handlePropertyClick}
           canEdit={canEdit}
           userRole={userRole}
         />
@@ -438,11 +466,9 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           <FullScreenMapView
             properties={displayProperties}
             selectedPropertyId={selectedPropertyId}
-            onPropertySelect={setSelectedPropertyId}
+            onPropertySelect={handleMapPropertySelect}
             onPropertiesChange={onPropertiesChange}
             onError={onError}
-            censusData={censusData}
-            isLoadingCensus={isLoadingCensus}
           />
         </div>
       ) : (
@@ -453,10 +479,9 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           onSelectAll={handleSelectAll}
           onRefresh={canEdit ? handleRefreshClick : undefined}
           onDelete={canEdit ? handleDeleteClick : undefined}
+          onPropertyClick={handlePropertyClick}
           refreshingPropertyId={refreshingPropertyId}
           visibleColumns={visibleColumns}
-          censusData={censusData}
-          isLoadingCensus={isLoadingCensus}
           canEdit={canEdit}
           userRole={userRole}
         />
@@ -502,7 +527,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Multiple Properties</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedRows.size} properties? 
+              Are you sure you want to delete {selectedRows.size} properties?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -518,6 +543,16 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Property Modal */}
+      <PropertyModal
+        open={drawerOpen}
+        onOpenChange={handleDrawerClose}
+        propertyId={drawerPropertyId}
+        portfolioId={portfolioId}
+        property={drawerProperty}
+        onPropertyUpdate={handlePropertyUpdate}
+      />
       </div>
     </div>
   )

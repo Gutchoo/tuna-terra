@@ -10,8 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, Calculator, TrendingUp } from "lucide-react"
+import { Calculator } from "lucide-react"
 import { useFinancialModeling } from "@/lib/contexts/FinancialModelingContext"
 import { formatCurrency, cn } from "@/lib/utils"
 
@@ -35,8 +34,8 @@ interface CashflowData {
 }
 
 export function CashflowsContent() {
-  const { state, calculateResults } = useFinancialModeling()
-  const { assumptions, results, isCalculating } = state
+  const { state } = useFinancialModeling()
+  const { assumptions, results } = state
   const [cashflowData, setCashflowData] = useState<CashflowData | null>(null)
 
   // Calculate cashflow data from assumptions and results
@@ -133,47 +132,6 @@ export function CashflowsContent() {
       setCashflowData(data)
     }
   }, [results, assumptions])
-
-  const exportToCsv = () => {
-    if (!cashflowData) return
-    
-    const years = cashflowData.potentialRentalIncome.length
-    const headers = ['Line Item', ...Array(years).fill(0).map((_, i) => `Year ${i + 1}`)]
-    
-    const detailedRows = [
-      ['Potential Rental Income', ...cashflowData.potentialRentalIncome],
-      ['Vacancy & Credit Loss', ...cashflowData.vacancyAndCreditLoss],
-      ['Effective Rental Income', ...cashflowData.effectiveRentalIncome],
-      ['Other Income', ...cashflowData.otherIncome],
-      ['Gross Operating Income', ...cashflowData.grossOperatingIncome],
-      ['Total Operating Expenses', ...cashflowData.totalOperatingExpenses],
-      ['Net Operating Income', ...cashflowData.netOperatingIncome],
-      ['Interest Expense', ...cashflowData.interestExpense],
-      ['Cost Recovery (Depreciation)', ...cashflowData.depreciation],
-      ['Loan Costs Amortization', ...cashflowData.loanCostsAmortization],
-      ['Real Estate Taxable Income', ...cashflowData.realEstateTaxableIncome]
-    ]
-    
-    const summaryRows = [
-      ['', ...Array(years).fill('')], // Empty separator row
-      ['CASH FLOW SUMMARY', ...Array(years).fill('')],
-      ['Net Operating Income', ...cashflowData.netOperatingIncome],
-      ['Annual Debt Service', ...cashflowData.annualDebtService],
-      ['Cash Flow Before Taxes', ...cashflowData.cashFlowBeforeTaxes],
-      ['Tax Liability', ...cashflowData.taxLiability],
-      ['Cash Flow After Taxes', ...cashflowData.cashFlowAfterTaxes]
-    ]
-    
-    const csvContent = [headers, ...detailedRows, ...summaryRows]
-    const csvString = csvContent.map(row => row.join(',')).join('\n')
-    const blob = new Blob([csvString], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'cashflow-analysis.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
-  }
 
   const formatValue = (value: number) => {
     return formatCurrency(Math.round(value * 100) / 100) // Round to 2 decimal places

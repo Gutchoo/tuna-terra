@@ -9,14 +9,10 @@ import { useState } from 'react'
 
 interface DemoPropertyViewWrapperProps {
   properties: Property[]
-  sampleProperties: Property[]
-  demoProperties: Property[]
 }
 
 export function DemoPropertyViewWrapper({
   properties,
-  sampleProperties,
-  demoProperties
 }: DemoPropertyViewWrapperProps) {
   const {
     handleRefresh,

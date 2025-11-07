@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
 import { z } from 'zod'
+import { sanitizePropertyForClient } from '@/lib/api/sanitizers'
 
 const bulkRefreshSchema = z.object({
   propertyIds: z.array(z.string()).min(1, 'At least one property ID is required')
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await response.json()
-        return { id: propertyId, success: true, property: result.property }
+        return { id: propertyId, success: true, property: sanitizePropertyForClient(result.property) }
       } catch (error) {
         return { 
           id: propertyId, 

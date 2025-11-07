@@ -29,59 +29,41 @@ export const AVAILABLE_COLUMNS: TableColumn[] = [
   { key: 'state', label: 'State', category: 'basic', defaultVisible: true },
   { key: 'zip_code', label: 'Zip Code', category: 'basic', defaultVisible: true },
   { key: 'apn', label: 'APN', category: 'basic', defaultVisible: true },
-  
-  // Property details
+
+  // Property details (keeping owner field for legacy data)
   { key: 'owner', label: 'Owner', category: 'property', defaultVisible: true },
-  { key: 'year_built', label: 'Year Built', category: 'property', defaultVisible: true },
-  { key: 'use_code', label: 'Use Code', category: 'property', defaultVisible: false },
-  { key: 'use_description', label: 'Use Description', category: 'property', defaultVisible: false },
-  { key: 'zoning', label: 'Zoning', category: 'property', defaultVisible: true },
-  { key: 'zoning_description', label: 'Zoning Description', category: 'property', defaultVisible: true },
-  { key: 'num_stories', label: 'Stories', category: 'property', defaultVisible: false },
-  { key: 'num_units', label: 'Units', category: 'property', defaultVisible: false },
-  { key: 'num_rooms', label: 'Rooms', category: 'property', defaultVisible: false },
-  { key: 'subdivision', label: 'Subdivision', category: 'property', defaultVisible: false },
-  { key: 'lot_size_acres', label: 'Lot Size (Acres)', category: 'property', defaultVisible: false },
-  { key: 'lot_size_sqft', label: 'Lot Size (Sq Ft)', category: 'property', defaultVisible: false },
-  
+  { key: 'insurance_provider', label: 'Insurance Provider', category: 'property', defaultVisible: false },
+  { key: 'property_management', label: 'Property Management', category: 'property', defaultVisible: false },
+
   // Financial data
-  { key: 'assessed_value', label: 'Assessed Value', category: 'financial', defaultVisible: true },
-  { key: 'improvement_value', label: 'Improvement Value', category: 'financial', defaultVisible: false },
-  { key: 'land_value', label: 'Land Value', category: 'financial', defaultVisible: false },
-  { key: 'last_sale_price', label: 'Last Sale Price', category: 'financial', defaultVisible: false },
+  { key: 'purchase_price', label: 'Purchase Price', category: 'financial', defaultVisible: false },
+  { key: 'purchase_date', label: 'Purchase Date', category: 'financial', defaultVisible: false },
+  { key: 'sale_price', label: 'Sale Price', category: 'financial', defaultVisible: false },
   { key: 'sale_date', label: 'Sale Date', category: 'financial', defaultVisible: false },
-  { key: 'tax_year', label: 'Tax Year', category: 'financial', defaultVisible: false },
-  
-  // Location data
-  { key: 'county', label: 'County', category: 'location', defaultVisible: false },
-  { key: 'census_tract', label: 'Census Tract', category: 'location', defaultVisible: false },
-  { key: 'census_block', label: 'Census Block', category: 'location', defaultVisible: false },
-  { key: 'qoz_status', label: 'QOZ Status', category: 'other', defaultVisible: true },
-  
-  // Demographics (virtual columns)
-  { key: 'median_income', label: 'Area Median Income', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'mean_income', label: 'Area Mean Income', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'households', label: 'Area Households', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'population', label: 'Area Population', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'median_age', label: 'Median Age', category: 'demographics', defaultVisible: false, virtual: true },
-  
-  // Housing demographics (virtual columns from DP04)
-  { key: 'total_housing_units', label: 'Total Housing Units', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'median_rent', label: 'Area Median Rent', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'owner_occupied_units', label: 'Owner Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'renter_occupied_units', label: 'Renter Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'avg_household_size_owner', label: 'Avg HH Size (Owner)', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'avg_household_size_renter', label: 'Avg HH Size (Renter)', category: 'demographics', defaultVisible: false, virtual: true },
-  
-  // Education demographics (virtual columns from S1501)
-  { key: 'bachelor_rate_25_34', label: 'Bachelor Rate (25-34)', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'bachelor_rate_35_44', label: 'Bachelor Rate (35-44)', category: 'demographics', defaultVisible: false, virtual: true },
-  { key: 'bachelor_rate_45_64', label: 'Bachelor Rate (45-64)', category: 'demographics', defaultVisible: false, virtual: true },
-  
+
+  // DISABLED: Demographics (virtual columns) - Census API integration removed
+  // To restore: uncomment these lines and restore Census API integration
+  // { key: 'median_income', label: 'Area Median Income', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'mean_income', label: 'Area Mean Income', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'households', label: 'Area Households', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'population', label: 'Area Population', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'median_age', label: 'Median Age', category: 'demographics', defaultVisible: false, virtual: true },
+
+  // DISABLED: Housing demographics (virtual columns from DP04)
+  // { key: 'total_housing_units', label: 'Total Housing Units', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'median_rent', label: 'Area Median Rent', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'owner_occupied_units', label: 'Owner Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'renter_occupied_units', label: 'Renter Occupied Units', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'avg_household_size_owner', label: 'Avg HH Size (Owner)', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'avg_household_size_renter', label: 'Avg HH Size (Renter)', category: 'demographics', defaultVisible: false, virtual: true },
+
+  // DISABLED: Education demographics (virtual columns from S1501)
+  // { key: 'bachelor_rate_25_34', label: 'Bachelor Rate (25-34)', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'bachelor_rate_35_44', label: 'Bachelor Rate (35-44)', category: 'demographics', defaultVisible: false, virtual: true },
+  // { key: 'bachelor_rate_45_64', label: 'Bachelor Rate (45-64)', category: 'demographics', defaultVisible: false, virtual: true },
+
   // Other
-  { key: 'created_at', label: 'Added', category: 'other', defaultVisible: true },
   { key: 'user_notes', label: 'Notes', category: 'other', defaultVisible: false },
-  { key: 'tags', label: 'Tags', category: 'other', defaultVisible: false },
 ]
 
 interface ColumnSelectorProps {

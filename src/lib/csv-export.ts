@@ -37,7 +37,7 @@ function formatPropertyValue(value: unknown, key: keyof Property): string {
   }
 
   // Handle dates - format to ISO string
-  if (key === 'created_at' || key === 'updated_at' || key === 'sale_date') {
+  if (key === 'created_at' || key === 'updated_at' || key === 'sale_date' || key === 'purchase_date') {
     try {
       const date = new Date(value as string)
       return date.toISOString().split('T')[0] // Just the date part
@@ -61,14 +61,14 @@ function formatPropertyValue(value: unknown, key: keyof Property): string {
 
 /**
  * Export properties to CSV file
- * Includes all Regrid property fields, excluding virtual demographic columns
+ * Includes essential property fields for user management
  */
 export function exportPropertiesToCSV(properties: Property[], portfolioName: string): void {
   if (properties.length === 0) {
     throw new Error('No properties to export')
   }
 
-  // Define columns to include (all real Property fields, no virtual demographics)
+  // Define columns to include (simplified essential fields)
   const columns: Array<{ key: keyof Property; label: string }> = [
     // Core identifier
     { key: 'apn', label: 'APN' },
@@ -78,49 +78,17 @@ export function exportPropertiesToCSV(properties: Property[], portfolioName: str
     { key: 'city', label: 'City' },
     { key: 'state', label: 'State' },
     { key: 'zip_code', label: 'Zip Code' },
-    { key: 'county', label: 'County' },
-
-    // Coordinates
-    { key: 'lat', label: 'Latitude' },
-    { key: 'lng', label: 'Longitude' },
 
     // Property details
-    { key: 'year_built', label: 'Year Built' },
     { key: 'owner', label: 'Owner' },
-    { key: 'use_code', label: 'Use Code' },
-    { key: 'use_description', label: 'Use Description' },
-    { key: 'zoning', label: 'Zoning' },
-    { key: 'zoning_description', label: 'Zoning Description' },
-    { key: 'num_stories', label: 'Stories' },
-    { key: 'num_units', label: 'Units' },
-    { key: 'num_rooms', label: 'Rooms' },
-    { key: 'subdivision', label: 'Subdivision' },
-    { key: 'lot_size_acres', label: 'Lot Size (Acres)' },
-    { key: 'lot_size_sqft', label: 'Lot Size (Sq Ft)' },
+    { key: 'insurance_provider', label: 'Insurance Provider' },
+    { key: 'management_company', label: 'Property Management' },
 
     // Financial data
-    { key: 'assessed_value', label: 'Assessed Value' },
-    { key: 'improvement_value', label: 'Improvement Value' },
-    { key: 'land_value', label: 'Land Value' },
-    { key: 'last_sale_price', label: 'Last Sale Price' },
+    { key: 'purchase_date', label: 'Purchase Date' },
+    { key: 'purchase_price', label: 'Purchase Price' },
+    { key: 'sale_price', label: 'Sale Price' },
     { key: 'sale_date', label: 'Sale Date' },
-    { key: 'tax_year', label: 'Tax Year' },
-    { key: 'parcel_value_type', label: 'Parcel Value Type' },
-
-    // Location data
-    { key: 'census_tract', label: 'Census Tract' },
-    { key: 'census_block', label: 'Census Block' },
-    { key: 'qoz_status', label: 'QOZ Status' },
-    { key: 'qoz_tract', label: 'QOZ Tract' },
-
-    // Owner mailing address
-    { key: 'owner_mailing_address', label: 'Owner Mailing Address' },
-    { key: 'owner_mail_city', label: 'Owner Mail City' },
-    { key: 'owner_mail_state', label: 'Owner Mail State' },
-    { key: 'owner_mail_zip', label: 'Owner Mail Zip' },
-
-    // User data
-    { key: 'user_notes', label: 'Notes' },
   ]
 
   // Build CSV header row

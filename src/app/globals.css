@@ -330,7 +330,6 @@
   animation-delay: 500ms;
 }
 
-
 /* Mobile optimizations */
 @media (max-width: 640px) {
   .glass-card {

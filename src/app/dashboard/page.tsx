@@ -1,21 +1,19 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Suspense, useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { PropertyView } from '@/components/properties/PropertyView'
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { EmptyPropertiesState } from '@/components/welcome/EmptyPropertiesState'
 import { VirtualSamplePortfolioState } from '@/components/welcome/VirtualSamplePortfolioState'
 import { AddPropertiesModal } from '@/components/modals/AddPropertiesModal'
 import { CreatePortfolioModal } from '@/components/modals/CreatePortfolioModal'
 import { PropertyFlowDebugPanel } from '@/components/debug/PropertyFlowDebugPanel'
 import { PortfolioStatusDebugPanel } from '@/components/debug/PortfolioStatusDebugPanel'
-import { toast } from 'sonner'
 import { useDefaultPortfolio, useUpdateLastUsedPortfolio } from '@/hooks/use-portfolios'
 import { useProperties } from '@/hooks/use-properties'
 import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
+import { useQueryClient } from '@tanstack/react-query'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -28,7 +26,6 @@ function DashboardPageContent() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [showAddPropertiesModal, setShowAddPropertiesModal] = useState(false)
   const [showCreatePortfolioModal, setShowCreatePortfolioModal] = useState(false)
-  const [modalInitialMethod, setModalInitialMethod] = useState<'csv' | 'apn' | 'address' | undefined>(undefined)
   
   // Use refs to prevent unnecessary effect re-runs and track state
   const lastPortfolioIdRef = useRef<string | null>(currentPortfolioId)
@@ -37,11 +34,8 @@ function DashboardPageContent() {
   
   // Debug event listeners for modal control
   useEffect(() => {
-    const handleDebugOpenModal = (e: Event) => {
-      const customEvent = e as CustomEvent
-      const method = customEvent.detail?.method as 'csv' | 'apn' | 'address' | undefined
+    const handleDebugOpenModal = () => {
       setShowAddPropertiesModal(true)
-      setModalInitialMethod(method)
     }
 
     const handleDebugCloseModal = () => {
@@ -65,7 +59,8 @@ function DashboardPageContent() {
   // Use optimized hooks for data fetching
   const { data: defaultPortfolio, portfolios, isLoading: portfoliosLoading } = useDefaultPortfolio(true)
   const updateLastUsedPortfolio = useUpdateLastUsedPortfolio()
-  
+  const queryClient = useQueryClient()
+
   // Debug: Log what we're passing to useProperties
   console.log('[DASHBOARD] Calling useProperties with:', currentPortfolioId, 'enabled:', !!currentPortfolioId)
   
@@ -91,16 +86,12 @@ function DashboardPageContent() {
       if (portfolio) {
         console.log('[DASHBOARD] Portfolio created successfully:', portfolio.name)
         hasShownToastRef.current = true
-        
-        toast.success('Portfolio created successfully!', {
-          description: `"${portfolio.name}" is ready for your properties`
-        })
-        
+
         // Clean up URL without triggering navigation
         const newUrl = new URL(window.location.href)
         newUrl.searchParams.delete('created')
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
-        
+
         // Reset states for valid portfolio
         setIsRedirecting(false)
         return
@@ -174,7 +165,8 @@ function DashboardPageContent() {
     // 3. The portfolio exists in user's portfolios
     // 4. It's not the virtual sample portfolio
     // 5. The portfolio is not already marked as default/last-used (prevent redundant calls)
-    if (currentPortfolioId && !portfoliosLoading && portfolios && portfolios.length > 0) {
+    // 6. The mutation is not already in progress (prevent duplicate API calls)
+    if (currentPortfolioId && !portfoliosLoading && portfolios && portfolios.length > 0 && !updateLastUsedPortfolio.isPending) {
       const currentPortfolioData = portfolios.find(p => p.id === currentPortfolioId)
 
       if (currentPortfolioData &&
@@ -185,11 +177,12 @@ function DashboardPageContent() {
         console.log('[DASHBOARD] Setting new last-used portfolio:', currentPortfolioId)
       }
     }
-  }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio])
+  }, [currentPortfolioId, portfoliosLoading, portfolios, updateLastUsedPortfolio.isPending])
 
   const handlePropertiesChange = () => {
-    // Properties are now managed by React Query
-    // Individual property operations should invalidate the cache instead
+    console.log('[DASHBOARD] handlePropertiesChange called - invalidating properties cache')
+    // Invalidate React Query cache to refetch fresh data
+    queryClient.invalidateQueries({ queryKey: ['properties'] })
   }
 
   const handleError = (errorMessage: string) => {
@@ -269,11 +262,10 @@ function DashboardPageContent() {
     if (properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) {
       const currentPortfolio = portfolios?.find(p => p.id === currentPortfolioId)
       return (
-        <EmptyPropertiesState 
+        <EmptyPropertiesState
           portfolioId={currentPortfolioId}
           portfolioName={currentPortfolio?.name}
-          onAddProperties={(method) => {
-            setModalInitialMethod(method)
+          onAddProperties={() => {
             setShowAddPropertiesModal(true)
           }}
         />
@@ -289,8 +281,7 @@ function DashboardPageContent() {
         onError={handleError}
         portfolioId={currentPortfolioId}
         portfolioName={currentPortfolio?.name}
-        onAddProperties={(method) => {
-          setModalInitialMethod(method)
+        onAddProperties={() => {
           setShowAddPropertiesModal(true)
         }}
       />
@@ -298,43 +289,22 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      
-      {/* Dashboard Header */}
-      <DashboardHeader
-        onPortfolioChange={(portfolioId) => {
-          // Note: DashboardHeader handles URL updates directly
-          // This callback is just for potential future use
-          console.log('Portfolio changed to:', portfolioId)
-        }}
-      />
-
-      {/* Conditional layout - empty states get full height, content gets card wrapper */}
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8">
+      {/* Main Content Area */}
       {(properties.length === 0 && currentPortfolioId && !isVirtualSamplePortfolio(currentPortfolioId)) || (currentPortfolioId && isVirtualSamplePortfolio(currentPortfolioId) && properties.length === 0) ? (
         <div className="flex-1 flex flex-col">
           {renderContent()}
         </div>
       ) : (
-        <div className="p-6">
-          <Card>
-            <CardContent className="pt-0">
-              {renderContent()}
-            </CardContent>
-          </Card>
+        <div className="flex-1">
+          {renderContent()}
         </div>
       )}
 
       <AddPropertiesModal
         open={showAddPropertiesModal}
-        onOpenChange={(open) => {
-          setShowAddPropertiesModal(open)
-          // Reset the initial method when modal is closed
-          if (!open) {
-            setModalInitialMethod(undefined)
-          }
-        }}
+        onOpenChange={setShowAddPropertiesModal}
         portfolioId={currentPortfolioId}
-        initialMethod={modalInitialMethod}
         onCreatePortfolio={() => setShowCreatePortfolioModal(true)}
       />
       <CreatePortfolioModal
@@ -352,27 +322,10 @@ function DashboardPageContent() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col min-h-screen">
-        {/* Header Skeleton - always show during loading since we don't know portfolio state yet */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-48 bg-muted rounded animate-pulse" />
-                <div className="h-6 w-24 bg-muted rounded animate-pulse" />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-32 bg-muted rounded animate-pulse" />
-                <div className="h-9 w-28 bg-muted rounded animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
+      <div className="flex-1 flex flex-col justify-center p-4">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     }>

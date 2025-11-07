@@ -193,11 +193,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 407.0038,
     lot_size_sqft: 17729455,
-    
+
     // Financial & tax data
     tax_year: null,
     parcel_value_type: 'ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06001982100',
     census_block: '060019821001001',
@@ -263,6 +264,13 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tags: null,
     insurance_provider: null,
     maintenance_history: null,
+    purchase_price: null,
+    purchase_date: null,
+    management_company: null,
+    mortgage_amount: null,
+    lender_name: null,
+    loan_rate: null,
+    loan_maturity_date: null,
     is_sample: true,
     portfolio_id: 'sample-portfolio-virtual',
     created_at: '2024-01-01T00:00:00.000Z',
@@ -611,11 +619,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 594.37101,
     lot_size_sqft: 25891340,
-    
+
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06037980028',
     census_block: '060379800281018',
@@ -988,6 +997,13 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tags: null,
     insurance_provider: null,
     maintenance_history: null,
+    purchase_price: null,
+    purchase_date: null,
+    management_company: null,
+    mortgage_amount: null,
+    lender_name: null,
+    loan_rate: null,
+    loan_maturity_date: null,
     is_sample: true,
     portfolio_id: 'sample-portfolio-virtual',
     created_at: '2024-01-01T00:00:00.000Z',
@@ -1075,11 +1091,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 4.20946,
     lot_size_sqft: 183368,
-    
+
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06037701902',
     census_block: '060377019023020',
@@ -1191,6 +1208,13 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     tags: null,
     insurance_provider: null,
     maintenance_history: null,
+    purchase_price: null,
+    purchase_date: null,
+    management_company: null,
+    mortgage_amount: null,
+    lender_name: null,
+    loan_rate: null,
+    loan_maturity_date: null,
     is_sample: true,
     portfolio_id: 'sample-portfolio-virtual',
     created_at: '2024-01-01T00:00:00.000Z',

@@ -38,14 +38,8 @@ export function PublicNavigation({
           <nav className="hidden md:flex items-center gap-fluid-md">
             {/* Development theme toggle - easy to comment out */}
             <ThemeToggle />
-            <Link href="/financial-modeling" className="text-fluid-sm font-medium hover:text-primary transition-colors">
-              Financial Modeling
-            </Link>
-            <Link href="/education" className="text-fluid-sm font-medium hover:text-primary transition-colors">
-              Education
-            </Link>
           </nav>
-          
+
           <div className="flex gap-fluid-xs items-center">
             <AnimatedButton 
               variant="ghost" 

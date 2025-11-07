@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusIcon, UsersIcon, BuildingIcon } from 'lucide-react'
+import { Settings, UsersIcon, BuildingIcon } from 'lucide-react'
 import { InlineEditablePortfolioName } from './InlineEditablePortfolioName'
 import { usePortfolios, useUpdatePortfolioName } from '@/hooks/use-portfolios'
+import { isVirtualSamplePortfolio } from '@/lib/sample-portfolio'
 // Types imported but may be used in future interface definitions
 
 interface PortfolioSelectorProps {
@@ -125,11 +126,8 @@ export function PortfolioSelector({
                   ) : (
                     <span>{selectedPortfolio.name}</span>
                   )}
-                  {selectedPortfolio.is_sample && (
-                    <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
-                  )}
-                  {selectedPortfolio.is_default && !selectedPortfolio.is_sample && (
-                    <Badge variant="secondary" className="text-xs">Default</Badge>
+                  {isVirtualSamplePortfolio(selectedPortfolio.id) && (
+                    <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
                   )}
                 </div>
               )}
@@ -141,15 +139,13 @@ export function PortfolioSelector({
                 <div className="flex items-center gap-2">
                   <BuildingIcon className="h-4 w-4" />
                   <span>{portfolio.name}</span>
-                  {portfolio.is_sample && (
-                    <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
+                  {isVirtualSamplePortfolio(portfolio.id) ? (
+                    <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
+                  ) : (
+                    <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
+                      {portfolio.membership_role}
+                    </Badge>
                   )}
-                  {portfolio.is_default && !portfolio.is_sample && (
-                    <Badge variant="secondary" className="text-xs">Default</Badge>
-                  )}
-                  <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
-                    {portfolio.membership_role}
-                  </Badge>
                 </div>
               </SelectItem>
             ))}
@@ -160,11 +156,10 @@ export function PortfolioSelector({
           <Button
             variant="outline"
             size="sm"
-            onClick={handleCreatePortfolio}
+            onClick={() => router.push('/dashboard/portfolios')}
             className="flex items-center gap-2"
           >
-            <PlusIcon className="h-4 w-4" />
-            New
+            <Settings className="h-4 w-4" />
           </Button>
         )}
       </div>
@@ -180,11 +175,11 @@ export function PortfolioSelector({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleCreatePortfolio}
+              onClick={() => router.push('/dashboard/portfolios')}
               className="flex items-center gap-2"
             >
-              <PlusIcon className="h-4 w-4" />
-              Create Portfolio
+              <Settings className="h-4 w-4" />
+              Manage
             </Button>
           )}
         </div>
@@ -209,11 +204,8 @@ export function PortfolioSelector({
                       ) : (
                         <span className="font-medium">{selectedPortfolio.name}</span>
                       )}
-                      {selectedPortfolio.is_sample && (
-                        <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
-                      )}
-                      {selectedPortfolio.is_default && !selectedPortfolio.is_sample && (
-                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                      {isVirtualSamplePortfolio(selectedPortfolio.id) && (
+                        <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -242,11 +234,8 @@ export function PortfolioSelector({
                   <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{portfolio.name}</span>
-                      {portfolio.is_sample && (
-                        <Badge className="text-xs bg-purple-100 text-purple-800">Sample</Badge>
-                      )}
-                      {portfolio.is_default && !portfolio.is_sample && (
-                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                      {isVirtualSamplePortfolio(portfolio.id) && (
+                        <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

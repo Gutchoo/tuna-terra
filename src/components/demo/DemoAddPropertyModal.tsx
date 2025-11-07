@@ -5,10 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  CrownIcon,
-  InfoIcon
-} from 'lucide-react'
 import { useDemo } from '@/contexts/DemoContext'
 import { AuthModal } from '@/components/modals/AuthModal'
 import { CURATED_DEMO_PROPERTIES, type CuratedDemoProperty } from '@/lib/curated-demo-properties'
@@ -219,7 +215,7 @@ export function DemoAddPropertyModal({
               Ready to manage your own portfolio?
             </p>
             <p className="text-sm md:text-base text-muted-foreground mb-6">
-              Create a free account for 10 monthly property lookups, saved portfolios, and comprehensive property data
+              Create a free account for saved portfolios and comprehensive property data
             </p>
             <Button
               size="lg"

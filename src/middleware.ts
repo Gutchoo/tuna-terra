@@ -74,11 +74,6 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
-  // Allow Census API access for demo users - provides public demographic data
-  if (req.nextUrl.pathname.startsWith('/api/census/')) {
-    return res
-  }
-
   // Public auth routes
   const authPaths = ['/sign-in', '/sign-up']
   const isAuthPath = authPaths.some(path => 
