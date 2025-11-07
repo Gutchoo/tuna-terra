@@ -27,8 +27,8 @@ const features = [
   },
   {
     icon: UsersIcon,
-    title: 'More Monthly Lookups',
-    description: 'Get additional property lookups each month'
+    title: 'Portfolio Collaboration',
+    description: 'Share portfolios with team members'
   },
   {
     icon: MapIcon,
@@ -80,7 +80,7 @@ export function ConversionPrompt({
                   <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  10 free lookups monthly • No credit card required
+                  No credit card required
                 </p>
               </div>
             </div>
@@ -146,7 +146,7 @@ export function ConversionPrompt({
               <ArrowRightIcon className="w-4 h-4 ml-2" />
             </Button>
             <p className="text-xs text-muted-foreground">
-              10 free lookups monthly • No credit card required • Set up in 30 seconds
+              No credit card required • Set up in 30 seconds
             </p>
           </div>
         </CardContent>

@@ -328,6 +328,12 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     setDrawerOpen(true)
   }
 
+  // Handle property selection in map view - only updates selection, doesn't open modal
+  const handleMapPropertySelect = (propertyId: string) => {
+    setSelectedPropertyId(propertyId)
+    // Don't open drawer in map view - let the map center on the property instead
+  }
+
   // Handle drawer close
   const handleDrawerClose = (open: boolean) => {
     setDrawerOpen(open)
@@ -483,7 +489,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
           <FullScreenMapView
             properties={displayProperties}
             selectedPropertyId={selectedPropertyId}
-            onPropertySelect={handlePropertyClick}
+            onPropertySelect={handleMapPropertySelect}
             onPropertiesChange={onPropertiesChange}
             onError={onError}
           />

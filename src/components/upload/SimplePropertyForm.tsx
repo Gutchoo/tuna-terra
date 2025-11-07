@@ -20,6 +20,9 @@ const propertySchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  county: z.string().optional(),
 }).refine(
   (data) => {
     if (data.inputMode === 'address') {
@@ -114,14 +117,33 @@ export function SimplePropertyForm({
         c.types.includes('postal_code')
       )?.longText || '';
 
+      // Extract county (administrative_area_level_2) and strip " County" suffix
+      const countyRaw = components.find((c: any) =>
+        c.types.includes('administrative_area_level_2')
+      )?.longText || '';
+      const county = countyRaw.replace(/ County$/i, '').trim();
+
+      // Extract coordinates from location
+      const lat = data.place?.location?.latitude;
+      const lng = data.place?.location?.longitude;
+
       // Build full address
       const fullAddress = `${streetNumber} ${route}`.trim();
 
-      // Update form
+      // Update form with address and geocoding data
       setValue('address', fullAddress);
       setValue('city', city);
       setValue('state', state);
       setValue('zip_code', zipCode);
+
+      // Set geocoding fields if available
+      if (lat !== undefined && lng !== undefined) {
+        setValue('lat', lat);
+        setValue('lng', lng);
+      }
+      if (county) {
+        setValue('county', county);
+      }
 
       setShowSuggestions(false);
     } catch (error) {
@@ -141,6 +163,9 @@ export function SimplePropertyForm({
         city: data.city || null,
         state: data.state || null,
         zip_code: data.zip_code || null,
+        lat: data.lat || null,
+        lng: data.lng || null,
+        county: data.county || null,
         created_at: new Date().toISOString(),
       };
 
@@ -169,6 +194,11 @@ export function SimplePropertyForm({
       if (data.city) propertyData.city = data.city;
       if (data.state) propertyData.state = data.state;
       if (data.zip_code) propertyData.zip_code = data.zip_code;
+
+      // Add geocoding fields
+      if (data.lat !== undefined) propertyData.lat = data.lat;
+      if (data.lng !== undefined) propertyData.lng = data.lng;
+      if (data.county) propertyData.county = data.county;
 
       propertyData.use_pro_lookup = false; // No external API lookup
 
@@ -265,9 +295,6 @@ export function SimplePropertyForm({
                 </button>
               ))}
             </div>
-          )}
-          {isLoadingPlaces && addressValue.length >= 3 && (
-            <p className="text-xs text-muted-foreground mt-1">Searching addresses...</p>
           )}
         </div>
       )}

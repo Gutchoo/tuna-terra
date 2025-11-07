@@ -5,7 +5,9 @@ import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog"
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Property } from "@/lib/supabase"
 import { PropertyOverviewSection } from "./PropertyOverviewSection"
@@ -109,6 +111,11 @@ export function PropertyModal({
       <DialogContent
         className="w-full h-[100dvh] sm:w-[90vw] lg:w-[85vw] xl:w-[80vw] 2xl:w-[75vw] sm:max-w-none sm:h-[95vh] overflow-hidden p-0 sm:rounded-lg gap-0 flex flex-col"
       >
+        <VisuallyHidden>
+          <DialogTitle>
+            {localProperty?.address || 'Property Details'}
+          </DialogTitle>
+        </VisuallyHidden>
         {localProperty ? (
           <>
             {/* Two-column layout for desktop, stacked for mobile */}

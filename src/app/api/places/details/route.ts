@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'id,formattedAddress,addressComponents',
+        'X-Goog-FieldMask': 'id,formattedAddress,addressComponents,location',
       },
     })
 

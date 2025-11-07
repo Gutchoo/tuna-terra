@@ -10,6 +10,9 @@ interface CreatePropertyData {
   city?: string
   state?: string
   zip_code?: string
+  lat?: number
+  lng?: number
+  county?: string
   regrid_id?: string
   user_notes?: string
   insurance_provider?: string

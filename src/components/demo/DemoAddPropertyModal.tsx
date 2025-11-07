@@ -219,7 +219,7 @@ export function DemoAddPropertyModal({
               Ready to manage your own portfolio?
             </p>
             <p className="text-sm md:text-base text-muted-foreground mb-6">
-              Create a free account for 10 monthly property lookups, saved portfolios, and comprehensive property data
+              Create a free account for saved portfolios and comprehensive property data
             </p>
             <Button
               size="lg"
