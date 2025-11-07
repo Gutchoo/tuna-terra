@@ -22,6 +22,10 @@ export function usePortfolioRole(portfolioId: string | null) {
         return 'viewer' as const
       }
 
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
       // First try to get role from user_accessible_portfolios view
       const { data: portfolioData, error } = await supabase
         .from('user_accessible_portfolios')

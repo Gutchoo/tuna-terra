@@ -26,17 +26,17 @@ export function HeroSection() {
             transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
             className="text-fluid-4xl font-bold tracking-tight leading-normal mb-6 sm:mb-8"
           >
-            Manage Your Real Estate Portfolio
+            Your Property Data Repository
           </motion.h1>
-          
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-fluid-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed px-fluid-md"
           >
-            Visualize, track, and manage properties with interactive maps, 
-            dynamic tables, and smart insights.
+            A dedicated workspace for storing property information, documents, and records.
+            Collaborate with your team and keep everything in one secure location.
           </motion.p>
         </div>
         
@@ -47,13 +47,13 @@ export function HeroSection() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="flex flex-col sm:flex-row justify-center items-center gap-4 px-fluid-md"
         >
-          <AnimatedButton 
-            size="lg" 
+          <AnimatedButton
+            size="lg"
             className="w-full sm:w-auto px-fluid-lg py-fluid-md text-primary-foreground"
             premium
             onClick={() => setAuthModalOpen(true)}
           >
-            Start Building Your Portfolio
+            Start Organizing Your Properties Today
           </AnimatedButton>
           
           <Button

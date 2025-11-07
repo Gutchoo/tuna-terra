@@ -16,12 +16,12 @@ export function CallToActionSection() {
         <ScrollReveal>
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Start building your portfolio today
+              Start organizing your properties today
             </h2>
-            
+
             <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Join professionals who trust our platform to manage their real estate investments 
-              with precision and insight.
+              Join professionals who use our platform to centralize property data, documents,
+              and records in one secure workspace.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">

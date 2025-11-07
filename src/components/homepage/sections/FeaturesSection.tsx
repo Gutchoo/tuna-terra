@@ -6,21 +6,21 @@ import { ScrollReveal } from '../ui/ScrollReveal'
 
 const features = [
   {
-    icon: MapIcon,
-    title: 'Interactive Maps',
-    description: 'Visualize your properties on interactive maps with parcel boundaries and detailed overlays.',
+    icon: UploadIcon,
+    title: 'Secure Storage',
+    description: 'Store property data and documents with multi-user access controls.',
     color: 'text-blue-600 dark:text-blue-400'
   },
   {
     icon: TableIcon,
-    title: 'Data Management',
-    description: 'Filter, search, and edit property details in powerful data tables with real-time updates.',
+    title: 'Collaborative Workspace',
+    description: 'Share portfolios with team members (owner/editor/viewer roles).',
     color: 'text-emerald-600 dark:text-emerald-400'
   },
   {
-    icon: UploadIcon,
-    title: 'Easy Import',
-    description: 'Upload CSV files, enter APNs, or search addresses to quickly add properties to your portfolio.',
+    icon: MapIcon,
+    title: 'Flexible Organization',
+    description: 'Organize by portfolio, view on maps, or manage in data tables.',
     color: 'text-purple-600 dark:text-purple-400'
   }
 ]
@@ -35,7 +35,7 @@ export function FeaturesSection() {
             Powerful Features
           </h2>
           <p className="text-fluid-lg text-muted-foreground max-w-2xl mx-auto px-fluid-md">
-            Everything you need to manage your real estate portfolio efficiently and effectively
+            Everything you need to store, organize, and access your property data securely
           </p>
         </ScrollReveal>
         

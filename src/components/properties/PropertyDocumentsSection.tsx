@@ -34,6 +34,8 @@ import { DocumentListItem } from './documents/DocumentListItem'
 import { DocumentPreviewDialog } from './documents/DocumentPreviewDialog'
 import { FILE_TYPE_FILTERS, type FileTypeFilter } from '@/lib/documents'
 import type { PropertyDocument } from '@/lib/supabase'
+import { isDemoProperty } from '@/contexts/DemoContext'
+import { isVirtualSampleProperty } from '@/lib/sample-portfolio'
 
 interface PropertyDocumentsSectionProps {
   propertyId: string
@@ -46,6 +48,32 @@ export function PropertyDocumentsSection({
   portfolioId,
   canEdit,
 }: PropertyDocumentsSectionProps) {
+  // Check if this is a demo or virtual sample property - documents not supported
+  if (isDemoProperty(propertyId) || isVirtualSampleProperty(propertyId)) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Documents
+          </h3>
+        </div>
+
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="rounded-full bg-muted p-3 mb-3">
+              <FileText className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h4 className="text-sm font-semibold mb-1">Document Center Not Available</h4>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Document storage is not available for demo properties. Sign up to create your own portfolio and upload documents for your properties.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFileType, setSelectedFileType] = useState<FileTypeFilter>('all')
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
