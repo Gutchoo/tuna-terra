@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Building2,
-  FileText,
-  Users,
   Landmark,
+  Pencil,
+  Save,
+  X,
 } from 'lucide-react';
 import { InlineEditField } from './InlineEditField';
 import type { Property } from '@/lib/supabase';
@@ -14,15 +15,26 @@ import type { Property } from '@/lib/supabase';
 interface PropertyOverviewSectionProps {
   property: Property;
   canEdit: boolean;
-  onPropertyUpdate: (propertyId: string, updates: Partial<Property>) => Promise<void>;
+  isEditMode?: boolean;
+  editedValues?: Partial<Property>;
+  onFieldChange?: (field: string, value: string | number | null) => void;
+  onEditModeChange?: (editMode: boolean) => void;
+  onSaveAll?: () => Promise<void>;
+  onCancelEdit?: () => void;
+  isSaving?: boolean;
 }
 
 export function PropertyOverviewSection({
   property,
   canEdit,
-  onPropertyUpdate,
+  isEditMode = false,
+  editedValues = {},
+  onFieldChange,
+  onEditModeChange,
+  onSaveAll,
+  onCancelEdit,
+  isSaving = false,
 }: PropertyOverviewSectionProps) {
-  const [isSaving, setIsSaving] = useState(false);
 
   const formatCurrency = (value: string | number | null | undefined) => {
     if (!value) return 'Not set';
@@ -63,24 +75,22 @@ export function PropertyOverviewSection({
     return 'Invalid date';
   };
 
-  const handleFieldSave = async (field: string, value: string) => {
-    if (isSaving) return;
+  const handleFieldChange = (field: string, value: string) => {
+    if (!onFieldChange) return;
 
-    setIsSaving(true);
-    try {
-      // Convert value based on field type
-      let convertedValue: string | number | null = value;
+    // Convert value based on field type
+    let convertedValue: string | number | null = value;
 
-      if (['mortgage_amount', 'loan_rate', 'purchase_price', 'last_sale_price'].includes(field)) {
-        convertedValue = value ? parseFloat(value) : null;
-      }
-
-      await onPropertyUpdate(property.id, { [field]: convertedValue || null });
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsSaving(false);
+    if (['mortgage_amount', 'loan_rate', 'purchase_price', 'last_sale_price', 'sale_price'].includes(field)) {
+      convertedValue = value ? parseFloat(value) : null;
     }
+
+    onFieldChange(field, convertedValue || null);
+  };
+
+  // Get the current value (edited value if available, otherwise property value)
+  const getCurrentValue = (field: keyof Property) => {
+    return editedValues.hasOwnProperty(field) ? editedValues[field] : property[field];
   };
 
   return (
@@ -88,17 +98,59 @@ export function PropertyOverviewSection({
       {/* Overview - Combined Location, Parcel & Owner */}
       <Card className="group">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            Overview
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Overview
+            </CardTitle>
+            {/* Edit/Save/Cancel buttons */}
+            {canEdit && (
+              <div className="flex gap-2">
+                {!isEditMode ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditModeChange?.(true)}
+                    className="gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onCancelEdit}
+                      disabled={isSaving}
+                      className="gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={onSaveAll}
+                      disabled={isSaving}
+                      className="gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      {isSaving ? 'Saving...' : 'Save All'}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Address - Editable */}
           <InlineEditField
             label="Address"
-            value={property.address}
-            onSave={(value) => handleFieldSave('address', value)}
+            value={getCurrentValue('address')}
+            onChange={(value) => handleFieldChange('address', value)}
+            isEditMode={isEditMode}
             canEdit={canEdit}
             placeholder="Add address"
           />
@@ -107,58 +159,48 @@ export function PropertyOverviewSection({
           <div className="grid grid-cols-3 gap-3">
             <InlineEditField
               label="City"
-              value={property.city}
-              onSave={(value) => handleFieldSave('city', value)}
+              value={getCurrentValue('city')}
+              onChange={(value) => handleFieldChange('city', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add city"
             />
             <InlineEditField
               label="State"
-              value={property.state}
-              onSave={(value) => handleFieldSave('state', value)}
+              value={getCurrentValue('state')}
+              onChange={(value) => handleFieldChange('state', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add state"
             />
             <InlineEditField
               label="ZIP"
-              value={property.zip_code}
-              onSave={(value) => handleFieldSave('zip_code', value)}
+              value={getCurrentValue('zip_code')}
+              onChange={(value) => handleFieldChange('zip_code', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add ZIP"
             />
           </div>
 
-          {/* County and APN - Editable */}
+          {/* Owner and APN - Editable */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-            {property.county && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">County</p>
-                <p className="text-sm">{property.county}</p>
-              </div>
-            )}
-            <InlineEditField
-              label="Parcel (APN)"
-              value={property.apn}
-              onSave={(value) => handleFieldSave('apn', value)}
-              canEdit={canEdit}
-              placeholder="Add APN"
-            />
-          </div>
-
-          {/* Owner - Editable */}
-          <div className="pt-2 border-t">
             <InlineEditField
               label="Owner of Record"
-              value={property.owner}
-              onSave={(value) => handleFieldSave('owner', value)}
+              value={getCurrentValue('owner')}
+              onChange={(value) => handleFieldChange('owner', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add owner name"
             />
-            {property.owner_mailing_address && (
-              <p className="text-xs text-muted-foreground mt-1 ml-0">
-                {property.owner_mailing_address}
-              </p>
-            )}
+            <InlineEditField
+              label="Parcel (APN)"
+              value={getCurrentValue('apn')}
+              onChange={(value) => handleFieldChange('apn', value)}
+              isEditMode={isEditMode}
+              canEdit={canEdit}
+              placeholder="Add APN"
+            />
           </div>
 
           {/* Management - Editable */}
@@ -166,15 +208,17 @@ export function PropertyOverviewSection({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Management</p>
             <InlineEditField
               label="Insurance Provider"
-              value={property.insurance_provider}
-              onSave={(value) => handleFieldSave('insurance_provider', value)}
+              value={getCurrentValue('insurance_provider')}
+              onChange={(value) => handleFieldChange('insurance_provider', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add insurance company"
             />
             <InlineEditField
               label="Property Management Company"
-              value={property.management_company}
-              onSave={(value) => handleFieldSave('management_company', value)}
+              value={getCurrentValue('management_company')}
+              onChange={(value) => handleFieldChange('management_company', value)}
+              isEditMode={isEditMode}
               canEdit={canEdit}
               placeholder="Add management company"
             />
@@ -186,8 +230,9 @@ export function PropertyOverviewSection({
             <div className="grid grid-cols-2 gap-3">
               <InlineEditField
                 label="Purchase Date"
-                value={property.purchase_date}
-                onSave={(value) => handleFieldSave('purchase_date', value)}
+                value={getCurrentValue('purchase_date')}
+                onChange={(value) => handleFieldChange('purchase_date', value)}
+                isEditMode={isEditMode}
                 canEdit={canEdit}
                 type="date"
                 placeholder="Add purchase date"
@@ -195,8 +240,9 @@ export function PropertyOverviewSection({
               />
               <InlineEditField
                 label="Purchase Price"
-                value={property.purchase_price}
-                onSave={(value) => handleFieldSave('purchase_price', value)}
+                value={getCurrentValue('purchase_price')}
+                onChange={(value) => handleFieldChange('purchase_price', value)}
+                isEditMode={isEditMode}
                 canEdit={canEdit}
                 type="number"
                 placeholder="Add purchase price"
@@ -206,8 +252,9 @@ export function PropertyOverviewSection({
             <div className="grid grid-cols-2 gap-3">
               <InlineEditField
                 label="Sale Date"
-                value={property.sale_date}
-                onSave={(value) => handleFieldSave('sale_date', value)}
+                value={getCurrentValue('sale_date')}
+                onChange={(value) => handleFieldChange('sale_date', value)}
+                isEditMode={isEditMode}
                 canEdit={canEdit}
                 type="date"
                 placeholder="Add sale date"
@@ -215,8 +262,9 @@ export function PropertyOverviewSection({
               />
               <InlineEditField
                 label="Sale Price"
-                value={property.sale_price}
-                onSave={(value) => handleFieldSave('sale_price', value)}
+                value={getCurrentValue('sale_price')}
+                onChange={(value) => handleFieldChange('sale_price', value)}
+                isEditMode={isEditMode}
                 canEdit={canEdit}
                 type="number"
                 placeholder="Add sale price"
@@ -238,8 +286,9 @@ export function PropertyOverviewSection({
         <CardContent className="space-y-3">
           <InlineEditField
             label="Mortgage Amount"
-            value={property.mortgage_amount}
-            onSave={(value) => handleFieldSave('mortgage_amount', value)}
+            value={getCurrentValue('mortgage_amount')}
+            onChange={(value) => handleFieldChange('mortgage_amount', value)}
+            isEditMode={isEditMode}
             canEdit={canEdit}
             type="number"
             placeholder="Add mortgage amount"
@@ -247,15 +296,17 @@ export function PropertyOverviewSection({
           />
           <InlineEditField
             label="Lender Name"
-            value={property.lender_name}
-            onSave={(value) => handleFieldSave('lender_name', value)}
+            value={getCurrentValue('lender_name')}
+            onChange={(value) => handleFieldChange('lender_name', value)}
+            isEditMode={isEditMode}
             canEdit={canEdit}
             placeholder="Add lender name"
           />
           <InlineEditField
             label="Interest Rate"
-            value={property.loan_rate}
-            onSave={(value) => handleFieldSave('loan_rate', value)}
+            value={getCurrentValue('loan_rate')}
+            onChange={(value) => handleFieldChange('loan_rate', value)}
+            isEditMode={isEditMode}
             canEdit={canEdit}
             type="number"
             placeholder="Add interest rate"
@@ -263,8 +314,9 @@ export function PropertyOverviewSection({
           />
           <InlineEditField
             label="Loan Maturity Date"
-            value={property.loan_maturity_date}
-            onSave={(value) => handleFieldSave('loan_maturity_date', value)}
+            value={getCurrentValue('loan_maturity_date')}
+            onChange={(value) => handleFieldChange('loan_maturity_date', value)}
+            isEditMode={isEditMode}
             canEdit={canEdit}
             type="date"
             placeholder="Add maturity date"
@@ -273,34 +325,6 @@ export function PropertyOverviewSection({
         </CardContent>
       </Card>
 
-      {/* Use & Zoning (Read-only) */}
-      {(property.use_description || property.zoning) && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Use & Zoning
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {property.use_description && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">Property Use</p>
-                <p className="text-sm">{property.use_description}</p>
-              </div>
-            )}
-            {property.zoning && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">Zoning</p>
-                <p className="text-sm">{property.zoning}</p>
-                {property.zoning_description && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{property.zoning_description}</p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

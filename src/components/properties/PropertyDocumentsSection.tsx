@@ -118,7 +118,7 @@ export function PropertyDocumentsSection({
           )}
         </h3>
         {canEdit && (
-          <Button onClick={() => setUploadDialogOpen(true)} size="sm">
+          <Button onClick={() => setUploadDialogOpen(true)} size="sm" className="mr-6">
             <Upload className="h-4 w-4 mr-2" />
             Upload
           </Button>

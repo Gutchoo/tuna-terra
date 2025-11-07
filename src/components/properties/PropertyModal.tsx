@@ -5,9 +5,6 @@ import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Property } from "@/lib/supabase"
@@ -37,6 +34,11 @@ export function PropertyModal({
   // Local state for optimistic updates
   const [localProperty, setLocalProperty] = useState<Property | undefined>(property)
 
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editedValues, setEditedValues] = useState<Partial<Property>>({})
+  const [isSaving, setIsSaving] = useState(false)
+
   // Sync local state with external property updates
   useEffect(() => {
     if (property) {
@@ -44,34 +46,62 @@ export function PropertyModal({
     }
   }, [property])
 
+  // Reset edit mode when modal closes
+  useEffect(() => {
+    if (!open) {
+      setIsEditMode(false)
+      setEditedValues({})
+    }
+  }, [open])
+
   if (!propertyId) {
     return null
   }
 
-  const handlePropertyUpdate = async (id: string, updates: Partial<Property>) => {
-    // Optimistically update local state immediately for instant UI feedback
-    setLocalProperty(prev => prev ? { ...prev, ...updates } : prev)
+  const handleFieldChange = (field: string, value: string | number | null) => {
+    setEditedValues(prev => ({ ...prev, [field]: value }))
+  }
 
+  const handleSaveAll = async () => {
+    if (!propertyId || Object.keys(editedValues).length === 0) {
+      setIsEditMode(false)
+      return
+    }
+
+    setIsSaving(true)
     try {
+      // Optimistically update local state immediately for instant UI feedback
+      setLocalProperty(prev => prev ? { ...prev, ...editedValues } : prev)
+
       if (onPropertyUpdate) {
-        await onPropertyUpdate(id, updates)
+        await onPropertyUpdate(propertyId, editedValues)
       } else {
         // Fallback to default API call if no handler provided
-        const response = await fetch(`/api/properties/${id}`, {
+        const response = await fetch(`/api/properties/${propertyId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
+          body: JSON.stringify(editedValues),
         })
 
         if (!response.ok) {
           throw new Error('Failed to update property')
         }
       }
+
+      setEditedValues({})
+      setIsEditMode(false)
     } catch (error) {
       // Rollback optimistic update on error
       setLocalProperty(property)
-      throw error
+      console.error('Failed to save changes:', error)
+    } finally {
+      setIsSaving(false)
     }
+  }
+
+  const handleCancelEdit = () => {
+    setEditedValues({})
+    setIsEditMode(false)
   }
 
   return (
@@ -81,25 +111,21 @@ export function PropertyModal({
       >
         {localProperty ? (
           <>
-            {/* Header */}
-            <DialogHeader className="border-b pb-4 pt-6 px-6 shrink-0">
-              <DialogTitle className="text-xl font-semibold">
-                {localProperty.address}
-              </DialogTitle>
-              <DialogDescription>
-                {localProperty.city}, {localProperty.state} {localProperty.zip_code}
-              </DialogDescription>
-            </DialogHeader>
-
             {/* Two-column layout for desktop, stacked for mobile */}
-            <div className="flex-1 overflow-hidden px-7 pb-6 min-h-0">
-              <div className="h-full grid grid-cols-1 lg:grid-cols-[55%_45%] gap-4 pt-4">
+            <div className="flex-1 overflow-hidden px-7 py-6 min-h-0">
+              <div className="h-full grid grid-cols-1 lg:grid-cols-[55%_45%] gap-4">
                 {/* Left Column: Property Overview (scrollable) */}
                 <div className="overflow-y-auto pr-2 min-h-0">
                   <PropertyOverviewSection
                     property={localProperty}
                     canEdit={canEdit}
-                    onPropertyUpdate={handlePropertyUpdate}
+                    isEditMode={isEditMode}
+                    editedValues={editedValues}
+                    onFieldChange={handleFieldChange}
+                    onEditModeChange={setIsEditMode}
+                    onSaveAll={handleSaveAll}
+                    onCancelEdit={handleCancelEdit}
+                    isSaving={isSaving}
                   />
                 </div>
 
@@ -133,12 +159,8 @@ export function PropertyModal({
 
 function PropertyModalSkeleton() {
   return (
-    <div className="space-y-6 px-6 py-6">
-      <div className="space-y-2 border-b pb-4">
-        <Skeleton className="h-8 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="px-7 py-6 h-full">
+      <div className="h-full grid grid-cols-1 lg:grid-cols-[55%_45%] gap-4">
         <div className="space-y-4">
           <Skeleton className="h-40 w-full" />
           <Skeleton className="h-40 w-full" />
