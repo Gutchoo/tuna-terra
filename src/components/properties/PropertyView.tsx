@@ -26,10 +26,9 @@ import { usePortfolioRole } from '@/hooks/use-portfolio-role'
 import { FullScreenMapView } from './FullScreenMapView'
 import { toast } from 'sonner'
 import { exportPropertiesToCSV } from '@/lib/csv-export'
-import { PropertyDashboardView } from '../property-dashboard/PropertyDashboardView'
 import { PropertyModal } from './PropertyModal'
 
-type ViewMode = 'cards' | 'table' | 'map' | 'dashboard'
+type ViewMode = 'cards' | 'table' | 'map'
 
 interface PropertyViewProps {
   properties: Property[]
@@ -58,7 +57,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null)
-  const [dashboardPropertyId, setDashboardPropertyId] = useState<string | null>(null)
 
   // Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -369,27 +367,6 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     onPropertiesChange(updatedProperties)
   }
 
-  // Handle back from dashboard
-  const handleBackFromDashboard = () => {
-    setDashboardPropertyId(null)
-    setViewMode('cards') // Return to cards view by default
-  }
-
-  // If in dashboard mode, render the dashboard view
-  if (viewMode === 'dashboard' && dashboardPropertyId) {
-    const dashboardProperty = properties.find(p => p.id === dashboardPropertyId)
-    if (dashboardProperty) {
-      return (
-        <PropertyDashboardView
-          property={dashboardProperty}
-          portfolioId={portfolioId || ''}
-          portfolioName={portfolioName}
-          onBack={handleBackFromDashboard}
-        />
-      )
-    }
-  }
-
   return (
     <div>
       {/* Perfect Alignment Container - Search Input, View Switcher, Add Button */}
@@ -405,7 +382,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
         <div className="flex items-center gap-3">
           <PropertyViewToggle
-            currentView={viewMode === 'dashboard' ? 'cards' : viewMode}
+            currentView={viewMode}
             onViewChange={handleViewChange}
           />
 

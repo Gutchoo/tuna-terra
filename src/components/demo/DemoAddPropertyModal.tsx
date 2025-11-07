@@ -5,10 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  CrownIcon,
-  InfoIcon
-} from 'lucide-react'
 import { useDemo } from '@/contexts/DemoContext'
 import { AuthModal } from '@/components/modals/AuthModal'
 import { CURATED_DEMO_PROPERTIES, type CuratedDemoProperty } from '@/lib/curated-demo-properties'

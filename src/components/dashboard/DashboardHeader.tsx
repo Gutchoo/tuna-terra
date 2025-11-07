@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Suspense } from 'react'
 import { TerraLogo } from '@/components/ui/terra-logo'
 import { PortfolioSelector } from '@/components/portfolios/PortfolioSelector'
 import { UserMenu } from '@/components/user-menu'
@@ -41,11 +42,13 @@ export function DashboardHeader() {
                 {!isPortfoliosPage && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-muted-foreground">Portfolio</h3>
-                    <PortfolioSelector
-                      compact={true}
-                      showCreateButton={true}
-                      enableInlineEdit={false}
-                    />
+                    <Suspense fallback={<div className="h-10 animate-pulse bg-muted rounded" />}>
+                      <PortfolioSelector
+                        compact={true}
+                        showCreateButton={true}
+                        enableInlineEdit={false}
+                      />
+                    </Suspense>
                   </div>
                 )}
 
@@ -76,17 +79,21 @@ export function DashboardHeader() {
           {/* Center: Portfolio Selector (conditionally rendered) */}
           {!isPortfoliosPage && (
             <div className="flex-1 flex justify-center items-center px-4">
-              <PortfolioSelector
-                compact={true}
-                showCreateButton={true}
-                enableInlineEdit={false}
-              />
+              <Suspense fallback={<div className="h-10 w-48 animate-pulse bg-muted rounded" />}>
+                <PortfolioSelector
+                  compact={true}
+                  showCreateButton={true}
+                  enableInlineEdit={false}
+                />
+              </Suspense>
             </div>
           )}
 
           {/* Right: User Menu */}
           <div className="flex-1 flex justify-end items-center">
-            <UserMenu />
+            <Suspense fallback={<div className="h-8 w-8 animate-pulse bg-muted rounded-full" />}>
+              <UserMenu />
+            </Suspense>
           </div>
         </div>
 
@@ -99,7 +106,9 @@ export function DashboardHeader() {
 
         {/* Mobile: User Menu (right) */}
         <div className="flex lg:hidden ml-auto">
-          <UserMenu />
+          <Suspense fallback={<div className="h-8 w-8 animate-pulse bg-muted rounded-full" />}>
+            <UserMenu />
+          </Suspense>
         </div>
       </div>
     </header>

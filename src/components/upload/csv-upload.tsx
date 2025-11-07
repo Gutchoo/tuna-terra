@@ -210,22 +210,29 @@ export function CSVUpload({ portfolioId, onSuccess, onError, isModal = false, on
             const stateValue = stateKey ? String(row[stateKey]).trim() : ''
             const zipValue = zipKey ? String(row[zipKey]).trim() : ''
 
-            // Build property object
-            const property: any = {
+            // Build property object - address is required
+            const address = addressValue || (apnValue ? `APN: ${apnValue}` : 'Unknown Address')
+
+            const property: {
+              portfolio_id: string
+              address: string
+              apn?: string
+              city?: string
+              state?: string
+              zip_code?: string
+              use_pro_lookup: boolean
+            } = {
               portfolio_id: portfolioId,
+              address,
               use_pro_lookup: false, // No external API lookups
             }
 
-            // Set address or APN-based placeholder
-            if (addressValue) {
-              property.address = addressValue
-            } else if (apnValue) {
-              property.address = `APN: ${apnValue}`
+            // Add APN if provided
+            if (apnValue) {
               property.apn = apnValue
             }
 
             // Add optional location fields
-            if (apnValue && !property.apn) property.apn = apnValue
             if (cityValue) property.city = cityValue
             if (stateValue) property.state = stateValue
             if (zipValue) property.zip_code = zipValue

@@ -91,8 +91,17 @@ export function PropertyOverviewSection({
   };
 
   // Get the current value (edited value if available, otherwise property value)
-  const getCurrentValue = (field: keyof Property) => {
-    return editedValues.hasOwnProperty(field) ? editedValues[field] : property[field];
+  // Type narrowing to ensure only primitive types are returned for editable fields
+  const getCurrentValue = (field: keyof Property): string | number | null | undefined => {
+    const value = editedValues.hasOwnProperty(field) ? editedValues[field] : property[field];
+
+    // Filter out complex types (arrays, objects, booleans) and only return primitives
+    if (typeof value === 'string' || typeof value === 'number' || value === null || value === undefined) {
+      return value;
+    }
+
+    // For any other type (boolean, array, object), return null as fallback
+    return null;
   };
 
   return (
@@ -295,7 +304,7 @@ export function PropertyOverviewSection({
           <div className="pt-2 border-t">
             <InlineEditTextarea
               label="Notes"
-              value={getCurrentValue('user_notes')}
+              value={getCurrentValue('user_notes') as string | null | undefined}
               onChange={(value) => handleFieldChange('user_notes', value)}
               isEditMode={isEditMode}
               canEdit={canEdit}

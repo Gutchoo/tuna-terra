@@ -44,8 +44,6 @@ function DemoPageContent() {
             
             <DemoPropertyViewWrapper
               properties={allProperties}
-              sampleProperties={sampleProperties}
-              demoProperties={demoProperties}
             />
           </CardContent>
         </Card>

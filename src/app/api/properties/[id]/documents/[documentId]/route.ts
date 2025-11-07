@@ -65,7 +65,8 @@ export async function GET(
     })
 
     // Generate signed URL for download (valid for 1 hour)
-    const signedUrlResult = await getSignedUrl(document.file_path, 3600)
+    // Pass authenticated server client for RLS policy compliance
+    const signedUrlResult = await getSignedUrl(document.file_path, 3600, supabase)
 
     if (!signedUrlResult.url || signedUrlResult.error) {
       return NextResponse.json(
@@ -77,7 +78,8 @@ export async function GET(
     return NextResponse.json({
       data: {
         ...document,
-        signed_url: signedUrlResult.url
+        signedUrl: signedUrlResult.url,
+        expiresAt: Date.now() + 3600000 // 1 hour from now
       }
     })
   } catch (error) {

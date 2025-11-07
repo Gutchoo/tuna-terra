@@ -98,10 +98,65 @@ export type Property = {
   updated_at: string
 }
 
-// DEPRECATED: Enhanced property type with demographics data (client-side only)
-// Census API integration removed - kept for backward compatibility
+// ============================================================================
+// DEPRECATED TYPES (Census API Integration Removed)
+// ============================================================================
+
+/**
+ * @deprecated Census API integration has been removed.
+ * These types are kept for backward compatibility with existing property_data.
+ */
+interface AgeBrackets {
+  '20_24': number
+  '25_29': number
+  '30_34': number
+  '35_39': number
+  '40_44': number
+  '45_49': number
+  '50_54': number
+  '55_59': number
+  '60_64': number
+  '65_69': number
+  '70_74': number
+  '75_79': number
+  '80_84': number
+  '85_plus': number
+}
+
+/**
+ * @deprecated Census API integration has been removed.
+ * These types are kept for backward compatibility with existing property_data.
+ */
+interface EducationDetails {
+  pop_25_34: number
+  pop_35_44: number
+  pop_45_64: number
+  pct_bachelor_plus_25_34: number
+  pct_bachelor_plus_35_44: number
+  pct_bachelor_plus_45_64: number
+}
+
+/**
+ * @deprecated Census API integration removed - kept for backward compatibility
+ * Demographics data may exist in legacy property_data JSON fields
+ */
 export interface PropertyWithDemographics extends Property {
-  demographics?: Record<string, any> | null
+  demographics?: {
+    median_income: number | null
+    mean_income: number | null
+    households: number | null
+    population: number | null
+    unemployment_rate: number | null
+    median_age: number | null
+    age_brackets: AgeBrackets | null
+    total_housing_units: number | null
+    owner_occupied_units: number | null
+    renter_occupied_units: number | null
+    median_rent: number | null
+    avg_household_size_owner: number | null
+    avg_household_size_renter: number | null
+    education_details: EducationDetails | null
+  } | null
 }
 
 // Portfolio-related types

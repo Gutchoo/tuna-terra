@@ -1,7 +1,8 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, Suspense } from 'react'
-// import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,9 +36,6 @@ interface ProfileStats {
 }
 
 function AccountPageContent() {
-  // const searchParams = useSearchParams()
-  // Portfolio context can be added here for future navigation features
-  
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

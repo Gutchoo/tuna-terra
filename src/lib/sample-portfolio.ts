@@ -193,11 +193,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 407.0038,
     lot_size_sqft: 17729455,
-    
+
     // Financial & tax data
     tax_year: null,
     parcel_value_type: 'ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06001982100',
     census_block: '060019821001001',
@@ -618,11 +619,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 594.37101,
     lot_size_sqft: 25891340,
-    
+
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06037980028',
     census_block: '060379800281018',
@@ -1089,11 +1091,12 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     subdivision: null,
     lot_size_acres: 4.20946,
     lot_size_sqft: 183368,
-    
+
     // Financial & tax data
     tax_year: '2025',
     parcel_value_type: 'GROSS ASSESSED',
-    
+    sale_price: null,
+
     // Location data
     census_tract: '06037701902',
     census_block: '060377019023020',

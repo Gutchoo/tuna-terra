@@ -102,6 +102,7 @@ function createDemoProperty(baseData: unknown): Property {
     // Property management fields
     purchase_price: null,
     purchase_date: null,
+    sale_price: null,
     management_company: null,
     mortgage_amount: null,
     lender_name: null,

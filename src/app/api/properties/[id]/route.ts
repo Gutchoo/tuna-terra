@@ -3,6 +3,34 @@ import { getUserId } from '@/lib/auth'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+// Define allowed update fields type
+type PropertyUpdateField =
+  | 'address'
+  | 'city'
+  | 'state'
+  | 'zip_code'
+  | 'owner'
+  | 'apn'
+  | 'year_built'
+  | 'zoning'
+  | 'purchase_price'
+  | 'purchase_date'
+  | 'sale_price'
+  | 'sale_date'
+  | 'last_sale_price'
+  | 'insurance_provider'
+  | 'management_company'
+  | 'user_notes'
+  | 'tags'
+  | 'maintenance_history'
+  | 'owner_mailing_address'
+  | 'owner_mail_city'
+  | 'owner_mail_state'
+  | 'owner_mail_zip'
+
+// Property values can be various types
+type PropertyUpdateValue = string | number | string[] | null
+
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
 
@@ -133,10 +161,10 @@ export async function PATCH(
     ]
 
     // Filter body to only include allowed fields
-    const updates: Record<string, any> = {}
+    const updates: Partial<Record<PropertyUpdateField, PropertyUpdateValue>> = {}
     for (const field of allowedFields) {
       if (field in body) {
-        updates[field] = body[field]
+        updates[field as PropertyUpdateField] = body[field]
       }
     }
 

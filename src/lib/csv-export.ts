@@ -82,7 +82,7 @@ export function exportPropertiesToCSV(properties: Property[], portfolioName: str
     // Property details
     { key: 'owner', label: 'Owner' },
     { key: 'insurance_provider', label: 'Insurance Provider' },
-    { key: 'property_management', label: 'Property Management' },
+    { key: 'management_company', label: 'Property Management' },
 
     // Financial data
     { key: 'purchase_date', label: 'Purchase Date' },

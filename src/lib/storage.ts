@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // ============================================================================
 // CONSTANTS
@@ -88,10 +89,10 @@ export function sanitizeFilename(filename: string): string {
 
 /**
  * Generate storage path for a document
- * Path structure: {portfolio_id}/{property_id}/{unit_id or 'property-level'}/{document_id}/{filename}
+ * Path structure: {property_id}/{unit_id or 'property-level'}/{document_id}/{filename}
+ * Note: portfolio_id is not included as property already belongs to a portfolio
  */
 export function generateStoragePath(
-  portfolioId: string,
   propertyId: string,
   documentId: string,
   filename: string,
@@ -100,7 +101,7 @@ export function generateStoragePath(
   const sanitizedFilename = sanitizeFilename(filename)
   const unitPath = unitId || 'property-level'
 
-  return `${portfolioId}/${propertyId}/${unitPath}/${documentId}/${sanitizedFilename}`
+  return `${propertyId}/${unitPath}/${documentId}/${sanitizedFilename}`
 }
 
 // ============================================================================
@@ -183,13 +184,20 @@ export async function uploadFiles(
 /**
  * Get signed URL for private file download
  * Valid for 1 hour by default
+ *
+ * @param filePath - The path to the file in storage
+ * @param expiresIn - Expiration time in seconds (default: 3600 = 1 hour)
+ * @param supabaseClient - Optional authenticated Supabase client (for server-side operations)
+ *                         If not provided, creates a new browser client (for client-side operations)
  */
 export async function getSignedUrl(
   filePath: string,
-  expiresIn: number = 3600
+  expiresIn: number = 3600,
+  supabaseClient?: SupabaseClient
 ): Promise<{ url: string | null; error?: string }> {
   try {
-    const supabase = createClient()
+    // Use provided authenticated client or create new browser client
+    const supabase = supabaseClient || createClient()
 
     const { data, error } = await supabase.storage
       .from(STORAGE_BUCKET)
@@ -212,12 +220,18 @@ export async function getSignedUrl(
 
 /**
  * Download file as blob
+ *
+ * @param filePath - The path to the file in storage
+ * @param supabaseClient - Optional authenticated Supabase client (for server-side operations)
+ *                         If not provided, creates a new browser client (for client-side operations)
  */
 export async function downloadFile(
-  filePath: string
+  filePath: string,
+  supabaseClient?: SupabaseClient
 ): Promise<{ blob: Blob | null; error?: string }> {
   try {
-    const supabase = createClient()
+    // Use provided authenticated client or create new browser client
+    const supabase = supabaseClient || createClient()
 
     const { data, error } = await supabase.storage
       .from(STORAGE_BUCKET)
@@ -251,7 +265,7 @@ export async function downloadFile(
  */
 export async function deleteFile(
   filePath: string,
-  supabaseClient?: any
+  supabaseClient?: SupabaseClient
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log('[STORAGE] Attempting to delete file:', {
@@ -274,7 +288,7 @@ export async function deleteFile(
         bucket: STORAGE_BUCKET,
         authenticated: !!supabaseClient,
         errorMessage: error.message,
-        errorCode: (error as any).statusCode,
+        errorCode: (error as { statusCode?: number }).statusCode,
         errorDetails: error,
         timestamp: new Date().toISOString()
       })

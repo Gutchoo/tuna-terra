@@ -154,10 +154,12 @@ export async function POST(
     }
 
     // Generate storage path with sanitized filename
+    // Path structure: propertyId/unit/documentId/filename
+    // This matches Storage RLS policy which checks (storage.foldername(name))[1] = property_id
     const unitPath = unit_id || 'property-level'
     const documentId = crypto.randomUUID()
     const sanitizedFileName = sanitizeFilename(file.name)
-    const filePath = `${portfolio_id}/${propertyId}/${unitPath}/${documentId}/${sanitizedFileName}`
+    const filePath = `${propertyId}/${unitPath}/${documentId}/${sanitizedFileName}`
 
     // Convert File to ArrayBuffer for server-side upload
     const arrayBuffer = await file.arrayBuffer()

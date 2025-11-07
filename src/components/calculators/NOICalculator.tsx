@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import {
   calculateNOI,
-  generateNOIWaterfall,
   validateNOIInputs,
   type NOIInputs,
   type NOIResults,

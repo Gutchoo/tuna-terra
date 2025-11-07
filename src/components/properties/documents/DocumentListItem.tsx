@@ -18,12 +18,31 @@ import {
 } from '@/components/ui/tooltip'
 import { getFileIcon, getDocumentTypeLabel, formatFileSize, formatDocumentDate } from '@/lib/documents'
 import type { PropertyDocument } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface DocumentListItemProps {
   document: PropertyDocument
   canEdit: boolean
   onPreview: (document: PropertyDocument) => void
   onDelete: (documentId: string) => void
+}
+
+async function downloadDocument(propertyId: string, documentId: string) {
+  try {
+    const response = await fetch(`/api/properties/${propertyId}/documents/${documentId}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch document')
+    }
+    const { data } = await response.json()
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank')
+    } else {
+      throw new Error('No download URL available')
+    }
+  } catch (error) {
+    toast.error('Failed to download document')
+    console.error('Download error:', error)
+  }
 }
 
 export function DocumentListItem({
@@ -91,8 +110,7 @@ export function DocumentListItem({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => {
                 e.stopPropagation()
-                // Trigger download
-                window.open(`/api/properties/${document.property_id}/documents/${document.id}`, '_blank')
+                downloadDocument(document.property_id, document.id)
               }}>
                 <Download className="h-4 w-4 mr-2" />
                 Download
@@ -103,7 +121,7 @@ export function DocumentListItem({
                   e.stopPropagation()
                   onDelete(document.id)
                 }}
-                className="text-red-600 focus:text-red-600"
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete

@@ -13,6 +13,39 @@ import { useCreateProperty } from '@/hooks/use-create-property';
 import { useGooglePlacesAutocomplete } from '@/hooks/use-google-places-autocomplete';
 import { cn } from '@/lib/utils';
 
+// ============================================================================
+// GOOGLE PLACES API TYPES
+// ============================================================================
+
+interface PlaceAddressComponent {
+  longText: string
+  shortText?: string
+  types: string[]
+}
+
+interface PlaceLocation {
+  latitude: number
+  longitude: number
+}
+
+interface PlaceStructuredFormat {
+  mainText: string
+  secondaryText?: string
+}
+
+interface PlaceSuggestion {
+  placeId: string
+  description: string
+  structuredFormat?: PlaceStructuredFormat
+}
+
+interface PlaceDetailsResponse {
+  place: {
+    addressComponents: PlaceAddressComponent[]
+    location?: PlaceLocation
+  }
+}
+
 const propertySchema = z.object({
   inputMode: z.enum(['address', 'apn']),
   address: z.string().optional(),
@@ -43,7 +76,19 @@ interface SimplePropertyFormProps {
   portfolioId: string;
   onSuccess?: () => void;
   demoMode?: boolean;
-  onDemoPropertyAdd?: (property: any) => void;
+  onDemoPropertyAdd?: (property: Partial<{
+    id: string
+    portfolio_id: string
+    address: string
+    apn?: string
+    city?: string | null
+    state?: string | null
+    zip_code?: string | null
+    lat?: number | null
+    lng?: number | null
+    county?: string | null
+    created_at: string
+  }>) => void;
 }
 
 export function SimplePropertyForm({
@@ -97,28 +142,28 @@ export function SimplePropertyForm({
         throw new Error('Failed to fetch place details');
       }
 
-      const data = await response.json();
+      const data: PlaceDetailsResponse = await response.json();
 
       // Parse address components
       const components = data.place?.addressComponents || [];
-      const streetNumber = components.find((c: any) =>
+      const streetNumber = components.find((c: PlaceAddressComponent) =>
         c.types.includes('street_number')
       )?.longText || '';
-      const route = components.find((c: any) =>
+      const route = components.find((c: PlaceAddressComponent) =>
         c.types.includes('route')
       )?.longText || '';
-      const city = components.find((c: any) =>
+      const city = components.find((c: PlaceAddressComponent) =>
         c.types.includes('locality')
       )?.longText || '';
-      const state = components.find((c: any) =>
+      const state = components.find((c: PlaceAddressComponent) =>
         c.types.includes('administrative_area_level_1')
       )?.shortText || '';
-      const zipCode = components.find((c: any) =>
+      const zipCode = components.find((c: PlaceAddressComponent) =>
         c.types.includes('postal_code')
       )?.longText || '';
 
       // Extract county (administrative_area_level_2) and strip " County" suffix
-      const countyRaw = components.find((c: any) =>
+      const countyRaw = components.find((c: PlaceAddressComponent) =>
         c.types.includes('administrative_area_level_2')
       )?.longText || '';
       const county = countyRaw.replace(/ County$/i, '').trim();
@@ -177,17 +222,32 @@ export function SimplePropertyForm({
     }
 
     try {
+      // Determine address (required field)
+      const address = data.inputMode === 'address'
+        ? data.address!
+        : `APN: ${data.apn!}`;
+
       // Build property data
-      const propertyData: any = {
+      const propertyData: {
+        portfolio_id: string
+        address: string
+        apn?: string
+        city?: string
+        state?: string
+        zip_code?: string
+        lat?: number
+        lng?: number
+        county?: string
+        use_pro_lookup: boolean
+      } = {
         portfolio_id: portfolioId,
+        address,
+        use_pro_lookup: false, // No external API lookup
       };
 
-      if (data.inputMode === 'address') {
-        propertyData.address = data.address;
-      } else {
+      // Add APN if in APN mode
+      if (data.inputMode === 'apn') {
         propertyData.apn = data.apn;
-        // For APN-only properties, use a placeholder address
-        propertyData.address = `APN: ${data.apn}`;
       }
 
       // Add optional location fields
@@ -200,16 +260,14 @@ export function SimplePropertyForm({
       if (data.lng !== undefined) propertyData.lng = data.lng;
       if (data.county) propertyData.county = data.county;
 
-      propertyData.use_pro_lookup = false; // No external API lookup
-
       await createProperty.mutateAsync(propertyData);
 
       toast.success('Property added successfully');
       reset();
       if (onSuccess) onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating property:', error);
-      toast.error(error.message || 'Failed to add property');
+      toast.error(error instanceof Error ? error.message : 'Failed to add property');
     }
   };
 

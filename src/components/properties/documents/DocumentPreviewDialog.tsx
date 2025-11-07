@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Download, Trash2, Loader2 } from 'lucide-react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useDocumentPreview } from '@/hooks/usePropertyDocuments'
 import {
@@ -50,11 +50,23 @@ export function DocumentPreviewDialog({
   const typeLabel = getDocumentTypeLabel(document.document_type)
   const isImage = isImageFile(document.file_type)
   const isPdf = isPdfFile(document.file_type)
-  const signedUrl = data?.data?.signed_url
+  const signedUrl = data?.data?.signedUrl
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (signedUrl) {
       window.open(signedUrl, '_blank')
+    } else if (!isLoading) {
+      // If no signed URL yet, try to fetch it
+      try {
+        const response = await fetch(`/api/properties/${propertyId}/documents/${document.id}`)
+        if (!response.ok) throw new Error('Failed to fetch document')
+        const { data } = await response.json()
+        if (data?.signedUrl) {
+          window.open(data.signedUrl, '_blank')
+        }
+      } catch (error) {
+        console.error('Download error:', error)
+      }
     }
   }
 
@@ -71,9 +83,9 @@ export function DocumentPreviewDialog({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <FileIcon className="h-6 w-6 text-primary flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg truncate">
+              <DialogTitle className="font-semibold text-lg truncate">
                 {document.title || document.file_name}
-              </h3>
+              </DialogTitle>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{formatDocumentDate(document.uploaded_at)}</span>
               </div>
@@ -82,7 +94,12 @@ export function DocumentPreviewDialog({
 
           {/* Actions */}
           <div className="flex items-center gap-2 mr-10">
-            <Button variant="outline" size="icon" onClick={handleDownload}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleDownload}
+              disabled={isLoading}
+            >
               <Download className="h-4 w-4" />
             </Button>
 
