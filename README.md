@@ -256,8 +256,4 @@ _Status_: Research phase
 
 This is a personal project, but suggestions and feedback are welcome. Please open an issue to discuss potential changes.
 
-## License
-
-This project is [MIT licensed](./LICENSE).
-
 **Built with [Claude Code](https://claude.ai/code)** - Anthropic's AI-powered development tool
