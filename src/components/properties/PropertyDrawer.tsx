@@ -153,7 +153,7 @@ function IncomeTabPlaceholder({ propertyId }: { propertyId: string }) {
     <Alert>
       <AlertCircle className="h-4 w-4" />
       <AlertDescription>
-        Income transactions tab coming soon. You'll be able to add and manage income here.
+        Income transactions tab coming soon. You&apos;ll be able to add and manage income here.
       </AlertDescription>
     </Alert>
   )
@@ -164,7 +164,7 @@ function ExpensesTabPlaceholder({ propertyId }: { propertyId: string }) {
     <Alert>
       <AlertCircle className="h-4 w-4" />
       <AlertDescription>
-        Expense transactions tab coming soon. You'll be able to add and manage expenses here.
+        Expense transactions tab coming soon. You&apos;ll be able to add and manage expenses here.
       </AlertDescription>
     </Alert>
   )
@@ -175,7 +175,7 @@ function DocumentsTabPlaceholder({ propertyId }: { propertyId: string }) {
     <Alert>
       <AlertCircle className="h-4 w-4" />
       <AlertDescription>
-        Documents tab coming soon. You'll be able to upload and manage property documents here.
+        Documents tab coming soon. You&apos;ll be able to upload and manage property documents here.
       </AlertDescription>
     </Alert>
   )
