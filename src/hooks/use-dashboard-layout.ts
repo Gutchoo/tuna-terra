@@ -17,6 +17,7 @@ interface DashboardLayoutState {
   panels: Record<PanelId, PanelState>
   listPanelSize: number // Size of the left property list panel (percentage)
   selectedPropertyId: string | null
+  [key: string]: unknown // Satisfy Record<string, unknown> constraint
 }
 
 const DEFAULT_LAYOUT: DashboardLayoutState = {
