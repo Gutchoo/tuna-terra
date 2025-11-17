@@ -7,7 +7,7 @@ interface UserPreference {
   id: string
   user_id: string
   preference_key: string
-  preference_value: Record<string, any>
+  preference_value: Record<string, unknown>
   created_at: string
   updated_at: string
 }
@@ -35,7 +35,7 @@ async function fetchPreference(key: string): Promise<UserPreference | null> {
 }
 
 // Save or update a preference
-async function savePreference(key: string, value: Record<string, any>): Promise<UserPreference> {
+async function savePreference(key: string, value: Record<string, unknown>): Promise<UserPreference> {
   const response = await fetch('/api/user-preferences', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -69,7 +69,7 @@ async function deletePreference(key: string): Promise<void> {
  * @param key - The preference key (e.g., 'dashboard-layout', 'column-visibility')
  * @param defaultValue - Default value if preference doesn't exist
  */
-export function useUserPreference<T extends Record<string, any>>(
+export function useUserPreference<T extends Record<string, unknown>>(
   key: string,
   defaultValue?: T
 ) {
@@ -137,16 +137,18 @@ export function useUserPreference<T extends Record<string, any>>(
 /**
  * Hook to get multiple preferences at once
  * Useful when you need to load several preferences together
+ *
+ * Note: This hook is currently disabled due to React Hook rules.
+ * Use individual useUserPreference calls instead.
  */
 export function useUserPreferences(keys: string[]) {
-  const queries = keys.map(key => ({
-    key,
-    ...useUserPreference(key),
-  }))
+  // This implementation violates React Hook rules by calling useUserPreference in a map callback
+  // To use multiple preferences, call useUserPreference multiple times at the component level
+  console.warn('useUserPreferences is deprecated. Call useUserPreference multiple times instead.')
 
   return {
-    preferences: queries,
-    isLoading: queries.some(q => q.isLoading),
-    isError: queries.some(q => q.isError),
+    preferences: [] as Array<{ key: string }>,
+    isLoading: false,
+    isError: false,
   }
 }
