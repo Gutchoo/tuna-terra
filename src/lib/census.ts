@@ -470,7 +470,7 @@ export class CensusService {
         
         if (hasNewFields) {
           console.log(`📋 Using cached Census data for ${city}, ${state}`)
-          return cachedData
+          return cachedData as CensusData
         } else {
           console.log(`🔄 Cache incomplete - refreshing Census data for ${city}, ${state} (missing new fields)`)
           // Continue to fetch fresh data to update the cache

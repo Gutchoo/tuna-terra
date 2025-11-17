@@ -262,6 +262,7 @@ export function PropertyTableView({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {/* COMMENTED OUT: Refresh button - keeping for potential future use
                     <DropdownMenuItem
                       onClick={() => onRefresh(property)}
                       disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
@@ -272,6 +273,7 @@ export function PropertyTableView({
                       }`} />
                       {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
                     </DropdownMenuItem>
+                    */}
                     <DropdownMenuItem
                       onClick={() => onDelete(property)}
                       className="text-red-600 focus:text-red-600 focus:bg-red-50"
@@ -408,6 +410,7 @@ export function PropertyTableView({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {/* COMMENTED OUT: Refresh button - keeping for potential future use
                         <DropdownMenuItem
                           onClick={() => onRefresh(property)}
                           disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
@@ -418,6 +421,7 @@ export function PropertyTableView({
                           }`} />
                           {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
                         </DropdownMenuItem>
+                        */}
                         <DropdownMenuItem
                           onClick={() => onDelete(property)}
                           className="text-red-600 focus:text-red-600 focus:bg-red-50"

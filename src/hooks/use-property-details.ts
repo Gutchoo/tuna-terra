@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Property, FieldOverrides } from '@/lib/supabase'
+import type { Property } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 interface PropertyDetailsUpdate {

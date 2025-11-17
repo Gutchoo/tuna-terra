@@ -540,9 +540,7 @@ export function FullScreenMapView({
           properties={properties}
           selectedPropertyId={selectedPropertyId}
           onPropertySelect={onPropertySelect}
-          onRefreshProperty={handleRefreshProperty}
           onDeleteProperty={handleDeleteProperty}
-          refreshingPropertyId={refreshingPropertyId}
         />
       )}
     </div>

@@ -22,7 +22,6 @@ import {
 import {
   ChevronUpIcon,
   MoreHorizontalIcon,
-  RefreshCwIcon,
   TrashIcon
 } from 'lucide-react'
 import { ColumnSelector, AVAILABLE_COLUMNS } from './ColumnSelector'
@@ -32,9 +31,7 @@ interface MapOverlayTableProps {
   properties: Property[]
   selectedPropertyId: string | null
   onPropertySelect: (id: string) => void
-  onRefreshProperty: (property: Property) => void
   onDeleteProperty: (property: Property) => void
-  refreshingPropertyId: string | null
 }
 
 // Default minimal columns for map overlay
@@ -64,9 +61,7 @@ export function MapOverlayTable({
   properties,
   selectedPropertyId,
   onPropertySelect,
-  onRefreshProperty,
-  onDeleteProperty,
-  refreshingPropertyId
+  onDeleteProperty
 }: MapOverlayTableProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<Set<keyof Property | string>>(() => {
@@ -412,6 +407,7 @@ export function MapOverlayTable({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {/* COMMENTED OUT: Refresh button - keeping for potential future use
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -425,6 +421,7 @@ export function MapOverlayTable({
                               }`} />
                               {refreshingPropertyId === property.id ? 'Refreshing..' : 'Refresh'}
                             </DropdownMenuItem>
+                            */}
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation()

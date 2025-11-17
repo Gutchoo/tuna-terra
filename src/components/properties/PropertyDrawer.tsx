@@ -129,7 +129,7 @@ function OverviewTabPlaceholder({ property }: { property: Property }) {
           <div className="text-sm">
             <p><span className="font-medium">Lot Size:</span> {property.lot_size_acres ? `${property.lot_size_acres} acres` : 'N/A'}</p>
             <p><span className="font-medium">Year Built:</span> {property.year_built || 'N/A'}</p>
-            <p><span className="font-medium">Stories:</span> {property.stories || 'N/A'}</p>
+            <p><span className="font-medium">Stories:</span> {property.num_stories || 'N/A'}</p>
           </div>
         </div>
       </div>

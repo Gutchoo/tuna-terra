@@ -79,6 +79,10 @@ export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelect
     if (checked) {
       newColumns.add(columnKey)
     } else {
+      // Prevent deselecting the last column (minimum 1 column required)
+      if (visibleColumns.size <= 1) {
+        return
+      }
       newColumns.delete(columnKey)
     }
     onColumnsChange(newColumns)
@@ -94,14 +98,6 @@ export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelect
       AVAILABLE_COLUMNS.filter(col => col.defaultVisible).map(col => col.key)
     )
     onColumnsChange(defaultColumns)
-  }
-
-  const handleSelectNone = () => {
-    // Keep basic columns always visible
-    const basicColumns = new Set(
-      AVAILABLE_COLUMNS.filter(col => col.category === 'basic').map(col => col.key)
-    )
-    onColumnsChange(basicColumns)
   }
 
   const categorizedColumns = AVAILABLE_COLUMNS.reduce((acc, column) => {
@@ -139,9 +135,6 @@ export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelect
           <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={handleSelectDefault}>
             Default
           </Button>
-          <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={handleSelectNone}>
-            Minimal
-          </Button>
         </div>
         
         <DropdownMenuSeparator />
@@ -155,12 +148,14 @@ export function ColumnSelector({ visibleColumns, onColumnsChange }: ColumnSelect
               <DropdownMenuItem
                 key={column.key}
                 className="flex items-center gap-2 cursor-pointer"
-                onSelect={(e) => e.preventDefault()}
+                onSelect={(e) => {
+                  e.preventDefault()
+                  handleColumnToggle(column.key, !visibleColumns.has(column.key))
+                }}
               >
                 <Checkbox
                   checked={visibleColumns.has(column.key)}
                   onCheckedChange={(checked) => handleColumnToggle(column.key, !!checked)}
-                  disabled={column.category === 'basic'} // Keep basic columns always visible
                 />
                 <span className="flex-1 text-sm">{column.label}</span>
               </DropdownMenuItem>
