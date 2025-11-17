@@ -36,11 +36,12 @@ function formatPropertyValue(value: unknown, key: keyof Property): string {
     return value.join('; ')
   }
 
-  // Handle dates - format to ISO string
+  // Handle dates - extract YYYY-MM-DD without timezone conversion
   if (key === 'created_at' || key === 'updated_at' || key === 'sale_date' || key === 'purchase_date') {
     try {
-      const date = new Date(value as string)
-      return date.toISOString().split('T')[0] // Just the date part
+      const dateStr = String(value)
+      // Extract just the date part to avoid timezone issues
+      return dateStr.split('T')[0]
     } catch {
       return String(value)
     }

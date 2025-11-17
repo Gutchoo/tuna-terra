@@ -190,7 +190,13 @@ export function MapOverlayTable({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString()
+
+    // Extract date parts from YYYY-MM-DD format to avoid timezone issues
+    const dateOnly = dateString.split('T')[0]
+    const [year, month, day] = dateOnly.split('-')
+
+    // Format as MM/DD/YYYY without timezone conversion
+    return `${month}/${day}/${year}`
   }
 
   const formatNumber = (value: number | null) => {
@@ -226,6 +232,7 @@ export function MapOverlayTable({
       case 'land_value':
       case 'last_sale_price':
         return <span className="font-mono text-sm">{formatCurrency(value as number)}</span>
+      case 'purchase_date':
       case 'sale_date':
       case 'created_at':
         return formatDate(value as string)

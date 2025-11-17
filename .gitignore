@@ -61,6 +61,7 @@ src/lib/supabase 2.ts
 src/lib/test-data/
 
 *.csv
+LICENSE
 
 # Database schemas (contain sensitive production information)
 database/

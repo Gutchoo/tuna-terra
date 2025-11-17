@@ -316,7 +316,13 @@ export function PropertyMapView({
 
           const formatDate = (dateString: string | null) => {
             if (!dateString) return 'N/A'
-            return new Date(dateString).toLocaleDateString()
+
+            // Extract date parts from YYYY-MM-DD format to avoid timezone issues
+            const dateOnly = dateString.split('T')[0]
+            const [year, month, day] = dateOnly.split('-')
+
+            // Format as MM/DD/YYYY without timezone conversion
+            return `${month}/${day}/${year}`
           }
 
           const formatCoordinate = (value: number | null) => {
