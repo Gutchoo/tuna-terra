@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -69,6 +69,11 @@ export function DatePickerField({
     setOpen(false); // Close the popover after selection
   };
 
+  const handleClearDate = () => {
+    onChange('');
+    setOpen(false);
+  };
+
   const selectedDate = parseDate(value);
 
   // Use custom display formatter if provided, otherwise use default
@@ -118,6 +123,18 @@ export function DatePickerField({
                 fromYear={1900}
                 toYear={new Date().getFullYear() + 50}
               />
+              {selectedDate && (
+                <div className="border-t p-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleClearDate}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              )}
             </PopoverContent>
           </Popover>
         )}
