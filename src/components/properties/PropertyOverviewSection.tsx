@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { InlineEditField } from './InlineEditField';
 import { InlineEditTextarea } from './InlineEditTextarea';
+import { DatePickerField } from './DatePickerField';
 import type { Property } from '@/lib/supabase';
 
 interface PropertyOverviewSectionProps {
@@ -247,13 +248,12 @@ export function PropertyOverviewSection({
 
               {/* Purchase Column */}
               <div className="space-y-3">
-                <InlineEditField
+                <DatePickerField
                   label="Purchase Date"
                   value={getCurrentValue('purchase_date')}
                   onChange={(value) => handleFieldChange('purchase_date', value)}
                   isEditMode={isEditMode}
                   canEdit={canEdit}
-                  type="date"
                   placeholder="Add purchase date"
                   formatDisplay={formatDate}
                 />
@@ -275,13 +275,12 @@ export function PropertyOverviewSection({
 
               {/* Sale Column */}
               <div className="space-y-3">
-                <InlineEditField
+                <DatePickerField
                   label="Sale Date"
                   value={getCurrentValue('sale_date')}
                   onChange={(value) => handleFieldChange('sale_date', value)}
                   isEditMode={isEditMode}
                   canEdit={canEdit}
-                  type="date"
                   placeholder="Add sale date"
                   formatDisplay={formatDate}
                 />
@@ -352,13 +351,12 @@ export function PropertyOverviewSection({
             placeholder="Add interest rate"
             formatDisplay={formatPercentage}
           />
-          <InlineEditField
+          <DatePickerField
             label="Loan Maturity Date"
             value={getCurrentValue('loan_maturity_date')}
             onChange={(value) => handleFieldChange('loan_maturity_date', value)}
             isEditMode={isEditMode}
             canEdit={canEdit}
-            type="date"
             placeholder="Add maturity date"
             formatDisplay={formatDate}
           />
