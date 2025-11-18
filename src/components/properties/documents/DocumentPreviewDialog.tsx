@@ -1,14 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Download, Trash2, Loader2 } from 'lucide-react'
+import { Trash2, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useDocumentPreview } from '@/hooks/usePropertyDocuments'
 import {
   getFileIcon,
-  getDocumentTypeLabel,
-  formatFileSize,
   formatDocumentDate,
   isImageFile,
   isPdfFile,
@@ -47,28 +45,9 @@ export function DocumentPreviewDialog({
   if (!document) return null
 
   const FileIcon = getFileIcon(document.file_type)
-  const typeLabel = getDocumentTypeLabel(document.document_type)
   const isImage = isImageFile(document.file_type)
   const isPdf = isPdfFile(document.file_type)
   const signedUrl = data?.data?.signedUrl
-
-  const handleDownload = async () => {
-    if (signedUrl) {
-      window.open(signedUrl, '_blank')
-    } else if (!isLoading) {
-      // If no signed URL yet, try to fetch it
-      try {
-        const response = await fetch(`/api/properties/${propertyId}/documents/${document.id}`)
-        if (!response.ok) throw new Error('Failed to fetch document')
-        const { data } = await response.json()
-        if (data?.signedUrl) {
-          window.open(data.signedUrl, '_blank')
-        }
-      } catch (error) {
-        console.error('Download error:', error)
-      }
-    }
-  }
 
   const handleDelete = () => {
     onDelete(document.id)
@@ -93,17 +72,8 @@ export function DocumentPreviewDialog({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mr-10">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleDownload}
-              disabled={isLoading}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-
-            {canEdit && (
+          {canEdit && (
+            <div className="flex items-center gap-2 mr-10">
               <Button
                 variant="outline"
                 size="icon"
@@ -112,8 +82,8 @@ export function DocumentPreviewDialog({
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Preview Content */}
@@ -168,10 +138,9 @@ export function DocumentPreviewDialog({
                     <p className="text-muted-foreground">
                       Preview not available for this file type
                     </p>
-                    <Button onClick={handleDownload}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Download File
-                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      Use your browser&apos;s print menu to download this file
+                    </p>
                   </div>
                 </div>
               )}

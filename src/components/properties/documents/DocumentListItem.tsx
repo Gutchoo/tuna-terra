@@ -1,6 +1,6 @@
 'use client'
 
-import { MoreVertical, Download, Trash2, Eye } from 'lucide-react'
+import { MoreVertical, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,40 +9,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { getFileIcon, getDocumentTypeLabel, formatFileSize, formatDocumentDate } from '@/lib/documents'
+import { getFileIcon, formatDocumentDate } from '@/lib/documents'
 import type { PropertyDocument } from '@/lib/supabase'
-import { toast } from 'sonner'
 
 interface DocumentListItemProps {
   document: PropertyDocument
   canEdit: boolean
   onPreview: (document: PropertyDocument) => void
   onDelete: (documentId: string) => void
-}
-
-async function downloadDocument(propertyId: string, documentId: string) {
-  try {
-    const response = await fetch(`/api/properties/${propertyId}/documents/${documentId}`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch document')
-    }
-    const { data } = await response.json()
-    if (data?.signedUrl) {
-      window.open(data.signedUrl, '_blank')
-    } else {
-      throw new Error('No download URL available')
-    }
-  } catch (error) {
-    toast.error('Failed to download document')
-    console.error('Download error:', error)
-  }
 }
 
 export function DocumentListItem({
@@ -52,7 +32,6 @@ export function DocumentListItem({
   onDelete,
 }: DocumentListItemProps) {
   const FileIcon = getFileIcon(document.file_type)
-  const typeLabel = getDocumentTypeLabel(document.document_type)
 
   return (
     <div
@@ -107,13 +86,6 @@ export function DocumentListItem({
               }}>
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation()
-                downloadDocument(document.property_id, document.id)
-              }}>
-                <Download className="h-4 w-4 mr-2" />
-                Download
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

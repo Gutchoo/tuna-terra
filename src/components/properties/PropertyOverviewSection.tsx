@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
   Building2,
-  Landmark,
   Pencil,
   Save,
   X,
@@ -314,8 +313,8 @@ export function PropertyOverviewSection({
         </CardContent>
       </Card>
 
-      {/* Editable Debt Information */}
-      <Card className="group">
+      {/* Editable Debt Information - Disabled until mortgage payment calculations are implemented */}
+      {/* <Card className="group">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Landmark className="h-4 w-4" />
@@ -361,7 +360,7 @@ export function PropertyOverviewSection({
             formatDisplay={formatDate}
           />
         </CardContent>
-      </Card>
+      </Card> */}
 
     </div>
   );
