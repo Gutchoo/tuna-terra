@@ -86,15 +86,37 @@ export async function POST(
       return NextResponse.json({ error: 'Cannot share portfolio with yourself' }, { status: 400 })
     }
 
-    // Use service role to look up existing users (bypasses RLS)
+    // Use service role to look up specific user by email using custom RPC function
+    // This queries auth.users securely without exposing all users
     const serviceSupabase = createServiceSupabaseClient()
-    const { data: existingUsersList, error: userLookupError } = await serviceSupabase.auth.admin.listUsers()
-    
+
+    // Call our custom function to get user ID by email
+    const { data: lookupUserId, error: userLookupError } = await serviceSupabase
+      .rpc('get_user_id_by_email', { user_email: email })
+
     if (userLookupError) {
-      console.error('Error looking up users:', userLookupError)
+      console.error('Error looking up user:', userLookupError)
+      return NextResponse.json(
+        { error: 'Failed to verify user status', details: userLookupError.message },
+        { status: 500 }
+      )
     }
 
-    const existingUser = existingUsersList?.users?.find(user => user.email === email)
+    // If we got a user ID, fetch the full user details
+    let existingUser = null
+    if (lookupUserId) {
+      const { data: userData, error: userFetchError } = await serviceSupabase.auth.admin.getUserById(lookupUserId)
+
+      if (userFetchError) {
+        console.error('Error fetching user details:', userFetchError)
+        return NextResponse.json(
+          { error: 'Failed to fetch user details', details: userFetchError.message },
+          { status: 500 }
+        )
+      }
+
+      existingUser = userData.user
+    }
 
     if (existingUser) {
       // User exists, check if already a member using service role

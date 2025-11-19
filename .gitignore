@@ -51,6 +51,7 @@ CLAUDE.md
 # Security documentation (sensitive implementation details)
 CRITICAL_SECURITY.md
 SECURITY_CONFIGURATION.md
+SECURITY_CONCERNS.md
 
 # Python virtual environment
 venv/
