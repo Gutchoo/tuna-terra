@@ -12,10 +12,10 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { 
-  UserIcon, 
-  CalendarIcon, 
-  ShieldIcon, 
+import {
+  UserIcon,
+  CalendarIcon,
+  ShieldIcon,
   SaveIcon,
   BuildingIcon,
   SearchIcon,
@@ -46,7 +46,7 @@ function AccountPageContent() {
   const [nameError, setNameError] = useState('')
   const [initialName, setInitialName] = useState('')
   const [showProInfoModal, setShowProInfoModal] = useState(false)
-  
+
   const supabase = createClient()
 
   // Check if there are unsaved changes
@@ -135,11 +135,11 @@ function AccountPageContent() {
 
   const validateForm = () => {
     let isValid = true
-    
+
     // Reset errors
     setNameError('')
     setMessage(null)
-    
+
     // Validate full name
     if (!fullName.trim()) {
       setNameError('Full name is required')
@@ -151,7 +151,7 @@ function AccountPageContent() {
       setNameError('Full name must be less than 50 characters')
       isValid = false
     }
-    
+
     return isValid
   }
 
@@ -186,7 +186,7 @@ function AccountPageContent() {
       const data = await response.json()
 
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
-      
+
       // Update local user state
       setUser(prev => prev ? {
         ...prev,
@@ -195,14 +195,14 @@ function AccountPageContent() {
           full_name: data.user.full_name
         }
       } : null)
-      
+
       // Update initial values to reflect saved state
       setInitialName(data.user.full_name)
 
     } catch (error) {
       console.error('Error updating profile:', error)
-      setMessage({ 
-        type: 'error', 
+      setMessage({
+        type: 'error',
         text: error instanceof Error ? error.message : 'Failed to update profile'
       })
     } finally {
@@ -213,7 +213,7 @@ function AccountPageContent() {
 
   const getLoginMethods = (user: User): string[] => {
     const providers = new Set<string>()
-    
+
     // Check primary provider
     const provider = user.app_metadata?.provider
     if (provider) {
@@ -228,7 +228,7 @@ function AccountPageContent() {
           providers.add(provider.charAt(0).toUpperCase() + provider.slice(1))
       }
     }
-    
+
     // Check for linked identities (additional providers)
     if (user.identities) {
       user.identities.forEach(identity => {
@@ -246,7 +246,7 @@ function AccountPageContent() {
         }
       })
     }
-    
+
     return Array.from(providers).sort()
   }
 
@@ -292,7 +292,7 @@ function AccountPageContent() {
                 <span className="text-gray-600 dark:text-gray-300 ml-2">Exact boundaries & coordinates</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <UserIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
               <div>
@@ -300,7 +300,7 @@ function AccountPageContent() {
                 <span className="text-gray-600 dark:text-gray-300 ml-2">Names & mailing addresses</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <DollarSignIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />
               <div>
@@ -308,7 +308,7 @@ function AccountPageContent() {
                 <span className="text-gray-600 dark:text-gray-300 ml-2">Assessed values & sale history</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <HomeIcon className="h-4 w-4 text-purple-500 flex-shrink-0" />
               <div>
@@ -316,7 +316,7 @@ function AccountPageContent() {
                 <span className="text-gray-600 dark:text-gray-300 ml-2">Lot size, year built, stories & units</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <FileTextIcon className="h-4 w-4 text-orange-500 flex-shrink-0" />
               <div>
@@ -338,9 +338,7 @@ function AccountPageContent() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Account Settings</h1>
-        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           {[1, 2, 3].map(i => (
             <Card key={i}>
@@ -370,291 +368,283 @@ function AccountPageContent() {
 
   return (
     <TooltipProvider>
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Account Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your personal information and account preferences
-          </p>
-        </div>
-      </div>
+      <div className="p-4 md:p-6 lg:p-8 space-y-6">
 
-      {message && (
-        <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
-          <AlertDescription>{message.text}</AlertDescription>
-        </Alert>
-      )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>
-              Update your personal information
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        {message && (
+          <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+            <AlertDescription>{message.text}</AlertDescription>
+          </Alert>
+        )}
 
-            {/* Name Field */}
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Name</Label>
-              <Input
-                id="fullName"
-                value={fullName}
-                onChange={(e) => {
-                  setFullName(e.target.value)
-                  if (nameError) setNameError('') // Clear error on change
-                }}
-                placeholder="Enter your name"
-                className={nameError ? 'border-destructive' : ''}
-                maxLength={50}
-              />
-              {nameError && (
-                <p className="text-xs text-destructive">{nameError}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {fullName.length}/50 characters
-              </p>
-            </div>
-
-            {/* Email Field (Read-only) */}
-            <div className="space-y-2">
-              <Label>Email Address</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={user.email || ''}
-                  disabled
-                  className="bg-muted"
-                />
-                <Badge variant="secondary">Locked</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Your email cannot be changed after account creation
-              </p>
-            </div>
-
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={saving || !hasChanges() || !!nameError} 
-              className="w-full"
-            >
-              <SaveIcon className="mr-2 h-4 w-4" />
-              {saving ? 'Saving...' : hasChanges() ? 'Save Changes' : 'No Changes'}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <div className="space-y-6">
-          {/* Account Information */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Profile Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ShieldIcon className="h-5 w-5" />
-                Account Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs text-muted-foreground">LOGIN METHOD{getLoginMethods(user).length > 1 ? 'S' : ''}</Label>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    {getLoginMethods(user).map(method => (
-                      <Badge key={method} variant="outline">
-                        {method}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-xs text-muted-foreground">ACCOUNT STATUS</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="default">Active</Badge>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-xs text-muted-foreground">MEMBER SINCE</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {formatDate(user.created_at || '')}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground">LAST SIGN IN</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Unknown'}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Tier & Usage */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <SearchIcon className="h-5 w-5" />
-                  Account Tier & Usage
-                </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 hover:bg-muted"
-                      onClick={() => setShowProInfoModal(true)}
-                    >
-                      <InfoIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                      <span className="sr-only">What are Pro lookups?</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>What are Pro lookups?</p>
-                  </TooltipContent>
-                </Tooltip>
+                <UserIcon className="h-5 w-5" />
+                Profile Information
               </CardTitle>
               <CardDescription>
-                Property lookup limits and usage tracking
+                Update your personal information
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">CURRENT TIER</Label>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    {userLimits?.tier === 'pro' ? (
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                        Pro Tier
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        Free Tier
-                      </Badge>
-                    )}
-                    {userLimits?.tier === 'free' && (
-                      <Badge variant="outline" className="text-xs">
-                        Coming Soon: Pro
-                      </Badge>
-                    )}
+            <CardContent className="space-y-6">
+
+              {/* Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Name</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value)
+                    if (nameError) setNameError('') // Clear error on change
+                  }}
+                  placeholder="Enter your name"
+                  className={nameError ? 'border-destructive' : ''}
+                  maxLength={50}
+                />
+                {nameError && (
+                  <p className="text-xs text-destructive">{nameError}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {fullName.length}/50 characters
+                </p>
+              </div>
+
+              {/* Email Field (Read-only) */}
+              <div className="space-y-2">
+                <Label>Email Address</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={user.email || ''}
+                    disabled
+                    className="bg-muted"
+                  />
+                  <Badge variant="secondary">Locked</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your email cannot be changed after account creation
+                </p>
+              </div>
+
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving || !hasChanges() || !!nameError}
+                className="w-full"
+              >
+                <SaveIcon className="mr-2 h-4 w-4" />
+                {saving ? 'Saving...' : hasChanges() ? 'Save Changes' : 'No Changes'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Account Details */}
+          <div className="space-y-6">
+            {/* Account Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldIcon className="h-5 w-5" />
+                  Account Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">LOGIN METHOD{getLoginMethods(user).length > 1 ? 'S' : ''}</Label>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {getLoginMethods(user).map(method => (
+                        <Badge key={method} variant="outline">
+                          {method}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">ACCOUNT STATUS</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="default">Active</Badge>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">PROPERTY LOOKUPS</Label>
-                  <div className="mt-1">
-                    <div className="text-sm font-medium">
-                      {userLimits ? (
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {userLimits.property_lookups_used} / {userLimits.tier === 'pro' ? '∞' : userLimits.property_lookups_limit} used
-                          </span>
-                          {userLimits.tier !== 'pro' && userLimits.property_lookups_used >= userLimits.property_lookups_limit && (
-                            <Badge variant="destructive" className="text-xs">
-                              None Left
-                            </Badge>
-                          )}
-                          {userLimits.tier !== 'pro' && userLimits.property_lookups_used < userLimits.property_lookups_limit && getUsagePercentage() >= 90 && (
-                            <Badge variant="destructive" className="text-xs">
-                              Low
-                            </Badge>
-                          )}
-                        </div>
+
+                <Separator />
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">MEMBER SINCE</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {formatDate(user.created_at || '')}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">LAST SIGN IN</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Unknown'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Account Tier & Usage */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <SearchIcon className="h-5 w-5" />
+                    Account Tier & Usage
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-muted"
+                        onClick={() => setShowProInfoModal(true)}
+                      >
+                        <InfoIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        <span className="sr-only">What are Pro lookups?</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>What are Pro lookups?</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </CardTitle>
+                <CardDescription>
+                  Property lookup limits and usage tracking
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">CURRENT TIER</Label>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {userLimits?.tier === 'pro' ? (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                          Pro Tier
+                        </Badge>
                       ) : (
-                        'Loading...'
+                        <Badge variant="secondary">
+                          Free Tier
+                        </Badge>
+                      )}
+                      {userLimits?.tier === 'free' && (
+                        <Badge variant="outline" className="text-xs">
+                          Coming Soon: Pro
+                        </Badge>
                       )}
                     </div>
-                    {userLimits && userLimits.tier !== 'pro' && (
-                      <div className="w-full bg-muted rounded-full h-2 mt-2 relative overflow-hidden">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            getUsagePercentage() >= 90 ? 'bg-red-500' :
-                            getUsagePercentage() >= 70 ? 'bg-yellow-500' : 
-                            'bg-green-500'
-                          }`}
-                          style={{ width: `${getUsagePercentage()}%` }}
-                          role="progressbar"
-                          aria-valuenow={getUsagePercentage()}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-label={`Property lookup usage: ${userLimits.property_lookups_used} of ${userLimits.property_lookups_limit} used`}
-                        />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">PROPERTY LOOKUPS</Label>
+                    <div className="mt-1">
+                      <div className="text-sm font-medium">
+                        {userLimits ? (
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {userLimits.property_lookups_used} / {userLimits.tier === 'pro' ? '∞' : userLimits.property_lookups_limit} used
+                            </span>
+                            {userLimits.tier !== 'pro' && userLimits.property_lookups_used >= userLimits.property_lookups_limit && (
+                              <Badge variant="destructive" className="text-xs">
+                                None Left
+                              </Badge>
+                            )}
+                            {userLimits.tier !== 'pro' && userLimits.property_lookups_used < userLimits.property_lookups_limit && getUsagePercentage() >= 90 && (
+                              <Badge variant="destructive" className="text-xs">
+                                Low
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          'Loading...'
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    Resets {userLimits ? formatResetDate(userLimits.reset_date) : '...'}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BuildingIcon className="h-5 w-5" />
-                Portfolio Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stats ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {stats.portfolios_owned}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Portfolios Owned
-                    </div>
-                  </div>
-
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
-                      {stats.total_properties}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Total Properties
+                      {userLimits && userLimits.tier !== 'pro' && (
+                        <div className="w-full bg-muted rounded-full h-2 mt-2 relative overflow-hidden">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-300 ${getUsagePercentage() >= 90 ? 'bg-red-500' :
+                              getUsagePercentage() >= 70 ? 'bg-yellow-500' :
+                                'bg-green-500'
+                              }`}
+                            style={{ width: `${getUsagePercentage()}%` }}
+                            role="progressbar"
+                            aria-valuenow={getUsagePercentage()}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`Property lookup usage: ${userLimits.property_lookups_used} of ${userLimits.property_lookups_limit} used`}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="animate-pulse">
-                    <div className="h-4 w-24 bg-muted rounded mx-auto mb-2" />
-                    <div className="h-3 w-32 bg-muted rounded mx-auto" />
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Resets {userLimits ? formatResetDate(userLimits.reset_date) : '...'}
+                    </span>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Account Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BuildingIcon className="h-5 w-5" />
+                  Portfolio Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <div className="text-2xl font-bold text-primary">
+                        {stats.portfolios_owned}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Portfolios Owned
+                      </div>
+                    </div>
+
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {stats.total_properties}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Total Properties
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="animate-pulse">
+                      <div className="h-4 w-24 bg-muted rounded mx-auto mb-2" />
+                      <div className="h-3 w-32 bg-muted rounded mx-auto" />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
-    <ProLookupModal />
+      <ProLookupModal />
     </TooltipProvider>
   )
 }

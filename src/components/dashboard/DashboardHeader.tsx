@@ -15,8 +15,9 @@ export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
-  // Hide portfolio selector on portfolios management page
-  const isPortfoliosPage = pathname === '/dashboard/portfolios'
+  // Hide portfolio selector on portfolios management page and profile page
+  const shouldHidePortfolioSelector = pathname === '/dashboard/portfolios' || pathname === '/dashboard/account'
+  const isProfilePage = pathname === '/dashboard/account'
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,7 +40,7 @@ export function DashboardHeader() {
                 </Link>
 
                 {/* Portfolio selector in mobile menu */}
-                {!isPortfoliosPage && (
+                {!shouldHidePortfolioSelector && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-muted-foreground">Portfolio</h3>
                     <Suspense fallback={<div className="h-10 animate-pulse bg-muted rounded" />}>
@@ -76,8 +77,8 @@ export function DashboardHeader() {
             </Link>
           </div>
 
-          {/* Center: Portfolio Selector (conditionally rendered) */}
-          {!isPortfoliosPage && (
+          {/* Center: Portfolio Selector OR Profile Navigation */}
+          {!shouldHidePortfolioSelector ? (
             <div className="flex-1 flex justify-center items-center px-4">
               <Suspense fallback={<div className="h-10 w-48 animate-pulse bg-muted rounded" />}>
                 <PortfolioSelector
@@ -87,7 +88,16 @@ export function DashboardHeader() {
                 />
               </Suspense>
             </div>
-          )}
+          ) : isProfilePage ? (
+            <div className="flex-1 flex justify-center items-center px-4 gap-2">
+              <Button variant="ghost" asChild>
+                <Link href="/dashboard">Properties</Link>
+              </Button>
+              <Button variant="ghost" asChild>
+                <Link href="/dashboard/portfolios">Portfolios</Link>
+              </Button>
+            </div>
+          ) : null}
 
           {/* Right: User Menu */}
           <div className="flex-1 flex justify-end items-center">

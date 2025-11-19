@@ -30,7 +30,7 @@ export default function PortfoliosPage() {
   const [isProcessingBulk, setIsProcessingBulk] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [createPortfolioModalOpen, setCreatePortfolioModalOpen] = useState(false)
-  
+
   // Use React Query for consistent data management
   const { data: portfolios = [], isLoading: loading, refetch } = usePortfolios(true)
   const updatePortfolioName = useUpdatePortfolioName()
@@ -90,7 +90,7 @@ export default function PortfoliosPage() {
       // Filter portfolios based on current search, then only select those user owns
       const currentFilteredPortfolios = portfolios.filter(portfolio => {
         if (!searchQuery.trim()) return true
-        
+
         const searchLower = searchQuery.toLowerCase()
         return (
           portfolio.name.toLowerCase().includes(searchLower) ||
@@ -98,7 +98,7 @@ export default function PortfoliosPage() {
           (portfolio.membership_role?.toLowerCase().includes(searchLower) || false)
         )
       })
-      
+
       const ownedPortfolioIds = currentFilteredPortfolios
         .filter(p => p.membership_role === 'owner')
         .map(p => p.id)
@@ -127,8 +127,8 @@ export default function PortfoliosPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          portfolioIds: Array.from(selectedPortfolios) 
+        body: JSON.stringify({
+          portfolioIds: Array.from(selectedPortfolios)
         }),
       })
 
@@ -159,7 +159,7 @@ export default function PortfoliosPage() {
   // Filter portfolios based on search query
   const filteredPortfolios = portfolios.filter(portfolio => {
     if (!searchQuery.trim()) return true
-    
+
     const searchLower = searchQuery.toLowerCase()
     return (
       portfolio.name.toLowerCase().includes(searchLower) ||
@@ -188,11 +188,7 @@ export default function PortfoliosPage() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Portfolios</h1>
-            <p className="text-muted-foreground">Manage your property portfolios and sharing settings</p>
-          </div>
+        <div className="flex items-center justify-end">
           <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
         </div>
 
@@ -224,7 +220,7 @@ export default function PortfoliosPage() {
             </Alert>
           </div>
         )}
-        
+
         {/* Centered empty state */}
         <div className="flex flex-col items-center justify-start flex-1 max-w-md mx-auto px-6 pt-20 text-center">
           {/* Simple Icon */}
@@ -233,21 +229,21 @@ export default function PortfoliosPage() {
               <BuildingIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </div>
-          
+
           {/* Clean Typography */}
           <div className="space-y-4 mb-8">
             <h1 className="text-2xl font-semibold text-foreground">
               Create your first portfolio
             </h1>
-            
+
             <p className="text-muted-foreground leading-relaxed">
-              Organize and manage your real estate properties in one place. 
+              Organize and manage your real estate properties in one place.
               Get started by creating your first portfolio.
             </p>
           </div>
 
           {/* Single CTA */}
-          <Button 
+          <Button
             onClick={handleCreatePortfolio}
             size="lg"
             className="w-full max-w-xs h-12 flex items-center justify-center gap-2"
@@ -256,7 +252,7 @@ export default function PortfoliosPage() {
             Create Portfolio
           </Button>
         </div>
-        
+
         {/* Delete Portfolio Dialog */}
         <DeletePortfolioDialog
           portfolio={portfolioToDelete}
@@ -274,33 +270,19 @@ export default function PortfoliosPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Portfolios</h1>
-          <p className="text-muted-foreground">
-            Manage your property portfolios and sharing settings
-          </p>
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex-1 w-full max-w-md">
+          <SearchBar
+            onSearchChange={handleSearchChange}
+            placeholder="Search portfolios by name, description, or role..."
+            resultsCount={filteredPortfolios.length}
+            totalCount={portfolios.length}
+          />
         </div>
-        <Button onClick={handleCreatePortfolio} className="flex items-center gap-2">
+        <Button onClick={handleCreatePortfolio} className="flex items-center gap-2 shrink-0">
           <PlusIcon className="h-4 w-4" />
           Create Portfolio
         </Button>
-      </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Search Bar */}
-      <div className="max-w-md">
-        <SearchBar
-          onSearchChange={handleSearchChange}
-          placeholder="Search portfolios by name, description, or role..."
-          resultsCount={filteredPortfolios.length}
-          totalCount={portfolios.length}
-        />
       </div>
 
       {/* Empty state for no search results */}
@@ -320,141 +302,140 @@ export default function PortfoliosPage() {
       {filteredPortfolios.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredPortfolios.map((portfolio) => {
-          const isSelected = selectedPortfolios.has(portfolio.id)
-          return (
-          <Card 
-            key={portfolio.id} 
-            className={`relative group transition-all duration-200 ${
-              isSelected
-                ? 'bg-muted/30 border-muted-foreground/20'
-                : 'hover:shadow-md'
-            }`}
-          >
-            {/* Checkbox overlay for owner portfolios (except sample portfolios) */}
-            {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
-              <div className="absolute top-3 left-3 z-10">
-                <Checkbox
-                  checked={selectedPortfolios.has(portfolio.id)}
-                  onCheckedChange={(checked) => 
-                    handlePortfolioSelect(portfolio.id, checked as boolean)
-                  }
-                  aria-label={`Select ${portfolio.name}`}
-                />
-              </div>
-            )}
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="flex items-center gap-2 mb-2">
-                    {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
-                      <div className="w-5 h-5" />
-                    )}
-                    <BuildingIcon className="h-5 w-5" />
-                    <div className="truncate">
+            const isSelected = selectedPortfolios.has(portfolio.id)
+            return (
+              <Card
+                key={portfolio.id}
+                className={`relative group transition-all duration-200 ${isSelected
+                  ? 'bg-muted/30 border-muted-foreground/20'
+                  : 'hover:shadow-md'
+                  }`}
+              >
+                {/* Checkbox overlay for owner portfolios (except sample portfolios) */}
+                {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <Checkbox
+                      checked={selectedPortfolios.has(portfolio.id)}
+                      onCheckedChange={(checked) =>
+                        handlePortfolioSelect(portfolio.id, checked as boolean)
+                      }
+                      aria-label={`Select ${portfolio.name}`}
+                    />
+                  </div>
+                )}
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="flex items-center gap-2 mb-2">
+                        {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
+                          <div className="w-5 h-5" />
+                        )}
+                        <BuildingIcon className="h-5 w-5" />
+                        <div className="truncate">
+                          {isVirtualSamplePortfolio(portfolio.id) ? (
+                            <span className="truncate font-medium">{portfolio.name}</span>
+                          ) : (
+                            <InlineEditablePortfolioName
+                              portfolioId={portfolio.id}
+                              initialName={portfolio.name}
+                              canEdit={portfolio.membership_role === 'owner'}
+                              onNameChange={(newName) => handlePortfolioNameUpdate(portfolio.id, newName)}
+                              onError={handleNameUpdateError}
+                              className="truncate"
+                            />
+                          )}
+                        </div>
+                      </CardTitle>
+                      {!isVirtualSamplePortfolio(portfolio.id) && (
+                        <CardDescription className="mt-1 h-6 line-clamp-2">
+                          {portfolio.description || 'No description'}
+                        </CardDescription>
+                      )}
+                      {isVirtualSamplePortfolio(portfolio.id) && (
+                        <div className="h-6" />
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       {isVirtualSamplePortfolio(portfolio.id) ? (
-                        <span className="truncate font-medium">{portfolio.name}</span>
+                        <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
                       ) : (
-                        <InlineEditablePortfolioName
-                          portfolioId={portfolio.id}
-                          initialName={portfolio.name}
-                          canEdit={portfolio.membership_role === 'owner'}
-                          onNameChange={(newName) => handlePortfolioNameUpdate(portfolio.id, newName)}
-                          onError={handleNameUpdateError}
-                          className="truncate"
+                        <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
+                          {portfolio.membership_role}
+                        </Badge>
+                      )}
+
+                      {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-1">
+                              <SettingsIcon className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleDeletePortfolio(portfolio)}
+                              className="text-red-600"
+                            >
+                              <TrashIcon className="h-4 w-4 mr-2" />
+                              Delete Portfolio
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <BuildingIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{portfolio.property_count || 0}</span>
+                        <span className="text-muted-foreground">properties</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{portfolio.member_count || 0}</span>
+                        <span className="text-muted-foreground">members</span>
+                      </div>
+                    </div>
+
+                    {/* Created Date */}
+                    <div className="text-xs text-muted-foreground">
+                      Created {formatDate(portfolio.created_at)}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewPortfolio(portfolio.id)}
+                        className="flex-1"
+                      >
+                        View Properties
+                      </Button>
+
+                      {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
+                        <SharePortfolioDialog
+                          portfolio={portfolio}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <Share2Icon className="h-4 w-4" />
+                            </Button>
+                          }
+                          onShareSuccess={() => refetch()}
                         />
                       )}
                     </div>
-                  </CardTitle>
-                  {!isVirtualSamplePortfolio(portfolio.id) && (
-                    <CardDescription className="mt-1 h-6 line-clamp-2">
-                      {portfolio.description || 'No description'}
-                    </CardDescription>
-                  )}
-                  {isVirtualSamplePortfolio(portfolio.id) && (
-                    <div className="h-6" />
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {isVirtualSamplePortfolio(portfolio.id) ? (
-                    <Badge className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Demo</Badge>
-                  ) : (
-                    <Badge className={`text-xs ${getRoleColor(portfolio.membership_role)}`}>
-                      {portfolio.membership_role}
-                    </Badge>
-                  )}
-
-                  {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-1">
-                          <SettingsIcon className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleDeletePortfolio(portfolio)}
-                          className="text-red-600"
-                        >
-                            <TrashIcon className="h-4 w-4 mr-2" />
-                            Delete Portfolio
-                          </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pt-0">
-              <div className="space-y-4">
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <BuildingIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{portfolio.property_count || 0}</span>
-                    <span className="text-muted-foreground">properties</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{portfolio.member_count || 0}</span>
-                    <span className="text-muted-foreground">members</span>
-                  </div>
-                </div>
-
-                {/* Created Date */}
-                <div className="text-xs text-muted-foreground">
-                  Created {formatDate(portfolio.created_at)}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewPortfolio(portfolio.id)}
-                    className="flex-1"
-                  >
-                    View Properties
-                  </Button>
-
-                  {portfolio.membership_role === 'owner' && !isVirtualSamplePortfolio(portfolio.id) && (
-                    <SharePortfolioDialog
-                      portfolio={portfolio}
-                      trigger={
-                        <Button variant="outline" size="sm">
-                          <Share2Icon className="h-4 w-4" />
-                        </Button>
-                      }
-                      onShareSuccess={() => refetch()}
-                    />
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          )
-        })}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 
@@ -481,7 +462,7 @@ export default function PortfoliosPage() {
           <DialogHeader>
             <DialogTitle>Delete Multiple Portfolios</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {selectedPortfolios.size} portfolio{selectedPortfolios.size === 1 ? '' : 's'}? 
+              Are you sure you want to delete {selectedPortfolios.size} portfolio{selectedPortfolios.size === 1 ? '' : 's'}?
               This action cannot be undone and will permanently delete all properties within these portfolios.
             </DialogDescription>
           </DialogHeader>
