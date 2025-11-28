@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { toast } from 'sonner'
 import { LogInIcon, UserPlusIcon, Eye, EyeOff } from 'lucide-react'
 import { TerraLogo } from '@/components/ui/terra-logo'
 
@@ -110,9 +109,6 @@ export function AuthModal({
           setError(error.message)
         } else {
           onOpenChange(false)
-          toast.success('Welcome back!', {
-            description: 'You have been signed in successfully'
-          })
           router.push('/dashboard')
         }
       }

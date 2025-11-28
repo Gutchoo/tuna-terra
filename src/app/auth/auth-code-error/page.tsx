@@ -1,13 +1,13 @@
 'use client'
 
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Suspense } from 'react'
 
 function AuthErrorContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const error = searchParams.get('error')
   const description = searchParams.get('description')
   const supabaseError = searchParams.get('supabase_error')
@@ -90,8 +90,8 @@ function AuthErrorContent() {
             </details>
           )}
           <div className="pt-4">
-            <Button asChild className="w-full">
-              <Link href="/sign-in">Try Again</Link>
+            <Button onClick={() => router.push('/')} className="w-full">
+              Try Again
             </Button>
           </div>
         </CardContent>
