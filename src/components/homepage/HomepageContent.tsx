@@ -88,7 +88,7 @@ export function HomepageContent() {
             transition={{ duration: 0.6 }}
             className="text-fluid-4xl font-bold tracking-tight leading-normal mb-6"
           >
-            Managing Remote Land Shouldn&apos;t Be Hard
+            One Place for Every Property Detail
           </motion.h1>
 
           <motion.p
