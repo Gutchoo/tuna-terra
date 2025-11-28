@@ -1,4 +1,4 @@
-import { PublicNavigation } from '@/components/navigation/PublicNavigation'
+import { SmartNavigation } from '@/components/navigation/SmartNavigation'
 
 export default function ToolsLayout({
   children,
@@ -7,7 +7,7 @@ export default function ToolsLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <PublicNavigation sticky />
+      <SmartNavigation />
 
       <main className="fluid-container py-fluid-md">
         {children}
