@@ -35,16 +35,16 @@ function NavigationContent() {
       label: 'Properties'
     },
     {
+      href: navigation.portfolios,
+      label: 'Portfolios'
+    },
+    {
       href: '/financial-modeling',
       label: 'Financial Modeling'
     },
     {
       href: '/education',
       label: 'Education'
-    },
-    {
-      href: navigation.portfolios,
-      label: 'Portfolios'
     }
   ]
 
