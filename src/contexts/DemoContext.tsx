@@ -56,7 +56,8 @@ function createDemoProperty(baseData: unknown): Property {
     improvement_value: (data.improvement_value as number) || null,
     land_value: (data.land_value as number) || null,
     assessed_value: (data.assessed_value as number) || null,
-    
+    purchase_price: (data.purchase_price as number) || null,
+
     // Extended property details
     use_code: (data.use_code as string) || null,
     use_description: (data.use_description as string) || null,

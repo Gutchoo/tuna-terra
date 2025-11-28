@@ -37,8 +37,8 @@ export function PropertyDashboardView({
   }
 
   // Get purchase price and acquisition costs from property data
-  // Priority: user-entered purchase_price > last_sale_price > assessed_total_value
-  const purchasePrice = property.purchase_price || property.last_sale_price || property.assessed_total_value || 0
+  // Priority: user-entered purchase_price > last_sale_price > assessed_value
+  const purchasePrice = property.purchase_price || property.last_sale_price || property.assessed_value || 0
   const acquisitionCosts = 0 // TODO: Add acquisition costs field to property data or allow user input
 
   return (

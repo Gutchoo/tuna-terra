@@ -77,6 +77,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: null,
     land_value: 220000000,
     assessed_value: 1074685000,
+    purchase_price: null,
 
     // Extended details
     use_code: '05',
@@ -311,6 +312,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: 1680242604,
     land_value: 231576507,
     assessed_value: 1913672794,
+    purchase_price: null,
 
     // Extended details
     use_code: null,
@@ -1016,6 +1018,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: 494918190,
     land_value: 11644187,
     assessed_value: 506562377,
+    purchase_price: null,
 
     // Extended details
     use_code: '6530',
@@ -2010,6 +2013,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: 15880527,
     land_value: 18748497,
     assessed_value: 34629024,
+    purchase_price: null,
 
     // Extended details
     use_code: '58',
@@ -2590,6 +2594,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: 237590366,
     land_value: 15209500,
     assessed_value: 252799866,
+    purchase_price: null,
 
     // Extended details
     use_code: '591',
@@ -3440,6 +3445,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: null,
     land_value: null,
     assessed_value: 3323759771,
+    purchase_price: null,
 
     // Extended details
     use_code: '',
@@ -4184,6 +4190,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: null,
     land_value: 96400000,
     assessed_value: 96400000,
+    purchase_price: null,
 
     // Extended details
     use_code: '05',
@@ -6089,6 +6096,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     improvement_value: 732624900,
     land_value: 178196100,
     assessed_value: 910821000,
+    purchase_price: null,
 
     // Extended details
     use_code: '344',

@@ -181,7 +181,8 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     improvement_value: 0,
     land_value: 0,
     assessed_value: 0,
-    
+    purchase_price: null,
+
     // Extended property details
     use_code: '0300',
     use_description: null,
@@ -599,7 +600,8 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     improvement_value: 0,
     land_value: 33797215,
     assessed_value: 33797215,
-    
+    purchase_price: null,
+
     // Extended property details
     use_code: '8862',
     use_description: 'Government - Government Parcel',
@@ -1063,7 +1065,8 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     improvement_value: 0,
     land_value: 0,
     assessed_value: 0,
-    
+    purchase_price: null,
+
     // Extended property details
     use_code: null,
     use_description: null,

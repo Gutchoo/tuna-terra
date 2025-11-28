@@ -43,7 +43,7 @@ function convertToAssumptions(
   acquisitionCosts: number
 ): PropertyAssumptions {
   // Helper to get single-year value from array (first position)
-  const getSingleValue = (arr: any[] | null): number => {
+  const getSingleValue = (arr: number[] | null | undefined): number => {
     if (!arr || !Array.isArray(arr) || arr.length === 0) return 0
     return Number(arr[0]) || 0
   }
@@ -55,21 +55,21 @@ function convertToAssumptions(
     acquisitionCostType: 'dollar' as const,
 
     // Income - Convert from single-year to 30-year arrays (replicate first value)
-    potentialRentalIncome: Array(30).fill(getSingleValue(financials.potential_rental_income as any)),
-    otherIncome: Array(30).fill(getSingleValue(financials.other_income as any)),
-    vacancyRates: Array(30).fill(getSingleValue(financials.vacancy_rates as any)),
+    potentialRentalIncome: Array(30).fill(getSingleValue(financials.potential_rental_income)),
+    otherIncome: Array(30).fill(getSingleValue(financials.other_income)),
+    vacancyRates: Array(30).fill(getSingleValue(financials.vacancy_rates)),
     rentalIncomeGrowthRate: financials.rental_income_growth_rate || 0,
     defaultVacancyRate: financials.default_vacancy_rate || 0,
 
     // Operating Expenses
-    operatingExpenses: Array(30).fill(getSingleValue(financials.operating_expenses as any)),
+    operatingExpenses: Array(30).fill(getSingleValue(financials.operating_expenses)),
     operatingExpenseType: (financials.operating_expense_type || '') as 'percentage' | 'dollar' | '',
-    propertyTaxes: Array(30).fill(getSingleValue(financials.property_taxes as any)),
-    insurance: Array(30).fill(getSingleValue(financials.insurance as any)),
-    maintenance: Array(30).fill(getSingleValue(financials.maintenance as any)),
-    propertyManagement: Array(30).fill(getSingleValue(financials.property_management as any)),
-    utilities: Array(30).fill(getSingleValue(financials.utilities as any)),
-    otherExpenses: Array(30).fill(getSingleValue(financials.other_expenses as any)),
+    propertyTaxes: Array(30).fill(getSingleValue(financials.property_taxes)),
+    insurance: Array(30).fill(getSingleValue(financials.insurance)),
+    maintenance: Array(30).fill(getSingleValue(financials.maintenance)),
+    propertyManagement: Array(30).fill(getSingleValue(financials.property_management)),
+    utilities: Array(30).fill(getSingleValue(financials.utilities)),
+    otherExpenses: Array(30).fill(getSingleValue(financials.other_expenses)),
     defaultOperatingExpenseRate: financials.default_operating_expense_rate || 0,
 
     // Legacy fields
@@ -127,21 +127,21 @@ function convertToFinancials(assumptions: PropertyAssumptions): Partial<Property
 
   return {
     // Income
-    potential_rental_income: toSingleValueArray(getSingleValue(assumptions.potentialRentalIncome)) as any,
-    other_income: toSingleValueArray(getSingleValue(assumptions.otherIncome)) as any,
-    vacancy_rates: toSingleValueArray(getSingleValue(assumptions.vacancyRates)) as any,
+    potential_rental_income: toSingleValueArray(getSingleValue(assumptions.potentialRentalIncome)),
+    other_income: toSingleValueArray(getSingleValue(assumptions.otherIncome)),
+    vacancy_rates: toSingleValueArray(getSingleValue(assumptions.vacancyRates)),
     rental_income_growth_rate: assumptions.rentalIncomeGrowthRate || 0,
     default_vacancy_rate: assumptions.defaultVacancyRate || 0,
 
     // Operating Expenses
-    operating_expenses: toSingleValueArray(getSingleValue(assumptions.operatingExpenses)) as any,
+    operating_expenses: toSingleValueArray(getSingleValue(assumptions.operatingExpenses)),
     operating_expense_type: assumptions.operatingExpenseType || '',
-    property_taxes: toSingleValueArray(getSingleValue(assumptions.propertyTaxes)) as any,
-    insurance: toSingleValueArray(getSingleValue(assumptions.insurance)) as any,
-    maintenance: toSingleValueArray(getSingleValue(assumptions.maintenance)) as any,
-    property_management: toSingleValueArray(getSingleValue(assumptions.propertyManagement)) as any,
-    utilities: toSingleValueArray(getSingleValue(assumptions.utilities)) as any,
-    other_expenses: toSingleValueArray(getSingleValue(assumptions.otherExpenses)) as any,
+    property_taxes: toSingleValueArray(getSingleValue(assumptions.propertyTaxes)),
+    insurance: toSingleValueArray(getSingleValue(assumptions.insurance)),
+    maintenance: toSingleValueArray(getSingleValue(assumptions.maintenance)),
+    property_management: toSingleValueArray(getSingleValue(assumptions.propertyManagement)),
+    utilities: toSingleValueArray(getSingleValue(assumptions.utilities)),
+    other_expenses: toSingleValueArray(getSingleValue(assumptions.otherExpenses)),
     default_operating_expense_rate: assumptions.defaultOperatingExpenseRate || 0,
 
     // Financing

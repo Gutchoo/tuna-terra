@@ -23,10 +23,10 @@ export function InvestmentMetricsCard({
   isCalculating: propIsCalculating = false,
   useContext = false,
 }: InvestmentMetricsCardProps) {
-  // If useContext is true, get metrics from PropertyFinancialModelingContext
-  const contextData = useContext ? usePropertyFinancialModeling() : null
-  const contextResults = contextData?.state.results
-  const contextIsCalculating = contextData?.state.isLoading || false
+  // Always call the hook to comply with React Hooks rules
+  const contextData = usePropertyFinancialModeling()
+  const contextResults = useContext ? contextData?.state.results : null
+  const contextIsCalculating = useContext ? (contextData?.state.isLoading || false) : false
 
   // Determine which metrics to use
   const metrics = useContext && contextResults ? {

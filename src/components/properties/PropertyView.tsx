@@ -379,7 +379,7 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
 
         <div className="flex items-center gap-3">
           <PropertyViewToggle
-            currentView={viewMode}
+            currentView={viewMode === 'dashboard' ? 'cards' : viewMode}
             onViewChange={handleViewChange}
           />
 

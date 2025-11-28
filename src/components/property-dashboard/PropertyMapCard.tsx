@@ -55,7 +55,7 @@ export function PropertyMapCard({ property }: PropertyMapCardProps) {
         // Add property boundary as a polygon
         map.current.addSource('property-boundary', {
           type: 'geojson',
-          data: property.geometry as GeoJSON.GeoJSON,
+          data: property.geometry as unknown as GeoJSON.GeoJSON,
         })
 
         // Add fill layer
