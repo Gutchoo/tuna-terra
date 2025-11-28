@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { DatabaseService } from './db'
+import { censusDataSchema, type CensusData } from './types/census'
 
 const CENSUS_API_BASE = 'https://api.census.gov/data'
 const DEFAULT_YEAR = 2023
@@ -54,51 +55,8 @@ const S1501_VARIABLES = {
   pct_bachelor_plus_45_64: 'S1501_C02_024E',  // Fixed: was S1501_C02_015E
 }
 
-// Census data schema for validation
-const censusDataSchema = z.object({
-  geoid: z.string(),
-  year: z.number(),
-  households: z.number().nullable(),
-  median_income: z.number().nullable(),
-  mean_income: z.number().nullable(),
-  population: z.number().nullable(),
-  unemployment_rate: z.number().nullable(),
-  median_age: z.number().nullable(),
-  age_brackets: z.object({
-    '20_24': z.number(),
-    '25_29': z.number(),
-    '30_34': z.number(),
-    '35_39': z.number(),
-    '40_44': z.number(),
-    '45_49': z.number(),
-    '50_54': z.number(),
-    '55_59': z.number(),
-    '60_64': z.number(),
-    '65_69': z.number(),
-    '70_74': z.number(),
-    '75_79': z.number(),
-    '80_84': z.number(),
-    '85_plus': z.number(),
-  }).nullable(),
-  // Housing characteristics from DP04
-  total_housing_units: z.number().nullable(),
-  owner_occupied_units: z.number().nullable(),
-  renter_occupied_units: z.number().nullable(),
-  median_rent: z.number().nullable(),
-  avg_household_size_owner: z.number().nullable(),
-  avg_household_size_renter: z.number().nullable(),
-  // Education characteristics from S1501
-  education_details: z.object({
-    pop_25_34: z.number(),
-    pop_35_44: z.number(),
-    pop_45_64: z.number(),
-    pct_bachelor_plus_25_34: z.number(),
-    pct_bachelor_plus_35_44: z.number(),
-    pct_bachelor_plus_45_64: z.number(),
-  }).nullable(),
-})
-
-export type CensusData = z.infer<typeof censusDataSchema>
+// Note: censusDataSchema and CensusData type now imported from ./types/census
+// to break circular dependency between census.ts and db.ts
 
 // Census API response structure (array format)
 // interface CensusApiResponse {
@@ -579,5 +537,5 @@ export class CensusService {
   }
 }
 
-// Export types for use in other modules
-export { censusDataSchema }
+// Re-export types for backward compatibility
+export { censusDataSchema, type CensusData } from './types/census'

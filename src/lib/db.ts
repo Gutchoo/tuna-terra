@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Property } from './supabase'
-import type { CensusData } from './census'
+import type { CensusData } from './types/census'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
