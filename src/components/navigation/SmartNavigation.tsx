@@ -41,19 +41,19 @@ function NavigationContent() {
   if (isLoading) {
     return (
       <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="fluid-container h-fluid-md flex items-center justify-between">
+        <div className="fluid-container h-fluid-md grid grid-cols-3 items-center">
           <div className="flex items-center gap-fluid-sm">
             <div className="w-fluid-sm h-fluid-sm bg-muted rounded-md animate-pulse flex-shrink-0" />
-            <div className="flex items-center gap-1">
-              <div className="w-fluid-sm h-fluid-sm bg-muted rounded animate-pulse md:hidden" />
-              <div className="hidden md:flex items-center gap-1">
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-              </div>
+          </div>
+          <div className="flex items-center justify-center gap-1">
+            <div className="w-fluid-sm h-fluid-sm bg-muted rounded animate-pulse md:hidden" />
+            <div className="hidden md:flex items-center gap-1">
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-sm md:gap-fluid-md flex-shrink-0">
+          <div className="flex items-center justify-end gap-fluid-sm md:gap-fluid-md">
             <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
           </div>
         </div>
@@ -65,7 +65,7 @@ function NavigationContent() {
     // Authenticated user - show portfolio-aware navigation like dashboard
     return (
       <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="fluid-container h-fluid-md flex items-center justify-between">
+        <div className="fluid-container h-fluid-md grid grid-cols-3 items-center">
           <div className="flex items-center gap-fluid-sm">
             <Suspense fallback={
               <div className="flex items-center gap-fluid-sm min-w-0">
@@ -74,7 +74,9 @@ function NavigationContent() {
             }>
               <PortfolioAwareHomeButton className="flex items-center gap-fluid-sm min-w-0" />
             </Suspense>
-            
+          </div>
+
+          <div className="flex items-center justify-center">
             <Suspense fallback={
               <div className="flex items-center gap-1">
                 <div className="w-fluid-sm h-fluid-sm bg-muted rounded animate-pulse md:hidden" />
@@ -90,7 +92,7 @@ function NavigationContent() {
             </Suspense>
           </div>
 
-          <div className="flex items-center gap-fluid-sm md:gap-fluid-md flex-shrink-0">
+          <div className="flex items-center justify-end gap-fluid-sm md:gap-fluid-md">
             <UserMenu />
           </div>
         </div>
@@ -106,19 +108,19 @@ export function SmartNavigation() {
   return (
     <Suspense fallback={
       <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="fluid-container h-fluid-md flex items-center justify-between">
+        <div className="fluid-container h-fluid-md grid grid-cols-3 items-center">
           <div className="flex items-center gap-fluid-sm">
             <div className="w-fluid-sm h-fluid-sm bg-muted rounded-md animate-pulse flex-shrink-0" />
-            <div className="flex items-center gap-1">
-              <div className="w-fluid-sm h-fluid-sm bg-muted rounded animate-pulse md:hidden" />
-              <div className="hidden md:flex items-center gap-1">
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-20 bg-muted rounded animate-pulse" />
-              </div>
+          </div>
+          <div className="flex items-center justify-center gap-1">
+            <div className="w-fluid-sm h-fluid-sm bg-muted rounded animate-pulse md:hidden" />
+            <div className="hidden md:flex items-center gap-1">
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+              <div className="h-8 w-20 bg-muted rounded animate-pulse" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-sm md:gap-fluid-md flex-shrink-0">
+          <div className="flex items-center justify-end gap-fluid-sm md:gap-fluid-md">
             <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
           </div>
         </div>
