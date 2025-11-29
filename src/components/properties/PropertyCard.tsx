@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   MoreVerticalIcon,
-  RefreshCwIcon,
   TrashIcon,
   ChevronDownIcon,
   MapPinIcon,
@@ -117,16 +116,6 @@ export function PropertyCard({
                             View Dashboard
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                          }}
-                          disabled={true}
-                          className="opacity-50 cursor-not-allowed"
-                        >
-                          <RefreshCwIcon className="mr-2 h-4 w-4" />
-                          Refresh Data
-                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation()

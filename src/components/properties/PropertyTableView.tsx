@@ -23,7 +23,6 @@ import {
   ArrowDownIcon,
   ArrowUpDownIcon,
   MoreHorizontalIcon,
-  RefreshCwIcon,
   TrashIcon
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
@@ -359,16 +358,6 @@ export function PropertyTableView({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() => onRefresh(property)}
-                      disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
-                      className="focus:bg-blue-50"
-                    >
-                      <RefreshCwIcon className={`mr-2 h-4 w-4 ${
-                        refreshingPropertyId === property.id ? 'animate-spin' : ''
-                      }`} />
-                      {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
                       onClick={() => onDelete(property)}
                       className="text-red-600 focus:text-red-600 focus:bg-red-50"
                       disabled={isVirtualSampleProperty(property.id)}
@@ -497,16 +486,6 @@ export function PropertyTableView({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => onRefresh(property)}
-                          disabled={refreshingPropertyId === property.id || !property.apn || isVirtualSampleProperty(property.id)}
-                          className="focus:bg-blue-50"
-                        >
-                          <RefreshCwIcon className={`mr-2 h-4 w-4 ${
-                            refreshingPropertyId === property.id ? 'animate-spin' : ''
-                          }`} />
-                          {refreshingPropertyId === property.id ? 'Refreshing...' : 'Refresh'}
-                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(property)}
                           className="text-red-600 focus:text-red-600 focus:bg-red-50"
