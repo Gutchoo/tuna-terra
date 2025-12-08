@@ -7,8 +7,15 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Error: Missing required environment variables.')
+  console.error('  NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓ set' : '✗ missing')
+  console.error('  SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✓ set' : '✗ missing')
+  process.exit(1)
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
