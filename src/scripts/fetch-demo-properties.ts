@@ -14,6 +14,7 @@ interface CuratedProperty {
   type: 'office' | 'tech' | 'entertainment' | 'industrial' | 'aviation'
   city: string
   state: string
+  county?: string // Regrid path county slug; required when the APN collides across counties
   active: boolean
 }
 
@@ -44,6 +45,7 @@ const CURATED_PROPERTIES: CuratedProperty[] = [
     type: 'industrial',
     city: 'Austin',
     state: 'TX',
+    county: 'travis', // APN 292257 matches 11 TX parcels; Gigafactory is the Travis County one
     active: true
   },
   {
@@ -142,7 +144,7 @@ async function fetchPropertyData() {
     console.log(`\n📍 Fetching data for ${property.name} (APN: ${property.apn})`)
 
     try {
-      const regridData = await RegridService.searchByAPN(property.apn, property.state)
+      const regridData = await RegridService.searchByAPN(property.apn, property.state, property.county)
 
       if (regridData) {
         console.log(`✅ Successfully fetched data for ${property.name}`)

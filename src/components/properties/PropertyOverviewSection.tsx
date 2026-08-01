@@ -3,8 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import {
   Building2,
+  Landmark,
   Pencil,
   Save,
   X,
@@ -103,6 +105,76 @@ export function PropertyOverviewSection({
     // For any other type (boolean, array, object), return null as fallback
     return null;
   };
+
+  const formatNumber = (value: number | null | undefined) => {
+    if (value == null) return null;
+    return value.toLocaleString();
+  };
+
+  const formatAcres = (value: number | null | undefined) => {
+    if (value == null) return null;
+    return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} acres`;
+  };
+
+  // Read-only assessor data rows, grouped for the Parcel Data card; empty values are skipped
+  const parcelDataGroups: Array<{ heading: string; rows: Array<{ label: string; value: string | null }> }> = [
+    {
+      heading: 'Valuation',
+      rows: [
+        { label: 'Assessed Value', value: property.assessed_value ? formatCurrency(property.assessed_value) : null },
+        { label: 'Land Value', value: property.land_value ? formatCurrency(property.land_value) : null },
+        { label: 'Improvement Value', value: property.improvement_value ? formatCurrency(property.improvement_value) : null },
+        { label: 'Tax Year', value: property.tax_year || null },
+      ],
+    },
+    {
+      heading: 'Building',
+      rows: [
+        { label: 'Year Built', value: property.year_built ? String(property.year_built) : null },
+        { label: 'Stories', value: property.num_stories ? formatNumber(property.num_stories) : null },
+        { label: 'Units', value: property.num_units ? formatNumber(property.num_units) : null },
+        { label: 'Rooms', value: property.num_rooms ? formatNumber(property.num_rooms) : null },
+      ],
+    },
+    {
+      heading: 'Land & Zoning',
+      rows: [
+        { label: 'Lot Size', value: formatAcres(property.lot_size_acres) || (property.lot_size_sqft ? `${formatNumber(property.lot_size_sqft)} sqft` : null) },
+        { label: 'Zoning', value: property.zoning || null },
+        { label: 'Zoning Description', value: property.zoning_description || null },
+        { label: 'Land Use', value: property.use_description || property.use_code || null },
+        { label: 'Subdivision', value: property.subdivision || null },
+      ],
+    },
+    {
+      heading: 'Location',
+      rows: [
+        { label: 'County', value: property.county || null },
+        { label: 'Census Tract', value: property.census_tract || null },
+        { label: 'Opportunity Zone', value: property.qoz_status === 'Yes' ? `Yes${property.qoz_tract ? ` (${property.qoz_tract})` : ''}` : null },
+      ],
+    },
+    {
+      heading: 'Last Recorded Sale',
+      rows: [
+        { label: 'Sale Price', value: property.last_sale_price ? formatCurrency(property.last_sale_price) : null },
+        { label: 'Sale Date', value: property.sale_date ? formatDate(property.sale_date) : null },
+      ],
+    },
+    {
+      heading: 'Owner Mailing Address',
+      rows: [
+        {
+          label: 'Address',
+          value: property.owner_mailing_address
+            ? [property.owner_mailing_address, property.owner_mail_city, property.owner_mail_state, property.owner_mail_zip].filter(Boolean).join(', ')
+            : null,
+        },
+      ],
+    },
+  ]
+    .map(group => ({ ...group, rows: group.rows.filter(row => row.value) }))
+    .filter(group => group.rows.length > 0);
 
   return (
     <div className="space-y-3">
@@ -312,6 +384,41 @@ export function PropertyOverviewSection({
           </div>
         </CardContent>
       </Card>
+
+      {/* Parcel Data - read-only county assessor record */}
+      {parcelDataGroups.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Landmark className="h-4 w-4" />
+                Parcel Data
+              </CardTitle>
+              <Badge variant="secondary" className="text-xs font-normal">
+                County records
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {parcelDataGroups.map((group, index) => (
+              <div key={group.heading}>
+                {index > 0 && <Separator className="mb-4" />}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  {group.heading}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3">
+                  {group.rows.map(row => (
+                    <div key={row.label} className="min-w-0">
+                      <p className="text-xs text-muted-foreground">{row.label}</p>
+                      <p className="text-sm font-medium break-words">{row.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Editable Debt Information - Disabled until mortgage payment calculations are implemented */}
       {/* <Card className="group">
