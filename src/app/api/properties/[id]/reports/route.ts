@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { DatabaseService } from '@/lib/db'
 
 async function createServerSupabaseClient() {
   const cookieStore = await cookies()
@@ -77,7 +76,7 @@ export async function GET(
       )
     }
 
-    let reportData: any
+    let reportData: Record<string, unknown>
 
     // Generate report based on type
     switch (report_type) {

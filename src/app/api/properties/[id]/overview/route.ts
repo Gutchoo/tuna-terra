@@ -49,7 +49,7 @@ export async function GET(
     const today = new Date().toISOString().split('T')[0]
 
     // Aggregate income YTD
-    const { data: incomeData, error: incomeError } = await supabase
+    const { data: incomeData } = await supabase
       .from('income_transactions')
       .select('amount')
       .eq('property_id', propertyId)
@@ -60,7 +60,7 @@ export async function GET(
     const totalIncomeYTD = incomeData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
     // Aggregate expenses YTD
-    const { data: expenseData, error: expenseError } = await supabase
+    const { data: expenseData } = await supabase
       .from('expense_transactions')
       .select('amount')
       .eq('property_id', propertyId)
@@ -71,13 +71,13 @@ export async function GET(
     const totalExpensesYTD = expenseData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
     // Count documents
-    const { count: documentCount, error: documentError } = await supabase
+    const { count: documentCount } = await supabase
       .from('property_documents')
       .select('*', { count: 'exact', head: true })
       .eq('property_id', propertyId)
 
     // Count units
-    const { count: unitCount, error: unitError } = await supabase
+    const { count: unitCount } = await supabase
       .from('property_units')
       .select('*', { count: 'exact', head: true })
       .eq('property_id', propertyId)
