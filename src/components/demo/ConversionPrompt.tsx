@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  CrownIcon, 
+import {
   ArrowRightIcon,
   SaveIcon,
   UsersIcon,
@@ -20,36 +19,32 @@ interface ConversionPromptProps {
 
 const features = [
   {
-    icon: SaveIcon,
-    title: 'Save Your Work',
-    description: 'Keep all your properties and data permanently'
-  },
-  {
-    icon: UsersIcon,
-    title: 'Portfolio Collaboration',
-    description: 'Share portfolios with team members'
-  },
-  {
     icon: MapIcon,
-    title: 'Advanced Features',
-    description: 'Full editing, portfolio sharing, and more'
+    title: 'Parcel-Level Data',
+    description: 'Ownership, assessed values, zoning, and lot boundaries from county records'
   },
   {
     icon: BarChart3Icon,
-    title: 'Professional Tools',
-    description: 'Financial modeling and analytics'
+    title: 'Financial Modeling',
+    description: 'NOI, cap rate, DSCR, and IRR analysis built for CRE workflows'
+  },
+  {
+    icon: SaveIcon,
+    title: 'Portfolio Tracking',
+    description: 'Organize properties into portfolios with cards, table, and map views'
+  },
+  {
+    icon: UsersIcon,
+    title: 'Collaboration',
+    description: 'Share portfolios with role-based permissions'
   }
 ]
 
-export function ConversionPrompt({ 
-  variant = 'banner', 
-  className = '' 
+export function ConversionPrompt({
+  variant = 'banner',
+  className = ''
 }: ConversionPromptProps) {
   const [showAuthModal, setShowAuthModal] = useState(false)
-
-  const handleSignUp = () => {
-    setShowAuthModal(true)
-  }
 
   if (variant === 'banner') {
     return (
@@ -60,33 +55,34 @@ export function ConversionPrompt({
               {/* Left side - Message */}
               <div className="flex-1 text-center lg:text-left">
                 <h3 className="text-xl font-semibold mb-2 text-foreground">
-                  Explore Sample Properties with Extensive Data
+                  Real parcel data on real properties
                 </h3>
                 <p className="text-muted-foreground text-sm lg:text-base">
-                  Browse commercial properties owned by some of the world&apos;s biggest companies with complete data and interactive maps.
-                  Sign up for a free account to search any property using parcel numbers or addresses.
+                  Every property below is enriched with live county assessor data — ownership,
+                  assessed value, zoning, lot size, and parcel boundaries. Add a landmark property,
+                  open it to see the full record, and switch to the map view to see its footprint.
                 </p>
               </div>
 
-              {/* Right side - Action */}
-              <div className="flex flex-col items-center gap-4 lg:min-w-[280px]">
+              {/* Right side - subtle account link */}
+              <div className="flex flex-col items-center gap-2 lg:min-w-[220px]">
                 <Button
-                  onClick={handleSignUp}
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90 px-8 py-3 w-full lg:w-auto"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAuthModal(true)}
                 >
-                  Create Free Account
+                  Create free account
                   <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  No credit card required
+                  to search any US property
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <AuthModal 
+        <AuthModal
           open={showAuthModal}
           onOpenChange={setShowAuthModal}
           defaultMode="sign-up"
@@ -101,14 +97,11 @@ export function ConversionPrompt({
       <Card className={`bg-muted/30 border-border ${className}`}>
         <CardContent className="p-8">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <CrownIcon className="w-8 h-8 text-primary-foreground" />
-            </div>
             <h3 className="text-2xl font-bold mb-2 text-foreground">
-              Upgrade Your Experience
+              What&apos;s under the hood
             </h3>
             <p className="text-muted-foreground">
-              You&apos;ve seen what our platform can do. Ready to unlock everything?
+              The same tools available on every property in a real portfolio
             </p>
           </div>
 
@@ -137,21 +130,18 @@ export function ConversionPrompt({
           {/* CTA */}
           <div className="text-center">
             <Button
-              onClick={handleSignUp}
-              size="lg"
-              className="bg-primary hover:bg-primary/90 px-12 py-4 mb-3"
+              variant="outline"
+              onClick={() => setShowAuthModal(true)}
+              className="px-8"
             >
-              Create Free Account
+              Create free account
               <ArrowRightIcon className="w-4 h-4 ml-2" />
             </Button>
-            <p className="text-xs text-muted-foreground">
-              No credit card required • Set up in 30 seconds
-            </p>
           </div>
         </CardContent>
       </Card>
 
-      <AuthModal 
+      <AuthModal
         open={showAuthModal}
         onOpenChange={setShowAuthModal}
         defaultMode="sign-up"

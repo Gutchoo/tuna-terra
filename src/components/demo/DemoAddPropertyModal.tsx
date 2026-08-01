@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useDemo } from '@/contexts/DemoContext'
-import { AuthModal } from '@/components/modals/AuthModal'
 import { CURATED_DEMO_PROPERTIES, type CuratedDemoProperty } from '@/lib/curated-demo-properties'
 import type { Property } from '@/lib/supabase'
 
@@ -23,7 +22,6 @@ export function DemoAddPropertyModal({
 }: DemoAddPropertyModalProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'success'>('selection')
   const [selectedProperty, setSelectedProperty] = useState<CuratedDemoProperty | null>(null)
-  const [showAuthModal, setShowAuthModal] = useState(false)
   const { demoState, addDemoProperty, hasProperty } = useDemo()
 
   // Reset modal state when opened
@@ -140,9 +138,9 @@ export function DemoAddPropertyModal({
     <div className="space-y-4">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-2xl font-bold">Sign up with a free account to search any property by address or parcel number</h2>
+        <h2 className="text-2xl font-bold">Add a landmark property to explore</h2>
         <p className="text-muted-foreground text-md">
-          Demo experience: Add and explore properties from some of the world&apos;s biggest companies
+          Each property is loaded with real county assessor data — ownership, assessed values, zoning, and parcel boundaries
         </p>
       </div>
 
@@ -210,20 +208,15 @@ export function DemoAddPropertyModal({
 
       <Card className="bg-muted/30 border-border max-w-2xl mx-auto">
         <CardContent className="p-6 md:p-8">
-          <div className="text-center">
-            <p className="text-lg md:text-xl font-semibold text-foreground mb-3">
-              Ready to manage your own portfolio?
+          <div className="text-left space-y-2">
+            <p className="text-base md:text-lg font-semibold text-foreground">
+              Things to try next
             </p>
-            <p className="text-sm md:text-base text-muted-foreground mb-6">
-              Create a free account for saved portfolios and comprehensive property data
-            </p>
-            <Button
-              size="lg"
-              onClick={() => setShowAuthModal(true)}
-              className="bg-primary hover:bg-primary/90 px-8 py-3"
-            >
-              Create Free Account
-            </Button>
+            <ul className="text-sm md:text-base text-muted-foreground space-y-1 list-disc list-inside">
+              <li>Open the property card to see the full assessor record</li>
+              <li>Switch to Map view to see the parcel boundary</li>
+              <li>Compare assessed value vs. land value across properties in Table view</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
@@ -269,12 +262,6 @@ export function DemoAddPropertyModal({
           </div>
         </DialogContent>
       </Dialog>
-
-      <AuthModal
-        open={showAuthModal}
-        onOpenChange={setShowAuthModal}
-        defaultMode="sign-up"
-      />
     </>
   )
 }

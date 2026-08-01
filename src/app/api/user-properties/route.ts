@@ -423,7 +423,17 @@ async function handleSingleCreate(userId: string, body: unknown) {
 
       if (exactMatch) {
         console.log('handleSingleCreate - duplicate APN found within same portfolio, rejecting creation')
-        throw new Error('A property with this APN already exists in this portfolio')
+        return NextResponse.json(
+          {
+            error: 'This property is already in this portfolio',
+            details: {
+              type: 'duplicate',
+              apn: propertyData.apn,
+              existing_address: exactMatch.address
+            }
+          },
+          { status: 409 }
+        )
       }
     }
 

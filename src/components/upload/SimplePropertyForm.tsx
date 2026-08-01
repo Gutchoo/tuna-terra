@@ -80,6 +80,12 @@ const propertySchema = z.object({
     message: 'Either address or APN is required',
     path: ['address'],
   }
+).refine(
+  (data) => data.inputMode !== 'apn' || (!!data.state && data.state.trim().length === 2),
+  {
+    message: 'State is required for APN lookups — parcel numbers repeat across counties',
+    path: ['state'],
+  }
 );
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -286,7 +292,12 @@ export function SimplePropertyForm({
       if (onSuccess) onSuccess();
     } catch (error: unknown) {
       console.error('Error creating property:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add property');
+      const message = error instanceof Error ? error.message : 'Failed to add property';
+      if (message.toLowerCase().includes('already') && message.toLowerCase().includes('portfolio')) {
+        toast.info(message);
+      } else {
+        toast.error(message);
+      }
     }
   };
 
@@ -455,6 +466,10 @@ export function SimplePropertyForm({
           {errors.apn && (
             <p className="text-sm text-destructive">{errors.apn.message}</p>
           )}
+          <p className="text-xs text-muted-foreground">
+            APNs are only unique within a county — include the state below to narrow the search.
+            If multiple parcels match, you&apos;ll be asked to pick the right one.
+          </p>
         </div>
       )}
 
@@ -469,14 +484,19 @@ export function SimplePropertyForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="state">State</Label>
+          <Label htmlFor="state">
+            State {inputMode === 'apn' && <span className="text-destructive">*</span>}
+          </Label>
           <Input
             id="state"
             {...register('state')}
-            placeholder="State"
+            placeholder="CA"
             maxLength={2}
             className="uppercase"
           />
+          {errors.state && (
+            <p className="text-sm text-destructive">{errors.state.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="zip_code">Zip Code</Label>

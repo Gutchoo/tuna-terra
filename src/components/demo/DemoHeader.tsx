@@ -36,10 +36,10 @@ export function DemoHeader() {
               <div className="flex items-center gap-fluid-xs">
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Eye className="w-3 h-3" />
-                  Demo Mode
+                  Live Demo
                 </Badge>
                 <span className="text-fluid-sm text-muted-foreground hidden sm:inline">
-                  Explore Sample Data
+                  Real parcel data, no account needed
                 </span>
               </div>
             </div>
@@ -58,9 +58,9 @@ export function DemoHeader() {
 
               {/* Sign Up CTA */}
               <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setAuthModalOpen(true)}
-                className="bg-primary hover:bg-primary/90"
               >
                 Sign Up
               </Button>
