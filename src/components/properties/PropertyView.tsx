@@ -40,9 +40,12 @@ interface PropertyViewProps {
   // Demo mode override handlers
   onRefreshOverride?: (property: Property) => void
   onDeleteOverride?: (property: Property) => void
+  // Programmatic focus: map view centers on the property, other views open its drawer.
+  // Timestamp makes repeat requests for the same property re-trigger the effect.
+  focusRequest?: { propertyId: string; ts: number } | null
 }
 
-export function PropertyView({ properties, onPropertiesChange, onError, portfolioId, portfolioName, onAddProperties, onRefreshOverride, onDeleteOverride }: PropertyViewProps) {
+export function PropertyView({ properties, onPropertiesChange, onError, portfolioId, portfolioName, onAddProperties, onRefreshOverride, onDeleteOverride, focusRequest }: PropertyViewProps) {
   // React Query mutations for property operations
   const deleteProperty = useDeleteProperty()
   const deleteProperties = useDeleteProperties()
@@ -325,6 +328,24 @@ export function PropertyView({ properties, onPropertiesChange, onError, portfoli
     setDrawerPropertyId(propertyId)
     setDrawerOpen(true)
   }
+
+  // Respond to programmatic focus requests (e.g. demo adds a property):
+  // map view centers on it, cards/table open its drawer. The request may
+  // arrive before the property lands in `properties` (context update is
+  // async), so re-check on property changes and consume the request once.
+  const handledFocusTs = useRef(0)
+  useEffect(() => {
+    if (!focusRequest || focusRequest.ts === handledFocusTs.current) return
+    if (!properties.some(p => p.id === focusRequest.propertyId)) return
+    handledFocusTs.current = focusRequest.ts
+    if (viewMode === 'map') {
+      setSelectedPropertyId(focusRequest.propertyId)
+    } else {
+      setDrawerPropertyId(focusRequest.propertyId)
+      setDrawerOpen(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest, properties])
 
   // Handle property selection in map view - only updates selection, doesn't open modal
   const handleMapPropertySelect = (propertyId: string) => {

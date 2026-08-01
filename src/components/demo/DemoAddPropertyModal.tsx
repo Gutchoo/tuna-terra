@@ -13,12 +13,17 @@ interface DemoAddPropertyModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   forceSuccessState?: boolean
+  // When provided, adding a property closes the modal and hands the new id
+  // back to the parent (which focuses it in the current view) instead of
+  // showing the success screen
+  onPropertyAdded?: (propertyId: string) => void
 }
 
 export function DemoAddPropertyModal({
   open,
   onOpenChange,
-  forceSuccessState = false
+  forceSuccessState = false,
+  onPropertyAdded
 }: DemoAddPropertyModalProps) {
   const [currentStep, setCurrentStep] = useState<'selection' | 'success'>('selection')
   const [selectedProperty, setSelectedProperty] = useState<CuratedDemoProperty | null>(null)
@@ -116,8 +121,20 @@ export function DemoAddPropertyModal({
         curatedMetadata: property.curatedMetadata
       } as Property & { curatedMetadata: typeof property.curatedMetadata }
 
-      addDemoProperty(demoPropertyData)
-      setCurrentStep('success')
+      // DemoContext assigns its own id, so use the returned property
+      const createdProperty = addDemoProperty(demoPropertyData)
+
+      if (onPropertyAdded) {
+        // Close and let the parent focus the property in the current view
+        onOpenChange(false)
+        onPropertyAdded(createdProperty.id)
+        setTimeout(() => {
+          setCurrentStep('selection')
+          setSelectedProperty(null)
+        }, 300)
+      } else {
+        setCurrentStep('success')
+      }
     } catch (error) {
       console.error('Demo property creation error:', error)
     }

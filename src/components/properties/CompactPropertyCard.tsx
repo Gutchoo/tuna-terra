@@ -35,16 +35,40 @@ export function CompactPropertyCard({
   canEdit = true,
 }: CompactPropertyCardProps) {
   const formatCurrency = (value: number | null) => {
-    if (!value) return 'N/A'
+    if (!value) return null
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
+      notation: value >= 10_000_000 ? 'compact' : 'standard',
+      compactDisplay: 'short',
     }).format(value)
   }
 
+  const formatLotSize = () => {
+    if (property.lot_size_acres && property.lot_size_acres >= 0.5) {
+      return `${property.lot_size_acres.toLocaleString(undefined, { maximumFractionDigits: 1 })} ac`
+    }
+    if (property.lot_size_sqft) {
+      return `${Math.round(property.lot_size_sqft).toLocaleString()} sqft`
+    }
+    if (property.lot_size_acres) {
+      return `${property.lot_size_acres.toLocaleString(undefined, { maximumFractionDigits: 2 })} ac`
+    }
+    return null
+  }
+
   const hasAddress = property.address && property.address.trim() !== ''
+  const assessedValue = formatCurrency(property.assessed_value)
+  const lotSize = formatLotSize()
+
+  // Key parcel stats shown in the data grid: label + value pairs, skipped when empty
+  const stats: Array<{ label: string; value: string }> = []
+  if (assessedValue) stats.push({ label: 'Assessed', value: assessedValue })
+  if (property.year_built) stats.push({ label: 'Built', value: String(property.year_built) })
+  if (lotSize) stats.push({ label: 'Lot', value: lotSize })
+  if (property.zoning) stats.push({ label: 'Zoning', value: property.zoning })
 
   const handleCardClick = () => {
     onPropertyClick(property.id)
@@ -124,6 +148,34 @@ export function CompactPropertyCard({
             <span className="truncate" title={property.owner}>
               {property.owner}
             </span>
+          </div>
+        )}
+
+        {/* Key parcel stats */}
+        {stats.length > 0 && (
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border-t pt-2">
+            {stats.map(stat => (
+              <div key={stat.label} className="min-w-0">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{stat.label}</p>
+                <p className="text-sm font-medium truncate" title={stat.value}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Use / QOZ badges */}
+        {(property.use_description || property.qoz_status === 'Yes') && (
+          <div className="flex flex-wrap gap-1">
+            {property.use_description && (
+              <Badge variant="secondary" className="text-xs max-w-full">
+                <span className="truncate">{property.use_description}</span>
+              </Badge>
+            )}
+            {property.qoz_status === 'Yes' && (
+              <Badge variant="outline" className="text-xs">
+                QOZ
+              </Badge>
+            )}
           </div>
         )}
       </CardContent>

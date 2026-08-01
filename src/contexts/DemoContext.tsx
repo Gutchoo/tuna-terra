@@ -12,7 +12,7 @@ interface DemoContextType {
   demoState: DemoState
   enterDemoMode: () => void
   exitDemoMode: () => void
-  addDemoProperty: (property: Property) => void
+  addDemoProperty: (property: Property) => Property
   removeDemoProperty: (propertyId: string) => void
   clearAllDemoProperties: () => void
   getDemoProperties: () => Property[]
@@ -161,12 +161,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addDemoProperty = useCallback((propertyData: unknown) => {
+  const addDemoProperty = useCallback((propertyData: unknown): Property => {
     const demoProperty = createDemoProperty(propertyData)
     setDemoState(prev => ({
       ...prev,
       demoProperties: [...prev.demoProperties, demoProperty]
     }))
+    return demoProperty
   }, [])
 
   const removeDemoProperty = useCallback((propertyId: string) => {
