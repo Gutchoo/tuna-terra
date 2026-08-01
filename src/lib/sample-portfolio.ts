@@ -1,4 +1,28 @@
 import type { PortfolioWithMembership, Property } from '@/lib/supabase'
+import { CURATED_DEMO_PROPERTIES } from '@/lib/curated-demo-properties'
+
+// Curated demo properties (landmark buildings with full Regrid data) presented
+// as read-only members of the virtual sample portfolio
+const CURATED_SAMPLE_PROPERTIES: Property[] = CURATED_DEMO_PROPERTIES.map(property => ({
+  ...property,
+  id: `sample-property-curated-${property.apn}`,
+  user_id: 'virtual-sample-owner',
+  purchase_price: null,
+  purchase_date: null,
+  management_company: null,
+  mortgage_amount: null,
+  lender_name: null,
+  loan_rate: null,
+  loan_maturity_date: null,
+  user_notes: null,
+  tags: null,
+  insurance_provider: null,
+  maintenance_history: null,
+  is_sample: true,
+  portfolio_id: 'sample-portfolio-virtual',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: '2024-01-01T00:00:00.000Z',
+} as Property))
 
 // Virtual sample portfolio that appears for all users
 export const VIRTUAL_SAMPLE_PORTFOLIO: PortfolioWithMembership = {
@@ -12,7 +36,7 @@ export const VIRTUAL_SAMPLE_PORTFOLIO: PortfolioWithMembership = {
   updated_at: '2024-01-01T00:00:00.000Z',
   membership_role: 'viewer', // Users can only view, not edit
   member_count: 1,
-  property_count: 3, // UC Berkeley, LAX, and Santa Monica Pier sample properties
+  property_count: 3 + CURATED_DEMO_PROPERTIES.length, // UC Berkeley, LAX, Santa Monica Pier + curated landmarks
 }
 
 // Virtual sample property - UC Berkeley from real Regrid API data
@@ -1234,7 +1258,7 @@ export function getVirtualSamplePortfolio(): PortfolioWithMembership {
 
 // Get the virtual sample properties
 export function getVirtualSampleProperties(): Property[] {
-  return VIRTUAL_SAMPLE_PROPERTIES
+  return [...VIRTUAL_SAMPLE_PROPERTIES, ...CURATED_SAMPLE_PROPERTIES]
 }
 
 // Check if a property is a virtual sample property

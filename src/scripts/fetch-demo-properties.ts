@@ -5,6 +5,8 @@ import fs from 'fs'
 import path from 'path'
 
 // Curated property data for demo experience
+// `active` controls whether the property appears in the demo/sample portfolio.
+// Keep inactive entries in the pool so lineups can be reverted without refetching.
 interface CuratedProperty {
   apn: string
   name: string
@@ -12,32 +14,19 @@ interface CuratedProperty {
   type: 'office' | 'tech' | 'entertainment' | 'industrial' | 'aviation'
   city: string
   state: string
+  active: boolean
 }
 
 const CURATED_PROPERTIES: CuratedProperty[] = [
+  // --- Active lineup (8 shown in demo + sample portfolio) ---
   {
     apn: '1008350041',
     name: 'Empire State Building',
     description: 'The world\'s most famous office tower in the heart of Manhattan',
     type: 'office',
     city: 'New York',
-    state: 'NY'
-  },
-  {
-    apn: '3720009',
-    name: 'Salesforce Tower',
-    description: 'San Francisco\'s tallest skyscraper and tech industry landmark',
-    type: 'office',
-    city: 'San Francisco',
-    state: 'CA'
-  },
-  {
-    apn: '2443022009',
-    name: 'Disney Headquarters',
-    description: 'The Walt Disney Company\'s corporate headquarters in Burbank',
-    type: 'entertainment',
-    city: 'Burbank',
-    state: 'CA'
+    state: 'NY',
+    active: true
   },
   {
     apn: '31606062',
@@ -45,15 +34,8 @@ const CURATED_PROPERTIES: CuratedProperty[] = [
     description: 'Apple Park\'s stunning visitor center showcasing innovation',
     type: 'tech',
     city: 'Cupertino',
-    state: 'CA'
-  },
-  {
-    apn: '17162160090000',
-    name: 'Willis Tower',
-    description: 'Chicago\'s iconic skyscraper, formerly known as Sears Tower',
-    type: 'office',
-    city: 'Chicago',
-    state: 'IL'
+    state: 'CA',
+    active: true
   },
   {
     apn: '292257',
@@ -61,15 +43,8 @@ const CURATED_PROPERTIES: CuratedProperty[] = [
     description: 'Tesla\'s massive electric vehicle and battery manufacturing facility',
     type: 'industrial',
     city: 'Austin',
-    state: 'TX'
-  },
-  {
-    apn: '4138011027',
-    name: 'Apollo Global Management',
-    description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
-    type: 'office',
-    city: 'El Segundo',
-    state: 'CA'
+    state: 'TX',
+    active: true
   },
   {
     apn: '28041000100200',
@@ -77,7 +52,82 @@ const CURATED_PROPERTIES: CuratedProperty[] = [
     description: 'The world\'s largest building by volume, manufacturing Boeing aircraft',
     type: 'aviation',
     city: 'Everett',
-    state: 'WA'
+    state: 'WA',
+    active: true
+  },
+  {
+    apn: '1012830021',
+    name: 'Chase Headquarters',
+    description: 'JPMorgan Chase\'s corporate headquarters building',
+    type: 'office',
+    city: 'New York',
+    state: 'NY',
+    active: true
+  },
+  {
+    apn: '4138011027',
+    name: 'Apollo — El Segundo',
+    description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
+    type: 'office',
+    city: 'El Segundo',
+    state: 'CA',
+    active: true
+  },
+  {
+    apn: '1012730022',
+    name: 'Apollo — Global HQ',
+    description: 'Apollo\'s global headquarters in the Solow Building on West 57th',
+    type: 'office',
+    city: 'New York',
+    state: 'NY',
+    active: true
+  },
+  {
+    apn: '0141380340020',
+    name: 'Apollo — Miami',
+    description: 'Apollo\'s Miami office at 701 Brickell in the financial district',
+    type: 'office',
+    city: 'Miami',
+    state: 'FL',
+    active: true
+  },
+
+  // --- Inactive pool (kept for easy lineup swaps; flip active to true to restore) ---
+  {
+    apn: '0010690000006',
+    name: 'Apollo — Houston',
+    description: 'Apollo\'s Houston office at 609 Main at Texas, Hines\' LEED Platinum tower',
+    type: 'office',
+    city: 'Houston',
+    state: 'TX',
+    active: false
+  },
+  {
+    apn: '3720009',
+    name: 'Salesforce Tower',
+    description: 'San Francisco\'s tallest skyscraper and tech industry landmark',
+    type: 'office',
+    city: 'San Francisco',
+    state: 'CA',
+    active: false
+  },
+  {
+    apn: '2443022009',
+    name: 'Disney Headquarters',
+    description: 'The Walt Disney Company\'s corporate headquarters in Burbank',
+    type: 'entertainment',
+    city: 'Burbank',
+    state: 'CA',
+    active: false
+  },
+  {
+    apn: '17162160090000',
+    name: 'Willis Tower',
+    description: 'Chicago\'s iconic skyscraper, formerly known as Sears Tower',
+    type: 'office',
+    city: 'Chicago',
+    state: 'IL',
+    active: false
   }
 ]
 
@@ -106,7 +156,8 @@ async function fetchPropertyData() {
           curatedMetadata: {
             name: property.name,
             description: property.description,
-            type: property.type
+            type: property.type,
+            active: property.active
           }
         }
 
@@ -176,6 +227,7 @@ interface RegridPropertyData {
     category?: string
     description?: string
     type?: string
+    active?: boolean
   }
 }
 
@@ -192,10 +244,12 @@ export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | '
     name: string
     description: string
     type: 'office' | 'tech' | 'entertainment' | 'industrial' | 'aviation'
+    active: boolean
   }
 }
 
-export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
+// Full pool including inactive entries kept for lineup reverts
+export const CURATED_DEMO_PROPERTY_POOL: CuratedDemoProperty[] = [
 `
 
   properties.forEach((property, index) => {
@@ -278,7 +332,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     curatedMetadata: {
       name: '${metadata?.name?.replace(/'/g, "\\'") || ''}',
       description: '${metadata?.description?.replace(/'/g, "\\'") || ''}',
-      type: '${metadata?.type || ''}'
+      type: '${metadata?.type || ''}',
+      active: ${metadata?.active === true}
     },
 
     // Basic identifiers
@@ -351,6 +406,11 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
   tsContent += `
 ]
+
+// Active lineup shown in the demo modal and sample portfolio
+export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = CURATED_DEMO_PROPERTY_POOL.filter(
+  property => property.curatedMetadata.active
+)
 
 // Helper functions
 export function getCuratedDemoProperty(apn: string): CuratedDemoProperty | undefined {

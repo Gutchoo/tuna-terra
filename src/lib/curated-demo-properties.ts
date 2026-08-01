@@ -1,5 +1,5 @@
 // Auto-generated curated demo properties from Regrid API
-// Generated on: 2026-08-01T09:54:43.497Z
+// Generated on: 2026-08-01T10:57:06.973Z
 
 import type { Property } from '@/lib/supabase'
 
@@ -8,16 +8,19 @@ export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | '
     name: string
     description: string
     type: 'office' | 'tech' | 'entertainment' | 'industrial' | 'aviation'
+    active: boolean
   }
 }
 
-export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
+// Full pool including inactive entries kept for lineup reverts
+export const CURATED_DEMO_PROPERTY_POOL: CuratedDemoProperty[] = [
   {
     // Curated metadata
     curatedMetadata: {
       name: 'Empire State Building',
       description: 'The world\'s most famous office tower in the heart of Manhattan',
-      type: 'office'
+      type: 'office',
+      active: true
     },
 
     // Basic identifiers
@@ -249,818 +252,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "curatedMetadata": {
             "name": "Empire State Building",
             "description": "The world's most famous office tower in the heart of Manhattan",
-            "type": "office"
-      }
-}
-  },
-  {
-    // Curated metadata
-    curatedMetadata: {
-      name: 'Salesforce Tower',
-      description: 'San Francisco\'s tallest skyscraper and tech industry landmark',
-      type: 'office'
-    },
-
-    // Basic identifiers
-    regrid_id: '18a4b8df-4593-4cce-b59b-0897d3865466',
-    apn: '3720009',
-    address: '415 MISSION ST',
-    city: 'SAN FRANCISCO',
-    state: 'CA',
-    zip_code: '94105',
-
-    // Geometry and location
-    geometry: {
-      "type": "Polygon",
-      "coordinates": [
-            [
-                  [
-                        -122.39736,
-                        37.789769
-                  ],
-                  [
-                        -122.396913,
-                        37.789411
-                  ],
-                  [
-                        -122.396241,
-                        37.789942
-                  ],
-                  [
-                        -122.3966885,
-                        37.7902995
-                  ],
-                  [
-                        -122.39736,
-                        37.789769
-                  ]
-            ]
-      ]
-},
-    lat: 37.789855,
-    lng: -122.396801,
-
-    // Property details
-    year_built: 2018,
-    owner: 'TRANSBAY TOWER LLC',
-    last_sale_price: null,
-    sale_date: null,
-    county: 'san-francisco',
-    qoz_status: 'No',
-    improvement_value: 1713847455,
-    land_value: 236208037,
-    assessed_value: 1950055492,
-
-    // Extended details
-    use_code: null,
-    use_description: 'Commercial',
-    zoning: 'C-3-O(SD -1000-S-2',
-    zoning_description: 'Commercial Downtown Office Special Development',
-    num_stories: 63,
-    num_units: null,
-    num_rooms: null,
-    subdivision: null,
-    lot_size_acres: 1.15316,
-    lot_size_sqft: 50233,
-
-    // Financial & tax data
-    tax_year: '2025',
-    parcel_value_type: 'ASSESSED',
-    sale_price: null,
-
-    // Location data
-    census_tract: '06075061501',
-    census_block: '060750615011004',
-    qoz_tract: null,
-
-    // Data freshness
-    last_refresh_date: '2026-04-28',
-    regrid_updated_at: '2026-07-25 11:52:13 -0400',
-
-    // Owner mailing
-    owner_mailing_address: '4 EMBARCADERO CTR LBBY',
-    owner_mail_city: 'SAN FRANCISCO',
-    owner_mail_state: 'CA',
-    owner_mail_zip: '94111',
-
-    // User fields
-    is_sample: false,
-
-    // Store full property data
-    property_data: {
-      "id": "18a4b8df-4593-4cce-b59b-0897d3865466",
-      "apn": "3720009",
-      "address": {
-            "line1": "415 MISSION ST",
-            "line2": "",
-            "city": "SAN FRANCISCO",
-            "state": "CA",
-            "zip": "94105"
-      },
-      "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                  [
-                        [
-                              -122.39736,
-                              37.789769
-                        ],
-                        [
-                              -122.396913,
-                              37.789411
-                        ],
-                        [
-                              -122.396241,
-                              37.789942
-                        ],
-                        [
-                              -122.3966885,
-                              37.7902995
-                        ],
-                        [
-                              -122.39736,
-                              37.789769
-                        ]
-                  ]
-            ]
-      },
-      "centroid": {
-            "lat": 37.789855,
-            "lng": -122.396801
-      },
-      "properties": {
-            "owner": "TRANSBAY TOWER LLC",
-            "lot_size_sqft": 50233,
-            "lot_acres": 1.15316,
-            "year_built": 2018,
-            "zoning": "C-3-O(SD -1000-S-2",
-            "zoning_description": "Commercial Downtown Office Special Development",
-            "property_type": "",
-            "assessed_value": 1950055492,
-            "improvement_value": 1713847455,
-            "land_value": 236208037,
-            "sale_date": "",
-            "county": "san-francisco",
-            "qoz_status": "No",
-            "use_code": "",
-            "use_description": "Commercial",
-            "subdivision": "",
-            "num_stories": 63,
-            "tax_year": "2025",
-            "parcel_value_type": "ASSESSED",
-            "census_tract": "06075061501",
-            "census_block": "060750615011004",
-            "qoz_tract": "",
-            "last_refresh_date": "2026-04-28",
-            "regrid_updated_at": "2026-07-25 11:52:13 -0400",
-            "owner_mailing_address": "4 EMBARCADERO CTR LBBY",
-            "owner_mail_city": "SAN FRANCISCO",
-            "owner_mail_state": "CA",
-            "owner_mail_zip": "94111",
-            "qualified_opportunity_zone": "No",
-            "ogc_fid": 136644,
-            "geoid": "06075",
-            "parcelnumb": "3720009",
-            "parcelnumb_no_formatting": "3720009",
-            "account_number": "3720-009",
-            "alt_parcelnumb1": "3720009",
-            "usedesc": "Commercial",
-            "yearbuilt": 2018,
-            "numstories": 63,
-            "parvaltype": "ASSESSED",
-            "improvval": 1713847455,
-            "landval": 236208037,
-            "parval": 1950055492,
-            "taxyear": "2025",
-            "last_ownership_transfer_date": "2013-03-26",
-            "owner2": "MICHAEL YI",
-            "mailadd": "4 EMBARCADERO CTR LBBY",
-            "mail_city": "SAN FRANCISCO",
-            "mail_state2": "CA",
-            "mail_zip": "94111",
-            "original_mailing_address": "{\"mailadd\":\"4 EMBARCADERO CTR LBBY\",\"mail_city\":\"SAN FRANCISCO\",\"mail_state2\":\"CA\",\"mail_zip\":\"94111\"}",
-            "address": "415 MISSION ST",
-            "saddno": "415",
-            "saddstr": "MISSION",
-            "saddsttyp": "ST",
-            "scity": "SAN FRANCISCO",
-            "original_address": "{\"address\":\"415 MISSION ST\",\"saddno\":\"415\",\"saddstr\":\"MISSION\",\"saddsttyp\":\"ST\",\"scity\":\"SAN FRANCISCO\"}",
-            "city": "downtown-northeast-neighborhoods-treasure-island",
-            "state2": "CA",
-            "szip": "94105-2533",
-            "szip5": "94105",
-            "address_source": "county;cass",
-            "book": "25",
-            "block": "3720",
-            "lot": "9",
-            "neighborhood_code": "09B",
-            "lat": "37.789855",
-            "lon": "-122.396801",
-            "qoz": "No",
-            "census_blockgroup": "060750615011",
-            "census_zcta": "94105",
-            "ll_last_refresh": "2026-04-28",
-            "sqft": 1420430,
-            "ll_gisacre": 1.15316,
-            "ll_gissqft": 50233,
-            "path": "/us/ca/san-francisco/downtown-northeast-neighborhoods-treasure-island/136644",
-            "ll_stable_id": "parcelnumb",
-            "ll_uuid": "18a4b8df-4593-4cce-b59b-0897d3865466",
-            "ll_updated_at": "2026-07-25 11:52:13 -0400"
-      },
-      "demographics": null,
-      "curatedMetadata": {
-            "name": "Salesforce Tower",
-            "description": "San Francisco's tallest skyscraper and tech industry landmark",
-            "type": "office"
-      }
-}
-  },
-  {
-    // Curated metadata
-    curatedMetadata: {
-      name: 'Disney Headquarters',
-      description: 'The Walt Disney Company\'s corporate headquarters in Burbank',
-      type: 'entertainment'
-    },
-
-    // Basic identifiers
-    regrid_id: '38c37221-6732-4bb1-95d7-26b4c2414599',
-    apn: '2443-022-009',
-    address: '500 S BUENA VISTA ST',
-    city: 'BURBANK',
-    state: 'CA',
-    zip_code: '91521',
-
-    // Geometry and location
-    geometry: {
-      "type": "MultiPolygon",
-      "coordinates": [
-            [
-                  [
-                        [
-                              -118.325808,
-                              34.1542865
-                        ],
-                        [
-                              -118.3257245,
-                              34.1542015
-                        ],
-                        [
-                              -118.3240015,
-                              34.1546055
-                        ],
-                        [
-                              -118.323978,
-                              34.154611
-                        ],
-                        [
-                              -118.3237965,
-                              34.1546325
-                        ],
-                        [
-                              -118.3221145,
-                              34.155733
-                        ],
-                        [
-                              -118.3222965,
-                              34.1561125
-                        ],
-                        [
-                              -118.3223295,
-                              34.1561085
-                        ],
-                        [
-                              -118.322442,
-                              34.1560935
-                        ],
-                        [
-                              -118.3224995,
-                              34.156086
-                        ],
-                        [
-                              -118.3226685,
-                              34.156058
-                        ],
-                        [
-                              -118.3228355,
-                              34.1560215
-                        ],
-                        [
-                              -118.323001,
-                              34.155977
-                        ],
-                        [
-                              -118.323164,
-                              34.1559245
-                        ],
-                        [
-                              -118.323324,
-                              34.155864
-                        ],
-                        [
-                              -118.323481,
-                              34.1557955
-                        ],
-                        [
-                              -118.3236345,
-                              34.1557195
-                        ],
-                        [
-                              -118.323784,
-                              34.1556365
-                        ],
-                        [
-                              -118.3239295,
-                              34.1555455
-                        ],
-                        [
-                              -118.325808,
-                              34.1542865
-                        ]
-                  ]
-            ],
-            [
-                  [
-                        [
-                              -118.324137,
-                              34.1557595
-                        ],
-                        [
-                              -118.324023,
-                              34.155833
-                        ],
-                        [
-                              -118.3239055,
-                              34.155902
-                        ],
-                        [
-                              -118.3238425,
-                              34.1559365
-                        ],
-                        [
-                              -118.323672,
-                              34.156022
-                        ],
-                        [
-                              -118.323498,
-                              34.1560995
-                        ],
-                        [
-                              -118.3233205,
-                              34.156168
-                        ],
-                        [
-                              -118.3231395,
-                              34.1562275
-                        ],
-                        [
-                              -118.322956,
-                              34.1562785
-                        ],
-                        [
-                              -118.32277,
-                              34.15632
-                        ],
-                        [
-                              -118.3225825,
-                              34.1563525
-                        ],
-                        [
-                              -118.322548,
-                              34.156373
-                        ],
-                        [
-                              -118.3225455,
-                              34.1564085
-                        ],
-                        [
-                              -118.3239875,
-                              34.159412
-                        ],
-                        [
-                              -118.324014,
-                              34.1594345
-                        ],
-                        [
-                              -118.324052,
-                              34.159435
-                        ],
-                        [
-                              -118.326605,
-                              34.158583
-                        ],
-                        [
-                              -118.3278535,
-                              34.158166
-                        ],
-                        [
-                              -118.3278805,
-                              34.158144
-                        ],
-                        [
-                              -118.327881,
-                              34.1581125
-                        ],
-                        [
-                              -118.3268145,
-                              34.155946
-                        ],
-                        [
-                              -118.3267685,
-                              34.155962
-                        ],
-                        [
-                              -118.3265555,
-                              34.1555295
-                        ],
-                        [
-                              -118.326471,
-                              34.155321
-                        ],
-                        [
-                              -118.3265015,
-                              34.1553105
-                        ],
-                        [
-                              -118.3261065,
-                              34.154508
-                        ],
-                        [
-                              -118.326073,
-                              34.1544835
-                        ],
-                        [
-                              -118.3260295,
-                              34.1544915
-                        ],
-                        [
-                              -118.324137,
-                              34.1557595
-                        ]
-                  ]
-            ]
-      ]
-},
-    lat: 34.156873,
-    lng: -118.325024,
-
-    // Property details
-    year_built: 1938,
-    owner: 'DISNEY,WALT PRODUCTIONS INC',
-    last_sale_price: null,
-    sale_date: null,
-    county: 'los-angeles',
-    qoz_status: 'No',
-    improvement_value: 504816553,
-    land_value: 11877070,
-    assessed_value: 516693623,
-
-    // Extended details
-    use_code: '6530',
-    use_description: 'Recreational - Athletic & Amusement Facilities',
-    zoning: 'PD',
-    zoning_description: 'Planned Development',
-    num_stories: 1,
-    num_units: null,
-    num_rooms: null,
-    subdivision: null,
-    lot_size_acres: 42.98908,
-    lot_size_sqft: 1872643,
-
-    // Financial & tax data
-    tax_year: '2026',
-    parcel_value_type: 'GROSS ASSESSED',
-    sale_price: null,
-
-    // Location data
-    census_tract: '06037311700',
-    census_block: '060373117006011',
-    qoz_tract: null,
-
-    // Data freshness
-    last_refresh_date: '2026-06-24',
-    regrid_updated_at: '2026-07-25 11:50:56 -0400',
-
-    // Owner mailing
-    owner_mailing_address: 'PO BOX 313',
-    owner_mail_city: 'GLENDALE',
-    owner_mail_state: 'CA',
-    owner_mail_zip: '91209-0313',
-
-    // User fields
-    is_sample: false,
-
-    // Store full property data
-    property_data: {
-      "id": "38c37221-6732-4bb1-95d7-26b4c2414599",
-      "apn": "2443-022-009",
-      "address": {
-            "line1": "500 S BUENA VISTA ST",
-            "line2": "",
-            "city": "BURBANK",
-            "state": "CA",
-            "zip": "91521"
-      },
-      "geometry": {
-            "type": "MultiPolygon",
-            "coordinates": [
-                  [
-                        [
-                              [
-                                    -118.325808,
-                                    34.1542865
-                              ],
-                              [
-                                    -118.3257245,
-                                    34.1542015
-                              ],
-                              [
-                                    -118.3240015,
-                                    34.1546055
-                              ],
-                              [
-                                    -118.323978,
-                                    34.154611
-                              ],
-                              [
-                                    -118.3237965,
-                                    34.1546325
-                              ],
-                              [
-                                    -118.3221145,
-                                    34.155733
-                              ],
-                              [
-                                    -118.3222965,
-                                    34.1561125
-                              ],
-                              [
-                                    -118.3223295,
-                                    34.1561085
-                              ],
-                              [
-                                    -118.322442,
-                                    34.1560935
-                              ],
-                              [
-                                    -118.3224995,
-                                    34.156086
-                              ],
-                              [
-                                    -118.3226685,
-                                    34.156058
-                              ],
-                              [
-                                    -118.3228355,
-                                    34.1560215
-                              ],
-                              [
-                                    -118.323001,
-                                    34.155977
-                              ],
-                              [
-                                    -118.323164,
-                                    34.1559245
-                              ],
-                              [
-                                    -118.323324,
-                                    34.155864
-                              ],
-                              [
-                                    -118.323481,
-                                    34.1557955
-                              ],
-                              [
-                                    -118.3236345,
-                                    34.1557195
-                              ],
-                              [
-                                    -118.323784,
-                                    34.1556365
-                              ],
-                              [
-                                    -118.3239295,
-                                    34.1555455
-                              ],
-                              [
-                                    -118.325808,
-                                    34.1542865
-                              ]
-                        ]
-                  ],
-                  [
-                        [
-                              [
-                                    -118.324137,
-                                    34.1557595
-                              ],
-                              [
-                                    -118.324023,
-                                    34.155833
-                              ],
-                              [
-                                    -118.3239055,
-                                    34.155902
-                              ],
-                              [
-                                    -118.3238425,
-                                    34.1559365
-                              ],
-                              [
-                                    -118.323672,
-                                    34.156022
-                              ],
-                              [
-                                    -118.323498,
-                                    34.1560995
-                              ],
-                              [
-                                    -118.3233205,
-                                    34.156168
-                              ],
-                              [
-                                    -118.3231395,
-                                    34.1562275
-                              ],
-                              [
-                                    -118.322956,
-                                    34.1562785
-                              ],
-                              [
-                                    -118.32277,
-                                    34.15632
-                              ],
-                              [
-                                    -118.3225825,
-                                    34.1563525
-                              ],
-                              [
-                                    -118.322548,
-                                    34.156373
-                              ],
-                              [
-                                    -118.3225455,
-                                    34.1564085
-                              ],
-                              [
-                                    -118.3239875,
-                                    34.159412
-                              ],
-                              [
-                                    -118.324014,
-                                    34.1594345
-                              ],
-                              [
-                                    -118.324052,
-                                    34.159435
-                              ],
-                              [
-                                    -118.326605,
-                                    34.158583
-                              ],
-                              [
-                                    -118.3278535,
-                                    34.158166
-                              ],
-                              [
-                                    -118.3278805,
-                                    34.158144
-                              ],
-                              [
-                                    -118.327881,
-                                    34.1581125
-                              ],
-                              [
-                                    -118.3268145,
-                                    34.155946
-                              ],
-                              [
-                                    -118.3267685,
-                                    34.155962
-                              ],
-                              [
-                                    -118.3265555,
-                                    34.1555295
-                              ],
-                              [
-                                    -118.326471,
-                                    34.155321
-                              ],
-                              [
-                                    -118.3265015,
-                                    34.1553105
-                              ],
-                              [
-                                    -118.3261065,
-                                    34.154508
-                              ],
-                              [
-                                    -118.326073,
-                                    34.1544835
-                              ],
-                              [
-                                    -118.3260295,
-                                    34.1544915
-                              ],
-                              [
-                                    -118.324137,
-                                    34.1557595
-                              ]
-                        ]
-                  ]
-            ]
-      },
-      "centroid": {
-            "lat": 34.156873,
-            "lng": -118.325024
-      },
-      "properties": {
-            "owner": "DISNEY,WALT PRODUCTIONS INC",
-            "lot_size_sqft": 1872643,
-            "lot_acres": 42.98908,
-            "year_built": 1938,
-            "zoning": "PD",
-            "zoning_description": "Planned Development",
-            "property_type": "",
-            "assessed_value": 516693623,
-            "improvement_value": 504816553,
-            "land_value": 11877070,
-            "sale_date": "",
-            "county": "los-angeles",
-            "qoz_status": "No",
-            "use_code": "6530",
-            "use_description": "Recreational - Athletic & Amusement Facilities",
-            "subdivision": "",
-            "num_stories": 1,
-            "tax_year": "2026",
-            "parcel_value_type": "GROSS ASSESSED",
-            "census_tract": "06037311700",
-            "census_block": "060373117006011",
-            "qoz_tract": "",
-            "last_refresh_date": "2026-06-24",
-            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
-            "owner_mailing_address": "PO BOX 313",
-            "owner_mail_city": "GLENDALE",
-            "owner_mail_state": "CA",
-            "owner_mail_zip": "91209-0313",
-            "qualified_opportunity_zone": "No",
-            "ogc_fid": 242995,
-            "geoid": "06037",
-            "parcelnumb": "2443-022-009",
-            "parcelnumb_no_formatting": "2443022009",
-            "usecode": "6530",
-            "usedesc": "Recreational - Athletic & Amusement Facilities",
-            "yearbuilt": 1938,
-            "numstories": 1,
-            "numunits": 0,
-            "parvaltype": "GROSS ASSESSED",
-            "improvval": 504816553,
-            "landval": 11877070,
-            "parval": 516693623,
-            "taxyear": "2026",
-            "mailadd": "PO BOX 313",
-            "mail_addno": "313",
-            "mail_addstr": "PO BOX",
-            "mail_city": "GLENDALE",
-            "mail_state2": "CA",
-            "mail_zip": "91209-0313",
-            "original_mailing_address": "{\"mailadd\":\"00000 PO BOX 313\",\"mail_addno\":\"00000\",\"mail_addstr\":\"PO BOX 313\",\"mail_city\":\"GLENDALE\",\"mail_state2\":\"CA\",\"mail_zip\":\"912090000\"}",
-            "address": "500 S BUENA VISTA ST",
-            "saddno": "500",
-            "saddpref": "S",
-            "saddstr": "BUENA VISTA",
-            "saddsttyp": "ST",
-            "scity": "BURBANK",
-            "original_address": "{\"address\":\"00500 S BUENA VISTA ST\",\"saddno\":\"00500\",\"saddpref\":\"S\",\"saddstr\":\"BUENA VISTA ST\",\"scity\":\"BURBANK\",\"szip\":\"915210000\"}",
-            "city": "san-fernando-valley",
-            "state2": "CA",
-            "szip": "91521-0001",
-            "szip5": "91521",
-            "address_source": "county;cass",
-            "legaldesc": "M R 43-47-59 LAND DESC IN DOC 1866538, 990930 POR OF BLK 66",
-            "lat": "34.156873",
-            "lon": "-118.325024",
-            "qoz": "No",
-            "census_blockgroup": "060373117006",
-            "census_zcta": "91505",
-            "ll_last_refresh": "2026-06-24",
-            "recrdareano": 12800,
-            "ll_gisacre": 42.98908,
-            "ll_gissqft": 1872643,
-            "plss_township": "001N",
-            "plss_section": "Section 00",
-            "plss_range": "014W",
-            "path": "/us/ca/los-angeles/san-fernando-valley/242995",
-            "ll_stable_id": "parcelnumb",
-            "ll_uuid": "38c37221-6732-4bb1-95d7-26b4c2414599",
-            "ll_updated_at": "2026-07-25 11:50:56 -0400"
-      },
-      "demographics": null,
-      "curatedMetadata": {
-            "name": "Disney Headquarters",
-            "description": "The Walt Disney Company's corporate headquarters in Burbank",
-            "type": "entertainment"
+            "type": "office",
+            "active": true
       }
 }
   },
@@ -1069,7 +262,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     curatedMetadata: {
       name: 'Apple Visitor Center',
       description: 'Apple Park\'s stunning visitor center showcasing innovation',
-      type: 'tech'
+      type: 'tech',
+      active: true
     },
 
     // Basic identifiers
@@ -1868,358 +1062,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "curatedMetadata": {
             "name": "Apple Visitor Center",
             "description": "Apple Park's stunning visitor center showcasing innovation",
-            "type": "tech"
-      }
-}
-  },
-  {
-    // Curated metadata
-    curatedMetadata: {
-      name: 'Willis Tower',
-      description: 'Chicago\'s iconic skyscraper, formerly known as Sears Tower',
-      type: 'office'
-    },
-
-    // Basic identifiers
-    regrid_id: '6a1a8957-a752-4bb6-b4bf-aa583eaf56c4',
-    apn: '17162160090000',
-    address: '233 S WACKER DR',
-    city: 'CHICAGO',
-    state: 'IL',
-    zip_code: '60606',
-
-    // Geometry and location
-    geometry: {
-      "type": "Polygon",
-      "coordinates": [
-            [
-                  [
-                        -87.6357285,
-                        41.8781815
-                  ],
-                  [
-                        -87.6353585,
-                        41.878186
-                  ],
-                  [
-                        -87.6353705,
-                        41.878641
-                  ],
-                  [
-                        -87.635387,
-                        41.8792745
-                  ],
-                  [
-                        -87.635755,
-                        41.87927
-                  ],
-                  [
-                        -87.635939,
-                        41.879268
-                  ],
-                  [
-                        -87.636578,
-                        41.87926
-                  ],
-                  [
-                        -87.636567,
-                        41.878806
-                  ],
-                  [
-                        -87.6365625,
-                        41.878626
-                  ],
-                  [
-                        -87.636561,
-                        41.8785695
-                  ],
-                  [
-                        -87.6365595,
-                        41.8785125
-                  ],
-                  [
-                        -87.6365585,
-                        41.8784555
-                  ],
-                  [
-                        -87.636557,
-                        41.878399
-                  ],
-                  [
-                        -87.636554,
-                        41.878285
-                  ],
-                  [
-                        -87.6365525,
-                        41.878228
-                  ],
-                  [
-                        -87.6365515,
-                        41.8781715
-                  ],
-                  [
-                        -87.6361355,
-                        41.8781765
-                  ],
-                  [
-                        -87.636099,
-                        41.878177
-                  ],
-                  [
-                        -87.6359135,
-                        41.8781795
-                  ],
-                  [
-                        -87.6357285,
-                        41.8781815
-                  ]
-            ]
-      ]
-},
-    lat: 41.878723,
-    lng: -87.635969,
-
-    // Property details
-    year_built: 1970,
-    owner: 'PROPERTY TAX',
-    last_sale_price: 275611000,
-    sale_date: '2015-06-11',
-    county: 'cook',
-    qoz_status: 'No',
-    improvement_value: 293313850,
-    land_value: 13448400,
-    assessed_value: 306762250,
-
-    // Extended details
-    use_code: '591',
-    use_description: 'Commercial/Industrial',
-    zoning: 'DC-16',
-    zoning_description: 'Downtown Core District',
-    num_stories: 99,
-    num_units: null,
-    num_rooms: null,
-    subdivision: null,
-    lot_size_acres: 2.95457,
-    lot_size_sqft: 128704,
-
-    // Financial & tax data
-    tax_year: '2025',
-    parcel_value_type: 'ASSESSED',
-    sale_price: null,
-
-    // Location data
-    census_tract: '17031839100',
-    census_block: '170318391002008',
-    qoz_tract: null,
-
-    // Data freshness
-    last_refresh_date: '2025-12-23',
-    regrid_updated_at: '2026-07-25 12:23:11 -0400',
-
-    // Owner mailing
-    owner_mailing_address: 'PO BOX A3879',
-    owner_mail_city: 'CHICAGO',
-    owner_mail_state: 'IL',
-    owner_mail_zip: '60690-3879',
-
-    // User fields
-    is_sample: false,
-
-    // Store full property data
-    property_data: {
-      "id": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
-      "apn": "17162160090000",
-      "address": {
-            "line1": "233 S WACKER DR",
-            "line2": "",
-            "city": "CHICAGO",
-            "state": "IL",
-            "zip": "60606"
-      },
-      "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                  [
-                        [
-                              -87.6357285,
-                              41.8781815
-                        ],
-                        [
-                              -87.6353585,
-                              41.878186
-                        ],
-                        [
-                              -87.6353705,
-                              41.878641
-                        ],
-                        [
-                              -87.635387,
-                              41.8792745
-                        ],
-                        [
-                              -87.635755,
-                              41.87927
-                        ],
-                        [
-                              -87.635939,
-                              41.879268
-                        ],
-                        [
-                              -87.636578,
-                              41.87926
-                        ],
-                        [
-                              -87.636567,
-                              41.878806
-                        ],
-                        [
-                              -87.6365625,
-                              41.878626
-                        ],
-                        [
-                              -87.636561,
-                              41.8785695
-                        ],
-                        [
-                              -87.6365595,
-                              41.8785125
-                        ],
-                        [
-                              -87.6365585,
-                              41.8784555
-                        ],
-                        [
-                              -87.636557,
-                              41.878399
-                        ],
-                        [
-                              -87.636554,
-                              41.878285
-                        ],
-                        [
-                              -87.6365525,
-                              41.878228
-                        ],
-                        [
-                              -87.6365515,
-                              41.8781715
-                        ],
-                        [
-                              -87.6361355,
-                              41.8781765
-                        ],
-                        [
-                              -87.636099,
-                              41.878177
-                        ],
-                        [
-                              -87.6359135,
-                              41.8781795
-                        ],
-                        [
-                              -87.6357285,
-                              41.8781815
-                        ]
-                  ]
-            ]
-      },
-      "centroid": {
-            "lat": 41.878723,
-            "lng": -87.635969
-      },
-      "properties": {
-            "owner": "PROPERTY TAX",
-            "lot_size_sqft": 128704,
-            "lot_acres": 2.95457,
-            "year_built": 1970,
-            "zoning": "DC-16",
-            "zoning_description": "Downtown Core District",
-            "property_type": "",
-            "assessed_value": 306762250,
-            "improvement_value": 293313850,
-            "land_value": 13448400,
-            "last_sale_price": 275611000,
-            "sale_date": "2015-06-11",
-            "county": "cook",
-            "qoz_status": "No",
-            "use_code": "591",
-            "use_description": "Commercial/Industrial",
-            "subdivision": "",
-            "num_stories": 99,
-            "tax_year": "2025",
-            "parcel_value_type": "ASSESSED",
-            "census_tract": "17031839100",
-            "census_block": "170318391002008",
-            "qoz_tract": "",
-            "last_refresh_date": "2025-12-23",
-            "regrid_updated_at": "2026-07-25 12:23:11 -0400",
-            "owner_mailing_address": "PO BOX A3879",
-            "owner_mail_city": "CHICAGO",
-            "owner_mail_state": "IL",
-            "owner_mail_zip": "60690-3879",
-            "qualified_opportunity_zone": "No",
-            "ogc_fid": 1357189,
-            "geoid": "17031",
-            "parcelnumb": "17162160090000",
-            "parcelnumb_no_formatting": "17162160090000",
-            "alt_parcelnumb1": "1716216009",
-            "alt_parcelnumb2": "17-16-216-009-0000",
-            "usecode": "591",
-            "usedesc": "Commercial/Industrial",
-            "yearbuilt": 1970,
-            "numstories": 99,
-            "parvaltype": "ASSESSED",
-            "improvval": 293313850,
-            "landval": 13448400,
-            "parval": 306762250,
-            "saleprice": 275611000,
-            "saledate": "2015-06-11",
-            "taxyear": "2025",
-            "last_ownership_transfer_date": "2015-06-11",
-            "previous_owner": "UNKNOWN",
-            "mailadd": "PO BOX A3879",
-            "mail_addno": "A3879",
-            "mail_addstr": "PO BOX",
-            "mail_city": "CHICAGO",
-            "mail_state2": "IL",
-            "mail_zip": "60690-3879",
-            "original_mailing_address": "{\"mailadd\":\"P O BOX A-3879\",\"mail_address2\":\" CHICAGO\",\"mail_city\":\" CHICAGO\",\"mail_state2\":\"IL\",\"mail_zip\":\"60690\"}",
-            "address": "233 S WACKER DR",
-            "saddno": "233",
-            "saddpref": "S",
-            "saddstr": "WACKER",
-            "saddsttyp": "DR",
-            "scity": "CHICAGO",
-            "original_address": "{\"address\":\"233 S WACKER DR\",\"sunit\":\"\",\"scity\":\"CHICAGO\",\"szip\":\"60606\"}",
-            "city": "chicago",
-            "state2": "IL",
-            "szip": "60606-7147",
-            "szip5": "60606",
-            "address_source": "county;cass",
-            "neighborhood_code": "76010",
-            "lat": "41.878723",
-            "lon": "-87.635969",
-            "qoz": "No",
-            "census_blockgroup": "170318391002",
-            "census_zcta": "60606",
-            "ll_last_refresh": "2025-12-23",
-            "sourceurl": "https://www.cookcountyassessor.com/pin/17162160090000",
-            "sqft": 128079,
-            "ll_gisacre": 2.95457,
-            "ll_gissqft": 128704,
-            "plss_township": "039N",
-            "plss_section": "Section 16",
-            "plss_range": "014E",
-            "path": "/us/il/cook/chicago/1357189",
-            "ll_stable_id": "parcelnumb",
-            "ll_uuid": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
-            "ll_updated_at": "2026-07-25 12:23:11 -0400"
-      },
-      "demographics": null,
-      "curatedMetadata": {
-            "name": "Willis Tower",
-            "description": "Chicago's iconic skyscraper, formerly known as Sears Tower",
-            "type": "office"
+            "type": "tech",
+            "active": true
       }
 }
   },
@@ -2228,7 +1072,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     curatedMetadata: {
       name: 'Tesla Gigafactory',
       description: 'Tesla\'s massive electric vehicle and battery manufacturing facility',
-      type: 'industrial'
+      type: 'industrial',
+      active: true
     },
 
     // Basic identifiers
@@ -2527,273 +1372,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "curatedMetadata": {
             "name": "Tesla Gigafactory",
             "description": "Tesla's massive electric vehicle and battery manufacturing facility",
-            "type": "industrial"
-      }
-}
-  },
-  {
-    // Curated metadata
-    curatedMetadata: {
-      name: 'Apollo Global Management',
-      description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
-      type: 'office'
-    },
-
-    // Basic identifiers
-    regrid_id: '034d774e-1048-4e3a-af06-217ca01ac3d1',
-    apn: '4138-011-027',
-    address: '2101 ROSECRANS AVE',
-    city: 'EL SEGUNDO',
-    state: 'CA',
-    zip_code: '90245',
-
-    // Geometry and location
-    geometry: {
-      "type": "Polygon",
-      "coordinates": [
-            [
-                  [
-                        -118.3865965,
-                        33.9020945
-                  ],
-                  [
-                        -118.3865975,
-                        33.9033785
-                  ],
-                  [
-                        -118.387483,
-                        33.903378
-                  ],
-                  [
-                        -118.388429,
-                        33.9033775
-                  ],
-                  [
-                        -118.388427,
-                        33.9020935
-                  ],
-                  [
-                        -118.3883995,
-                        33.9020365
-                  ],
-                  [
-                        -118.3883315,
-                        33.9020115
-                  ],
-                  [
-                        -118.386692,
-                        33.902012
-                  ],
-                  [
-                        -118.386624,
-                        33.9020375
-                  ],
-                  [
-                        -118.3865965,
-                        33.9020945
-                  ]
-            ]
-      ]
-},
-    lat: 33.902696,
-    lng: -118.387512,
-
-    // Property details
-    year_built: 1983,
-    owner: 'PLAZA CP LLC',
-    last_sale_price: null,
-    sale_date: null,
-    county: 'los-angeles',
-    qoz_status: 'No',
-    improvement_value: 75862878,
-    land_value: 15928469,
-    assessed_value: 91791347,
-
-    // Extended details
-    use_code: '1703',
-    use_description: 'Commercial - Office Buildings',
-    zoning: 'MU-S',
-    zoning_description: 'Urban Mixed Use South',
-    num_stories: 3,
-    num_units: null,
-    num_rooms: null,
-    subdivision: null,
-    lot_size_acres: 6.32711,
-    lot_size_sqft: 275615,
-
-    // Financial & tax data
-    tax_year: '2026',
-    parcel_value_type: 'GROSS ASSESSED',
-    sale_price: null,
-
-    // Location data
-    census_tract: '06037980013',
-    census_block: '060379800131038',
-    qoz_tract: null,
-
-    // Data freshness
-    last_refresh_date: '2026-06-24',
-    regrid_updated_at: '2026-07-25 11:50:56 -0400',
-
-    // Owner mailing
-    owner_mailing_address: '2041 ROSECRANS AVE # 200',
-    owner_mail_city: 'EL SEGUNDO',
-    owner_mail_state: 'CA',
-    owner_mail_zip: '90245',
-
-    // User fields
-    is_sample: false,
-
-    // Store full property data
-    property_data: {
-      "id": "034d774e-1048-4e3a-af06-217ca01ac3d1",
-      "apn": "4138-011-027",
-      "address": {
-            "line1": "2101 ROSECRANS AVE",
-            "line2": "",
-            "city": "EL SEGUNDO",
-            "state": "CA",
-            "zip": "90245"
-      },
-      "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                  [
-                        [
-                              -118.3865965,
-                              33.9020945
-                        ],
-                        [
-                              -118.3865975,
-                              33.9033785
-                        ],
-                        [
-                              -118.387483,
-                              33.903378
-                        ],
-                        [
-                              -118.388429,
-                              33.9033775
-                        ],
-                        [
-                              -118.388427,
-                              33.9020935
-                        ],
-                        [
-                              -118.3883995,
-                              33.9020365
-                        ],
-                        [
-                              -118.3883315,
-                              33.9020115
-                        ],
-                        [
-                              -118.386692,
-                              33.902012
-                        ],
-                        [
-                              -118.386624,
-                              33.9020375
-                        ],
-                        [
-                              -118.3865965,
-                              33.9020945
-                        ]
-                  ]
-            ]
-      },
-      "centroid": {
-            "lat": 33.902696,
-            "lng": -118.387512
-      },
-      "properties": {
-            "owner": "PLAZA CP LLC",
-            "lot_size_sqft": 275615,
-            "lot_acres": 6.32711,
-            "year_built": 1983,
-            "zoning": "MU-S",
-            "zoning_description": "Urban Mixed Use South",
-            "property_type": "",
-            "assessed_value": 91791347,
-            "improvement_value": 75862878,
-            "land_value": 15928469,
-            "sale_date": "",
-            "county": "los-angeles",
-            "qoz_status": "No",
-            "use_code": "1703",
-            "use_description": "Commercial - Office Buildings",
-            "subdivision": "",
-            "num_stories": 3,
-            "tax_year": "2026",
-            "parcel_value_type": "GROSS ASSESSED",
-            "census_tract": "06037980013",
-            "census_block": "060379800131038",
-            "qoz_tract": "",
-            "last_refresh_date": "2026-06-24",
-            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
-            "owner_mailing_address": "2041 ROSECRANS AVE # 200",
-            "owner_mail_city": "EL SEGUNDO",
-            "owner_mail_state": "CA",
-            "owner_mail_zip": "90245",
-            "qualified_opportunity_zone": "No",
-            "ogc_fid": 966057,
-            "geoid": "06037",
-            "parcelnumb": "4138-011-027",
-            "parcelnumb_no_formatting": "4138011027",
-            "usecode": "1703",
-            "usedesc": "Commercial - Office Buildings",
-            "yearbuilt": 1983,
-            "numstories": 3,
-            "numunits": 0,
-            "parvaltype": "GROSS ASSESSED",
-            "improvval": 75862878,
-            "landval": 15928469,
-            "parval": 91791347,
-            "taxyear": "2026",
-            "last_ownership_transfer_date": "2005-03-09",
-            "owntype": "3",
-            "mailadd": "2041 ROSECRANS AVE # 200",
-            "mail_addno": "2041",
-            "mail_addstr": "ROSECRANS AVE",
-            "mail_unit": "# 200",
-            "mail_city": "EL SEGUNDO",
-            "mail_state2": "CA",
-            "mail_zip": "90245",
-            "original_mailing_address": "{\"mailadd\":\"02041 ROSECRANS AVE # 200\",\"mail_addno\":\"02041\",\"mail_addstr\":\"ROSECRANS AVE\",\"mail_unit\":\"# 200\",\"mail_city\":\"EL SEGUNDO\",\"mail_state2\":\"CA\",\"mail_zip\":\"902450000\"}",
-            "address": "2101 ROSECRANS AVE",
-            "saddno": "2101",
-            "saddstr": "ROSECRANS",
-            "saddsttyp": "AVE",
-            "scity": "EL SEGUNDO",
-            "original_address": "{\"address\":\"02101 ROSECRANS AVE\",\"saddno\":\"02101\",\"saddstr\":\"ROSECRANS AVE\",\"scity\":\"EL SEGUNDO\",\"szip\":\"902450000\"}",
-            "city": "south-bay-cities",
-            "state2": "CA",
-            "szip": "90245-4749",
-            "szip5": "90245",
-            "address_source": "county;cass",
-            "legaldesc": "TR=PARCEL MAP AS PER BK 124 P 52 OF P M LOT 4",
-            "lat": "33.902696",
-            "lon": "-118.387512",
-            "qoz": "No",
-            "census_blockgroup": "060379800131",
-            "census_zcta": "90245",
-            "ll_last_refresh": "2026-06-24",
-            "recrdareano": 106000,
-            "ll_gisacre": 6.32711,
-            "ll_gissqft": 275615,
-            "plss_township": "003S",
-            "plss_section": "Section 00",
-            "plss_range": "014W",
-            "path": "/us/ca/los-angeles/south-bay-cities/966057",
-            "ll_stable_id": "parcelnumb",
-            "ll_uuid": "034d774e-1048-4e3a-af06-217ca01ac3d1",
-            "ll_updated_at": "2026-07-25 11:50:56 -0400"
-      },
-      "demographics": null,
-      "curatedMetadata": {
-            "name": "Apollo Global Management",
-            "description": "Apollo's El Segundo office at the Plaza at Continental Park",
-            "type": "office"
+            "type": "industrial",
+            "active": true
       }
 }
   },
@@ -2802,7 +1382,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     curatedMetadata: {
       name: 'Boeing Everett Factory',
       description: 'The world\'s largest building by volume, manufacturing Boeing aircraft',
-      type: 'aviation'
+      type: 'aviation',
+      active: true
     },
 
     // Basic identifiers
@@ -6364,11 +4945,2469 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "curatedMetadata": {
             "name": "Boeing Everett Factory",
             "description": "The world's largest building by volume, manufacturing Boeing aircraft",
-            "type": "aviation"
+            "type": "aviation",
+            "active": true
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Chase Headquarters',
+      description: 'JPMorgan Chase\'s corporate headquarters building',
+      type: 'office',
+      active: true
+    },
+
+    // Basic identifiers
+    regrid_id: '04487036-ba01-43ca-bb54-118fcb05355a',
+    apn: '1012830021',
+    address: '270 PARK AVE',
+    city: 'NEW YORK',
+    state: 'NY',
+    zip_code: '10017',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -73.976785,
+                        40.7559985
+                  ],
+                  [
+                        -73.97649,
+                        40.755874
+                  ],
+                  [
+                        -73.975548,
+                        40.755478
+                  ],
+                  [
+                        -73.9751925,
+                        40.755965
+                  ],
+                  [
+                        -73.976083,
+                        40.75634
+                  ],
+                  [
+                        -73.976429,
+                        40.7564855
+                  ],
+                  [
+                        -73.976785,
+                        40.7559985
+                  ]
+            ]
+      ]
+},
+    lat: 40.755982,
+    lng: -73.975989,
+
+    // Property details
+    year_built: 2021,
+    owner: 'JPMORGAN CHASE BANK',
+    last_sale_price: null,
+    sale_date: null,
+    county: 'new-york',
+    qoz_status: 'No',
+    improvement_value: null,
+    land_value: 96400000,
+    assessed_value: 1528357000,
+
+    // Extended details
+    use_code: '05',
+    use_description: null,
+    zoning: 'C5-3',
+    zoning_description: 'Restricted Central Commercial',
+    num_stories: 60,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 1.82432,
+    lot_size_sqft: 79469,
+
+    // Financial & tax data
+    tax_year: '2027',
+    parcel_value_type: 'MARKET',
+    sale_price: null,
+
+    // Location data
+    census_tract: '36061009400',
+    census_block: '360610094002001',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-04-14',
+    regrid_updated_at: '2026-07-25 13:01:19 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '383 MADISON AVE',
+    owner_mail_city: 'NEW YORK',
+    owner_mail_state: 'NY',
+    owner_mail_zip: '10017-3217',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "04487036-ba01-43ca-bb54-118fcb05355a",
+      "apn": "1012830021",
+      "address": {
+            "line1": "270 PARK AVE",
+            "line2": "",
+            "city": "NEW YORK",
+            "state": "NY",
+            "zip": "10017"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -73.976785,
+                              40.7559985
+                        ],
+                        [
+                              -73.97649,
+                              40.755874
+                        ],
+                        [
+                              -73.975548,
+                              40.755478
+                        ],
+                        [
+                              -73.9751925,
+                              40.755965
+                        ],
+                        [
+                              -73.976083,
+                              40.75634
+                        ],
+                        [
+                              -73.976429,
+                              40.7564855
+                        ],
+                        [
+                              -73.976785,
+                              40.7559985
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 40.755982,
+            "lng": -73.975989
+      },
+      "properties": {
+            "owner": "JPMORGAN CHASE BANK",
+            "lot_size_sqft": 79469,
+            "lot_acres": 1.82432,
+            "year_built": 2021,
+            "zoning": "C5-3",
+            "zoning_description": "Restricted Central Commercial",
+            "property_type": "",
+            "assessed_value": 1528357000,
+            "land_value": 96400000,
+            "sale_date": "",
+            "county": "new-york",
+            "qoz_status": "No",
+            "use_code": "05",
+            "use_description": "",
+            "subdivision": "",
+            "num_stories": 60,
+            "tax_year": "2027",
+            "parcel_value_type": "MARKET",
+            "census_tract": "36061009400",
+            "census_block": "360610094002001",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-04-14",
+            "regrid_updated_at": "2026-07-25 13:01:19 -0400",
+            "owner_mailing_address": "383 MADISON AVE",
+            "owner_mail_city": "NEW YORK",
+            "owner_mail_state": "NY",
+            "owner_mail_zip": "10017-3217",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 408476,
+            "geoid": "36061",
+            "parcelnumb": "1012830021",
+            "parcelnumb_no_formatting": "1012830021",
+            "usecode": "05",
+            "structno": 1,
+            "yearbuilt": 2021,
+            "numstories": 60,
+            "numunits": 0,
+            "parvaltype": "MARKET",
+            "landval": 96400000,
+            "parval": 1528357000,
+            "taxyear": "2027",
+            "mailadd": "383 MADISON AVE",
+            "mail_addno": "383",
+            "mail_addstr": "MADISON",
+            "mail_addsttyp": "AVE",
+            "mail_city": "NEW YORK",
+            "mail_state2": "NY",
+            "mail_zip": "10017-3217",
+            "original_mailing_address": "{\"mailadd\":\"383 MADISON AVE.\",\"mail_city\":\"NEW YORK\",\"mail_state2\":\"NY\",\"mail_zip\":\"10017-3217\"}",
+            "address": "270 PARK AVE",
+            "saddno": "270",
+            "saddstr": "PARK",
+            "saddsttyp": "AVE",
+            "scity": "NEW YORK",
+            "original_address": "{\"address\":\"270 PARK AVENUE\",\"saddno\":\"270\",\"saddstr\":\"PARK AVENUE\",\"scity\":\"NEW YORK\",\"szip\":\"10017\"}",
+            "city": "manhattan",
+            "state2": "NY",
+            "szip": "10017-2014",
+            "szip5": "10017",
+            "address_source": "county;cass",
+            "block": "1283",
+            "lot": "21",
+            "lat": "40.755982",
+            "lon": "-73.975989",
+            "qoz": "No",
+            "census_blockgroup": "360610094002",
+            "census_zcta": "10017",
+            "ll_last_refresh": "2026-04-14",
+            "sqft": 80333,
+            "ll_gisacre": 1.82432,
+            "ll_gissqft": 79469,
+            "path": "/us/ny/new-york/manhattan/408476",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "04487036-ba01-43ca-bb54-118fcb05355a",
+            "ll_updated_at": "2026-07-25 13:01:19 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Chase Headquarters",
+            "description": "JPMorgan Chase's corporate headquarters building",
+            "type": "office",
+            "active": true
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Apollo — El Segundo',
+      description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
+      type: 'office',
+      active: true
+    },
+
+    // Basic identifiers
+    regrid_id: '034d774e-1048-4e3a-af06-217ca01ac3d1',
+    apn: '4138-011-027',
+    address: '2101 ROSECRANS AVE',
+    city: 'EL SEGUNDO',
+    state: 'CA',
+    zip_code: '90245',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -118.3865965,
+                        33.9020945
+                  ],
+                  [
+                        -118.3865975,
+                        33.9033785
+                  ],
+                  [
+                        -118.387483,
+                        33.903378
+                  ],
+                  [
+                        -118.388429,
+                        33.9033775
+                  ],
+                  [
+                        -118.388427,
+                        33.9020935
+                  ],
+                  [
+                        -118.3883995,
+                        33.9020365
+                  ],
+                  [
+                        -118.3883315,
+                        33.9020115
+                  ],
+                  [
+                        -118.386692,
+                        33.902012
+                  ],
+                  [
+                        -118.386624,
+                        33.9020375
+                  ],
+                  [
+                        -118.3865965,
+                        33.9020945
+                  ]
+            ]
+      ]
+},
+    lat: 33.902696,
+    lng: -118.387512,
+
+    // Property details
+    year_built: 1983,
+    owner: 'PLAZA CP LLC',
+    last_sale_price: null,
+    sale_date: null,
+    county: 'los-angeles',
+    qoz_status: 'No',
+    improvement_value: 75862878,
+    land_value: 15928469,
+    assessed_value: 91791347,
+
+    // Extended details
+    use_code: '1703',
+    use_description: 'Commercial - Office Buildings',
+    zoning: 'MU-S',
+    zoning_description: 'Urban Mixed Use South',
+    num_stories: 3,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 6.32711,
+    lot_size_sqft: 275615,
+
+    // Financial & tax data
+    tax_year: '2026',
+    parcel_value_type: 'GROSS ASSESSED',
+    sale_price: null,
+
+    // Location data
+    census_tract: '06037980013',
+    census_block: '060379800131038',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 11:50:56 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '2041 ROSECRANS AVE # 200',
+    owner_mail_city: 'EL SEGUNDO',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '90245',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "034d774e-1048-4e3a-af06-217ca01ac3d1",
+      "apn": "4138-011-027",
+      "address": {
+            "line1": "2101 ROSECRANS AVE",
+            "line2": "",
+            "city": "EL SEGUNDO",
+            "state": "CA",
+            "zip": "90245"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -118.3865965,
+                              33.9020945
+                        ],
+                        [
+                              -118.3865975,
+                              33.9033785
+                        ],
+                        [
+                              -118.387483,
+                              33.903378
+                        ],
+                        [
+                              -118.388429,
+                              33.9033775
+                        ],
+                        [
+                              -118.388427,
+                              33.9020935
+                        ],
+                        [
+                              -118.3883995,
+                              33.9020365
+                        ],
+                        [
+                              -118.3883315,
+                              33.9020115
+                        ],
+                        [
+                              -118.386692,
+                              33.902012
+                        ],
+                        [
+                              -118.386624,
+                              33.9020375
+                        ],
+                        [
+                              -118.3865965,
+                              33.9020945
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 33.902696,
+            "lng": -118.387512
+      },
+      "properties": {
+            "owner": "PLAZA CP LLC",
+            "lot_size_sqft": 275615,
+            "lot_acres": 6.32711,
+            "year_built": 1983,
+            "zoning": "MU-S",
+            "zoning_description": "Urban Mixed Use South",
+            "property_type": "",
+            "assessed_value": 91791347,
+            "improvement_value": 75862878,
+            "land_value": 15928469,
+            "sale_date": "",
+            "county": "los-angeles",
+            "qoz_status": "No",
+            "use_code": "1703",
+            "use_description": "Commercial - Office Buildings",
+            "subdivision": "",
+            "num_stories": 3,
+            "tax_year": "2026",
+            "parcel_value_type": "GROSS ASSESSED",
+            "census_tract": "06037980013",
+            "census_block": "060379800131038",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
+            "owner_mailing_address": "2041 ROSECRANS AVE # 200",
+            "owner_mail_city": "EL SEGUNDO",
+            "owner_mail_state": "CA",
+            "owner_mail_zip": "90245",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 966057,
+            "geoid": "06037",
+            "parcelnumb": "4138-011-027",
+            "parcelnumb_no_formatting": "4138011027",
+            "usecode": "1703",
+            "usedesc": "Commercial - Office Buildings",
+            "yearbuilt": 1983,
+            "numstories": 3,
+            "numunits": 0,
+            "parvaltype": "GROSS ASSESSED",
+            "improvval": 75862878,
+            "landval": 15928469,
+            "parval": 91791347,
+            "taxyear": "2026",
+            "last_ownership_transfer_date": "2005-03-09",
+            "owntype": "3",
+            "mailadd": "2041 ROSECRANS AVE # 200",
+            "mail_addno": "2041",
+            "mail_addstr": "ROSECRANS AVE",
+            "mail_unit": "# 200",
+            "mail_city": "EL SEGUNDO",
+            "mail_state2": "CA",
+            "mail_zip": "90245",
+            "original_mailing_address": "{\"mailadd\":\"02041 ROSECRANS AVE # 200\",\"mail_addno\":\"02041\",\"mail_addstr\":\"ROSECRANS AVE\",\"mail_unit\":\"# 200\",\"mail_city\":\"EL SEGUNDO\",\"mail_state2\":\"CA\",\"mail_zip\":\"902450000\"}",
+            "address": "2101 ROSECRANS AVE",
+            "saddno": "2101",
+            "saddstr": "ROSECRANS",
+            "saddsttyp": "AVE",
+            "scity": "EL SEGUNDO",
+            "original_address": "{\"address\":\"02101 ROSECRANS AVE\",\"saddno\":\"02101\",\"saddstr\":\"ROSECRANS AVE\",\"scity\":\"EL SEGUNDO\",\"szip\":\"902450000\"}",
+            "city": "south-bay-cities",
+            "state2": "CA",
+            "szip": "90245-4749",
+            "szip5": "90245",
+            "address_source": "county;cass",
+            "legaldesc": "TR=PARCEL MAP AS PER BK 124 P 52 OF P M LOT 4",
+            "lat": "33.902696",
+            "lon": "-118.387512",
+            "qoz": "No",
+            "census_blockgroup": "060379800131",
+            "census_zcta": "90245",
+            "ll_last_refresh": "2026-06-24",
+            "recrdareano": 106000,
+            "ll_gisacre": 6.32711,
+            "ll_gissqft": 275615,
+            "plss_township": "003S",
+            "plss_section": "Section 00",
+            "plss_range": "014W",
+            "path": "/us/ca/los-angeles/south-bay-cities/966057",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "034d774e-1048-4e3a-af06-217ca01ac3d1",
+            "ll_updated_at": "2026-07-25 11:50:56 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Apollo — El Segundo",
+            "description": "Apollo's El Segundo office at the Plaza at Continental Park",
+            "type": "office",
+            "active": true
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Apollo — Global HQ',
+      description: 'Apollo\'s global headquarters in the Solow Building on West 57th',
+      type: 'office',
+      active: true
+    },
+
+    // Basic identifiers
+    regrid_id: 'aab046b8-ae34-4caa-baf0-d8f044d145e1',
+    apn: '1012730022',
+    address: '9 W 57TH ST',
+    city: 'NEW YORK',
+    state: 'NY',
+    zip_code: '10019',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -73.9745135,
+                        40.763676
+                  ],
+                  [
+                        -73.9744925,
+                        40.763667
+                  ],
+                  [
+                        -73.974316,
+                        40.763913
+                  ],
+                  [
+                        -73.975419,
+                        40.7643715
+                  ],
+                  [
+                        -73.9755955,
+                        40.7641255
+                  ],
+                  [
+                        -73.9755105,
+                        40.7640905
+                  ],
+                  [
+                        -73.9753645,
+                        40.7640295
+                  ],
+                  [
+                        -73.9755505,
+                        40.7637715
+                  ],
+                  [
+                        -73.9747005,
+                        40.7634185
+                  ],
+                  [
+                        -73.9745135,
+                        40.763676
+                  ]
+            ]
+      ]
+},
+    lat: 40.763887,
+    lng: -73.97499,
+
+    // Property details
+    year_built: 1971,
+    owner: 'SOLOVIEFF REALTY CO. II, L.L.C.',
+    last_sale_price: 28050000,
+    sale_date: '2018-01-02',
+    county: 'new-york',
+    qoz_status: 'No',
+    improvement_value: null,
+    land_value: 425000000,
+    assessed_value: 1134079000,
+
+    // Extended details
+    use_code: '05',
+    use_description: null,
+    zoning: 'C5-2.5',
+    zoning_description: 'Restricted Central Commercial',
+    num_stories: 49,
+    num_units: 31,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 1.47541,
+    lot_size_sqft: 64270,
+
+    // Financial & tax data
+    tax_year: '2027',
+    parcel_value_type: 'MARKET',
+    sale_price: null,
+
+    // Location data
+    census_tract: '36061011201',
+    census_block: '360610112011002',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-04-14',
+    regrid_updated_at: '2026-07-25 13:01:19 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '9 W. 57TH ST',
+    owner_mail_city: 'NEW YORK',
+    owner_mail_state: 'NY',
+    owner_mail_zip: '10019-2701',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "aab046b8-ae34-4caa-baf0-d8f044d145e1",
+      "apn": "1012730022",
+      "address": {
+            "line1": "9 W 57TH ST",
+            "line2": "",
+            "city": "NEW YORK",
+            "state": "NY",
+            "zip": "10019"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -73.9745135,
+                              40.763676
+                        ],
+                        [
+                              -73.9744925,
+                              40.763667
+                        ],
+                        [
+                              -73.974316,
+                              40.763913
+                        ],
+                        [
+                              -73.975419,
+                              40.7643715
+                        ],
+                        [
+                              -73.9755955,
+                              40.7641255
+                        ],
+                        [
+                              -73.9755105,
+                              40.7640905
+                        ],
+                        [
+                              -73.9753645,
+                              40.7640295
+                        ],
+                        [
+                              -73.9755505,
+                              40.7637715
+                        ],
+                        [
+                              -73.9747005,
+                              40.7634185
+                        ],
+                        [
+                              -73.9745135,
+                              40.763676
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 40.763887,
+            "lng": -73.97499
+      },
+      "properties": {
+            "owner": "SOLOVIEFF REALTY CO. II, L.L.C.",
+            "lot_size_sqft": 64270,
+            "lot_acres": 1.47541,
+            "year_built": 1971,
+            "zoning": "C5-2.5",
+            "zoning_description": "Restricted Central Commercial",
+            "property_type": "",
+            "assessed_value": 1134079000,
+            "land_value": 425000000,
+            "last_sale_price": 28050000,
+            "sale_date": "2018-01-02",
+            "county": "new-york",
+            "qoz_status": "No",
+            "use_code": "05",
+            "use_description": "",
+            "subdivision": "",
+            "num_stories": 49,
+            "num_units": 31,
+            "tax_year": "2027",
+            "parcel_value_type": "MARKET",
+            "census_tract": "36061011201",
+            "census_block": "360610112011002",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-04-14",
+            "regrid_updated_at": "2026-07-25 13:01:19 -0400",
+            "owner_mailing_address": "9 W. 57TH ST",
+            "owner_mail_city": "NEW YORK",
+            "owner_mail_state": "NY",
+            "owner_mail_zip": "10019-2701",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 383999,
+            "geoid": "36061",
+            "parcelnumb": "1012730022",
+            "parcelnumb_no_formatting": "1012730022",
+            "usecode": "05",
+            "structno": 1,
+            "yearbuilt": 1971,
+            "numstories": 49,
+            "numunits": 31,
+            "parvaltype": "MARKET",
+            "landval": 425000000,
+            "parval": 1134079000,
+            "saleprice": 28050000,
+            "saledate": "2018-01-02",
+            "taxyear": "2027",
+            "last_ownership_transfer_date": "2018-01-02",
+            "mailadd": "9 W. 57TH ST",
+            "mail_city": "NEW YORK",
+            "mail_state2": "NY",
+            "mail_zip": "10019-2701",
+            "original_mailing_address": "{\"mailadd\":\"9 W. 57TH ST.\",\"mail_city\":\"NEW YORK\",\"mail_state2\":\"NY\",\"mail_zip\":\"10019-2701\"}",
+            "address": "9 W 57TH ST",
+            "saddno": "9",
+            "saddpref": "W",
+            "saddstr": "57TH",
+            "saddsttyp": "ST",
+            "scity": "NEW YORK",
+            "original_address": "{\"address\":\"9 WEST 57 STREET\",\"saddno\":\"9\",\"saddstr\":\"WEST 57 STREET\",\"scity\":\"NEW YORK\",\"szip\":\"10019\"}",
+            "city": "manhattan",
+            "state2": "NY",
+            "szip": "10019-0618",
+            "szip5": "10019",
+            "address_source": "county;cass",
+            "block": "1273",
+            "lot": "22",
+            "lat": "40.763887",
+            "lon": "-73.974990",
+            "qoz": "No",
+            "census_blockgroup": "360610112011",
+            "census_zcta": "10019",
+            "ll_last_refresh": "2026-04-14",
+            "sqft": 62058,
+            "ll_gisacre": 1.47541,
+            "ll_gissqft": 64270,
+            "path": "/us/ny/new-york/manhattan/383999",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "aab046b8-ae34-4caa-baf0-d8f044d145e1",
+            "ll_updated_at": "2026-07-25 13:01:19 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Apollo — Global HQ",
+            "description": "Apollo's global headquarters in the Solow Building on West 57th",
+            "type": "office",
+            "active": true
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Apollo — Miami',
+      description: 'Apollo\'s Miami office at 701 Brickell in the financial district',
+      type: 'office',
+      active: true
+    },
+
+    // Basic identifiers
+    regrid_id: '8ba9e02f-0cf3-4764-948a-d697d80c43d8',
+    apn: '0141380340020',
+    address: '701 BRICKELL AVE',
+    city: 'MIAMI',
+    state: 'FL',
+    zip_code: '33131',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -80.1886785,
+                        25.766496
+                  ],
+                  [
+                        -80.1881905,
+                        25.7663885
+                  ],
+                  [
+                        -80.188176,
+                        25.766493
+                  ],
+                  [
+                        -80.18812,
+                        25.7670755
+                  ],
+                  [
+                        -80.190034,
+                        25.767452
+                  ],
+                  [
+                        -80.190202,
+                        25.767487
+                  ],
+                  [
+                        -80.1903315,
+                        25.7670115
+                  ],
+                  [
+                        -80.190371,
+                        25.7668685
+                  ],
+                  [
+                        -80.1900105,
+                        25.7667895
+                  ],
+                  [
+                        -80.1886785,
+                        25.766496
+                  ]
+            ]
+      ]
+},
+    lat: 25.766949,
+    lng: -80.189207,
+
+    // Property details
+    year_built: 1986,
+    owner: 'MCME 701 LLC',
+    last_sale_price: 443000000,
+    sale_date: '2024-10-04',
+    county: 'miami-dade',
+    qoz_status: 'No',
+    improvement_value: 95032500,
+    land_value: 250507500,
+    assessed_value: 345540000,
+
+    // Extended details
+    use_code: '1813',
+    use_description: 'OFFICE BUILDING - MULTISTORY : OFFICE BUILDING',
+    zoning: 'T6-48A-O',
+    zoning_description: 'Urban Core Transect Open A',
+    num_stories: 32,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 3.9614,
+    lot_size_sqft: 172562,
+
+    // Financial & tax data
+    tax_year: '2026',
+    parcel_value_type: 'MARKET',
+    sale_price: null,
+
+    // Location data
+    census_tract: '12086006709',
+    census_block: '120860067091001',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-07-23',
+    regrid_updated_at: '2026-07-27 09:27:29 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '301 YAMATO RD 4160',
+    owner_mail_city: 'BOCA RATON',
+    owner_mail_state: 'FL',
+    owner_mail_zip: '33431',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "8ba9e02f-0cf3-4764-948a-d697d80c43d8",
+      "apn": "0141380340020",
+      "address": {
+            "line1": "701 BRICKELL AVE",
+            "line2": "",
+            "city": "MIAMI",
+            "state": "FL",
+            "zip": "33131"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -80.1886785,
+                              25.766496
+                        ],
+                        [
+                              -80.1881905,
+                              25.7663885
+                        ],
+                        [
+                              -80.188176,
+                              25.766493
+                        ],
+                        [
+                              -80.18812,
+                              25.7670755
+                        ],
+                        [
+                              -80.190034,
+                              25.767452
+                        ],
+                        [
+                              -80.190202,
+                              25.767487
+                        ],
+                        [
+                              -80.1903315,
+                              25.7670115
+                        ],
+                        [
+                              -80.190371,
+                              25.7668685
+                        ],
+                        [
+                              -80.1900105,
+                              25.7667895
+                        ],
+                        [
+                              -80.1886785,
+                              25.766496
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 25.766949,
+            "lng": -80.189207
+      },
+      "properties": {
+            "owner": "MCME 701 LLC",
+            "lot_size_sqft": 172562,
+            "lot_acres": 3.9614,
+            "year_built": 1986,
+            "zoning": "T6-48A-O",
+            "zoning_description": "Urban Core Transect Open A",
+            "property_type": "",
+            "assessed_value": 345540000,
+            "improvement_value": 95032500,
+            "land_value": 250507500,
+            "last_sale_price": 443000000,
+            "sale_date": "2024-10-04",
+            "county": "miami-dade",
+            "qoz_status": "No",
+            "use_code": "1813",
+            "use_description": "OFFICE BUILDING - MULTISTORY : OFFICE BUILDING",
+            "subdivision": "",
+            "num_stories": 32,
+            "tax_year": "2026",
+            "parcel_value_type": "MARKET",
+            "census_tract": "12086006709",
+            "census_block": "120860067091001",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-07-23",
+            "regrid_updated_at": "2026-07-27 09:27:29 -0400",
+            "owner_mailing_address": "301 YAMATO RD 4160",
+            "owner_mail_city": "BOCA RATON",
+            "owner_mail_state": "FL",
+            "owner_mail_zip": "33431",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 66539,
+            "geoid": "12086",
+            "parcelnumb": "0141380340020",
+            "parcelnumb_no_formatting": "0141380340020",
+            "usecode": "1813",
+            "usedesc": "OFFICE BUILDING - MULTISTORY : OFFICE BUILDING",
+            "structno": 2,
+            "yearbuilt": 1986,
+            "numstories": 32,
+            "numunits": 0,
+            "num_bath": 0,
+            "num_bath_partial": 0,
+            "num_bedrooms": 0,
+            "parvaltype": "MARKET",
+            "improvval": 95032500,
+            "landval": 250507500,
+            "parval": 345540000,
+            "saleprice": 443000000,
+            "saledate": "2024-10-04",
+            "taxyear": "2026",
+            "last_ownership_transfer_date": "2024-06-06",
+            "previous_owner": "T C 701 BRICKELL LLC",
+            "mailadd": "301 YAMATO RD 4160",
+            "mail_city": "BOCA RATON",
+            "mail_state2": "FL",
+            "mail_zip": "33431",
+            "original_mailing_address": "{\"mailadd\":\"301 YAMATO RD 4160\",\"mail_city\":\"BOCA RATON\",\"mail_state2\":\"FL\",\"mail_zip\":\"33431\"}",
+            "address": "701 BRICKELL AVE",
+            "saddno": "701",
+            "saddstr": "BRICKELL",
+            "saddsttyp": "AVE",
+            "scity": "MIAMI",
+            "original_address": "{\"address\":\"701 BRICKELL AVE\",\"scity\":\"Miami\",\"szip\":\"33131-0000\"}",
+            "city": "miami",
+            "state2": "FL",
+            "szip": "33131-2813",
+            "szip5": "33131",
+            "address_source": "county;cass",
+            "legaldesc": "NASHER SUB PB 117-90 TRACT A LESS S236.11FT THEREOF LOT SIZE 167005 SQ FT OR 20835-4298 1102 1",
+            "book": "34464",
+            "page": "3246",
+            "neighborhood_code": "69010.1",
+            "lat": "25.766949",
+            "lon": "-80.189207",
+            "qoz": "No",
+            "census_blockgroup": "120860067091",
+            "census_zcta": "33131",
+            "ll_last_refresh": "2026-07-23",
+            "recrdareano": 1110657,
+            "sqft": 167005,
+            "ll_gisacre": 3.9614,
+            "ll_gissqft": 172562,
+            "plss_township": "054S",
+            "plss_section": "Section 38",
+            "plss_range": "042E",
+            "path": "/us/fl/miami-dade/miami/66539",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "8ba9e02f-0cf3-4764-948a-d697d80c43d8",
+            "ll_updated_at": "2026-07-27 09:27:29 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Apollo — Miami",
+            "description": "Apollo's Miami office at 701 Brickell in the financial district",
+            "type": "office",
+            "active": true
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Apollo — Houston',
+      description: 'Apollo\'s Houston office at 609 Main at Texas, Hines\' LEED Platinum tower',
+      type: 'office',
+      active: false
+    },
+
+    // Basic identifiers
+    regrid_id: '09cb9079-9bbd-490a-96ba-c4562ae66bee',
+    apn: '0010690000006',
+    address: '609 MAIN ST',
+    city: 'HOUSTON',
+    state: 'TX',
+    zip_code: '77002',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -95.3629675,
+                        29.7592075
+                  ],
+                  [
+                        -95.3623125,
+                        29.758813
+                  ],
+                  [
+                        -95.362087,
+                        29.7590975
+                  ],
+                  [
+                        -95.361862,
+                        29.759382
+                  ],
+                  [
+                        -95.362517,
+                        29.7597765
+                  ],
+                  [
+                        -95.3629675,
+                        29.7592075
+                  ]
+            ]
+      ]
+},
+    lat: 29.759295,
+    lng: -95.362415,
+
+    // Property details
+    year_built: 2014,
+    owner: 'HCG BLOCK 69 LLC',
+    last_sale_price: null,
+    sale_date: '2008-03-12',
+    county: 'harris',
+    qoz_status: 'Yes',
+    improvement_value: 486722406,
+    land_value: 23721750,
+    assessed_value: 510444156,
+
+    // Extended details
+    use_code: 'F1',
+    use_description: 'Land Neighborhood Section 1',
+    zoning: 'NZ',
+    zoning_description: 'No Zoning',
+    num_stories: 48,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 1.45905,
+    lot_size_sqft: 63558,
+
+    // Financial & tax data
+    tax_year: '2026',
+    parcel_value_type: 'TOTAL MARKET VALUE',
+    sale_price: null,
+
+    // Location data
+    census_tract: '48201980700',
+    census_block: '482019807001070',
+    qoz_tract: '48201312200',
+
+    // Data freshness
+    last_refresh_date: '2026-07-08',
+    regrid_updated_at: '2026-07-30 17:42:38 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '845 TEXAS AVE STE 3300',
+    owner_mail_city: 'HOUSTON',
+    owner_mail_state: 'TX',
+    owner_mail_zip: '77002-0014',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "09cb9079-9bbd-490a-96ba-c4562ae66bee",
+      "apn": "0010690000006",
+      "address": {
+            "line1": "609 MAIN ST",
+            "line2": "",
+            "city": "HOUSTON",
+            "state": "TX",
+            "zip": "77002"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -95.3629675,
+                              29.7592075
+                        ],
+                        [
+                              -95.3623125,
+                              29.758813
+                        ],
+                        [
+                              -95.362087,
+                              29.7590975
+                        ],
+                        [
+                              -95.361862,
+                              29.759382
+                        ],
+                        [
+                              -95.362517,
+                              29.7597765
+                        ],
+                        [
+                              -95.3629675,
+                              29.7592075
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 29.759295,
+            "lng": -95.362415
+      },
+      "properties": {
+            "owner": "HCG BLOCK 69 LLC",
+            "lot_size_sqft": 63558,
+            "lot_acres": 1.45905,
+            "year_built": 2014,
+            "zoning": "NZ",
+            "zoning_description": "No Zoning",
+            "property_type": "",
+            "assessed_value": 510444156,
+            "improvement_value": 486722406,
+            "land_value": 23721750,
+            "sale_date": "2008-03-12",
+            "county": "harris",
+            "qoz_status": "Yes",
+            "use_code": "F1",
+            "use_description": "Land Neighborhood Section 1",
+            "subdivision": "",
+            "num_stories": 48,
+            "tax_year": "2026",
+            "parcel_value_type": "TOTAL MARKET VALUE",
+            "census_tract": "48201980700",
+            "census_block": "482019807001070",
+            "qoz_tract": "48201312200",
+            "last_refresh_date": "2026-07-08",
+            "regrid_updated_at": "2026-07-30 17:42:38 -0400",
+            "owner_mailing_address": "845 TEXAS AVE STE 3300",
+            "owner_mail_city": "HOUSTON",
+            "owner_mail_state": "TX",
+            "owner_mail_zip": "77002-0014",
+            "qualified_opportunity_zone": "Yes",
+            "ogc_fid": 1500487,
+            "geoid": "48201",
+            "parcelnumb": "0010690000006",
+            "parcelnumb_no_formatting": "0010690000006",
+            "account_number": "0010690000006",
+            "usecode": "F1",
+            "usedesc": "Land Neighborhood Section 1",
+            "yearbuilt": 2014,
+            "numstories": 48,
+            "parvaltype": "TOTAL MARKET VALUE",
+            "improvval": 486722406,
+            "landval": 23721750,
+            "parval": 510444156,
+            "agval": 0,
+            "saleprice": 0,
+            "saledate": "2008-03-12",
+            "taxyear": "2026",
+            "last_ownership_transfer_date": "2008-03-12",
+            "mailadd": "845 TEXAS AVE STE 3300",
+            "mail_city": "HOUSTON",
+            "mail_state2": "TX",
+            "mail_zip": "77002-0014",
+            "original_mailing_address": "{\"mailadd\":\"845 TEXAS AVE STE 3300\",\"mail_city\":\"HOUSTON\",\"mail_state2\":\"TX\",\"mail_zip\":\"77002-0014\"}",
+            "address": "609 MAIN ST",
+            "saddno": "609",
+            "saddstr": "MAIN",
+            "saddsttyp": "ST",
+            "scity": "HOUSTON",
+            "original_address": "{\"address\":\"609 MAIN ST\",\"saddsttyp\":\"ST\",\"scity\":\"HOUSTON\",\"szip\":\"77002\"}",
+            "city": "houston",
+            "state2": "TX",
+            "szip": "77002-3167",
+            "szip5": "77002",
+            "address_source": "county;cass",
+            "legaldesc": "LTS 1 THRU 12 BLK 69 SSBB",
+            "neighborhood_code": "5900.00",
+            "lat": "29.759295",
+            "lon": "-95.362415",
+            "qoz": "Yes",
+            "census_blockgroup": "482019807001",
+            "census_zcta": "77002",
+            "ll_last_refresh": "2026-07-08",
+            "recrdareano": 1322904,
+            "area_building": 3020,
+            "area_building_definition": "TOTAL AREA",
+            "gisacre": 1.4522,
+            "ll_gisacre": 1.45905,
+            "ll_gissqft": 63558,
+            "reviseddate": "2025-10-29",
+            "path": "/us/tx/harris/houston/1500487",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "09cb9079-9bbd-490a-96ba-c4562ae66bee",
+            "ll_updated_at": "2026-07-30 17:42:38 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Apollo — Houston",
+            "description": "Apollo's Houston office at 609 Main at Texas, Hines' LEED Platinum tower",
+            "type": "office",
+            "active": false
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Salesforce Tower',
+      description: 'San Francisco\'s tallest skyscraper and tech industry landmark',
+      type: 'office',
+      active: false
+    },
+
+    // Basic identifiers
+    regrid_id: '18a4b8df-4593-4cce-b59b-0897d3865466',
+    apn: '3720009',
+    address: '415 MISSION ST',
+    city: 'SAN FRANCISCO',
+    state: 'CA',
+    zip_code: '94105',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -122.39736,
+                        37.789769
+                  ],
+                  [
+                        -122.396913,
+                        37.789411
+                  ],
+                  [
+                        -122.396241,
+                        37.789942
+                  ],
+                  [
+                        -122.3966885,
+                        37.7902995
+                  ],
+                  [
+                        -122.39736,
+                        37.789769
+                  ]
+            ]
+      ]
+},
+    lat: 37.789855,
+    lng: -122.396801,
+
+    // Property details
+    year_built: 2018,
+    owner: 'TRANSBAY TOWER LLC',
+    last_sale_price: null,
+    sale_date: null,
+    county: 'san-francisco',
+    qoz_status: 'No',
+    improvement_value: 1713847455,
+    land_value: 236208037,
+    assessed_value: 1950055492,
+
+    // Extended details
+    use_code: null,
+    use_description: 'Commercial',
+    zoning: 'C-3-O(SD -1000-S-2',
+    zoning_description: 'Commercial Downtown Office Special Development',
+    num_stories: 63,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 1.15316,
+    lot_size_sqft: 50233,
+
+    // Financial & tax data
+    tax_year: '2025',
+    parcel_value_type: 'ASSESSED',
+    sale_price: null,
+
+    // Location data
+    census_tract: '06075061501',
+    census_block: '060750615011004',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-04-28',
+    regrid_updated_at: '2026-07-25 11:52:13 -0400',
+
+    // Owner mailing
+    owner_mailing_address: '4 EMBARCADERO CTR LBBY',
+    owner_mail_city: 'SAN FRANCISCO',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '94111',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "18a4b8df-4593-4cce-b59b-0897d3865466",
+      "apn": "3720009",
+      "address": {
+            "line1": "415 MISSION ST",
+            "line2": "",
+            "city": "SAN FRANCISCO",
+            "state": "CA",
+            "zip": "94105"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -122.39736,
+                              37.789769
+                        ],
+                        [
+                              -122.396913,
+                              37.789411
+                        ],
+                        [
+                              -122.396241,
+                              37.789942
+                        ],
+                        [
+                              -122.3966885,
+                              37.7902995
+                        ],
+                        [
+                              -122.39736,
+                              37.789769
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 37.789855,
+            "lng": -122.396801
+      },
+      "properties": {
+            "owner": "TRANSBAY TOWER LLC",
+            "lot_size_sqft": 50233,
+            "lot_acres": 1.15316,
+            "year_built": 2018,
+            "zoning": "C-3-O(SD -1000-S-2",
+            "zoning_description": "Commercial Downtown Office Special Development",
+            "property_type": "",
+            "assessed_value": 1950055492,
+            "improvement_value": 1713847455,
+            "land_value": 236208037,
+            "sale_date": "",
+            "county": "san-francisco",
+            "qoz_status": "No",
+            "use_code": "",
+            "use_description": "Commercial",
+            "subdivision": "",
+            "num_stories": 63,
+            "tax_year": "2025",
+            "parcel_value_type": "ASSESSED",
+            "census_tract": "06075061501",
+            "census_block": "060750615011004",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-04-28",
+            "regrid_updated_at": "2026-07-25 11:52:13 -0400",
+            "owner_mailing_address": "4 EMBARCADERO CTR LBBY",
+            "owner_mail_city": "SAN FRANCISCO",
+            "owner_mail_state": "CA",
+            "owner_mail_zip": "94111",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 136644,
+            "geoid": "06075",
+            "parcelnumb": "3720009",
+            "parcelnumb_no_formatting": "3720009",
+            "account_number": "3720-009",
+            "alt_parcelnumb1": "3720009",
+            "usedesc": "Commercial",
+            "yearbuilt": 2018,
+            "numstories": 63,
+            "parvaltype": "ASSESSED",
+            "improvval": 1713847455,
+            "landval": 236208037,
+            "parval": 1950055492,
+            "taxyear": "2025",
+            "last_ownership_transfer_date": "2013-03-26",
+            "owner2": "MICHAEL YI",
+            "mailadd": "4 EMBARCADERO CTR LBBY",
+            "mail_city": "SAN FRANCISCO",
+            "mail_state2": "CA",
+            "mail_zip": "94111",
+            "original_mailing_address": "{\"mailadd\":\"4 EMBARCADERO CTR LBBY\",\"mail_city\":\"SAN FRANCISCO\",\"mail_state2\":\"CA\",\"mail_zip\":\"94111\"}",
+            "address": "415 MISSION ST",
+            "saddno": "415",
+            "saddstr": "MISSION",
+            "saddsttyp": "ST",
+            "scity": "SAN FRANCISCO",
+            "original_address": "{\"address\":\"415 MISSION ST\",\"saddno\":\"415\",\"saddstr\":\"MISSION\",\"saddsttyp\":\"ST\",\"scity\":\"SAN FRANCISCO\"}",
+            "city": "downtown-northeast-neighborhoods-treasure-island",
+            "state2": "CA",
+            "szip": "94105-2533",
+            "szip5": "94105",
+            "address_source": "county;cass",
+            "book": "25",
+            "block": "3720",
+            "lot": "9",
+            "neighborhood_code": "09B",
+            "lat": "37.789855",
+            "lon": "-122.396801",
+            "qoz": "No",
+            "census_blockgroup": "060750615011",
+            "census_zcta": "94105",
+            "ll_last_refresh": "2026-04-28",
+            "sqft": 1420430,
+            "ll_gisacre": 1.15316,
+            "ll_gissqft": 50233,
+            "path": "/us/ca/san-francisco/downtown-northeast-neighborhoods-treasure-island/136644",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "18a4b8df-4593-4cce-b59b-0897d3865466",
+            "ll_updated_at": "2026-07-25 11:52:13 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Salesforce Tower",
+            "description": "San Francisco's tallest skyscraper and tech industry landmark",
+            "type": "office",
+            "active": false
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Disney Headquarters',
+      description: 'The Walt Disney Company\'s corporate headquarters in Burbank',
+      type: 'entertainment',
+      active: false
+    },
+
+    // Basic identifiers
+    regrid_id: '38c37221-6732-4bb1-95d7-26b4c2414599',
+    apn: '2443-022-009',
+    address: '500 S BUENA VISTA ST',
+    city: 'BURBANK',
+    state: 'CA',
+    zip_code: '91521',
+
+    // Geometry and location
+    geometry: {
+      "type": "MultiPolygon",
+      "coordinates": [
+            [
+                  [
+                        [
+                              -118.325808,
+                              34.1542865
+                        ],
+                        [
+                              -118.3257245,
+                              34.1542015
+                        ],
+                        [
+                              -118.3240015,
+                              34.1546055
+                        ],
+                        [
+                              -118.323978,
+                              34.154611
+                        ],
+                        [
+                              -118.3237965,
+                              34.1546325
+                        ],
+                        [
+                              -118.3221145,
+                              34.155733
+                        ],
+                        [
+                              -118.3222965,
+                              34.1561125
+                        ],
+                        [
+                              -118.3223295,
+                              34.1561085
+                        ],
+                        [
+                              -118.322442,
+                              34.1560935
+                        ],
+                        [
+                              -118.3224995,
+                              34.156086
+                        ],
+                        [
+                              -118.3226685,
+                              34.156058
+                        ],
+                        [
+                              -118.3228355,
+                              34.1560215
+                        ],
+                        [
+                              -118.323001,
+                              34.155977
+                        ],
+                        [
+                              -118.323164,
+                              34.1559245
+                        ],
+                        [
+                              -118.323324,
+                              34.155864
+                        ],
+                        [
+                              -118.323481,
+                              34.1557955
+                        ],
+                        [
+                              -118.3236345,
+                              34.1557195
+                        ],
+                        [
+                              -118.323784,
+                              34.1556365
+                        ],
+                        [
+                              -118.3239295,
+                              34.1555455
+                        ],
+                        [
+                              -118.325808,
+                              34.1542865
+                        ]
+                  ]
+            ],
+            [
+                  [
+                        [
+                              -118.324137,
+                              34.1557595
+                        ],
+                        [
+                              -118.324023,
+                              34.155833
+                        ],
+                        [
+                              -118.3239055,
+                              34.155902
+                        ],
+                        [
+                              -118.3238425,
+                              34.1559365
+                        ],
+                        [
+                              -118.323672,
+                              34.156022
+                        ],
+                        [
+                              -118.323498,
+                              34.1560995
+                        ],
+                        [
+                              -118.3233205,
+                              34.156168
+                        ],
+                        [
+                              -118.3231395,
+                              34.1562275
+                        ],
+                        [
+                              -118.322956,
+                              34.1562785
+                        ],
+                        [
+                              -118.32277,
+                              34.15632
+                        ],
+                        [
+                              -118.3225825,
+                              34.1563525
+                        ],
+                        [
+                              -118.322548,
+                              34.156373
+                        ],
+                        [
+                              -118.3225455,
+                              34.1564085
+                        ],
+                        [
+                              -118.3239875,
+                              34.159412
+                        ],
+                        [
+                              -118.324014,
+                              34.1594345
+                        ],
+                        [
+                              -118.324052,
+                              34.159435
+                        ],
+                        [
+                              -118.326605,
+                              34.158583
+                        ],
+                        [
+                              -118.3278535,
+                              34.158166
+                        ],
+                        [
+                              -118.3278805,
+                              34.158144
+                        ],
+                        [
+                              -118.327881,
+                              34.1581125
+                        ],
+                        [
+                              -118.3268145,
+                              34.155946
+                        ],
+                        [
+                              -118.3267685,
+                              34.155962
+                        ],
+                        [
+                              -118.3265555,
+                              34.1555295
+                        ],
+                        [
+                              -118.326471,
+                              34.155321
+                        ],
+                        [
+                              -118.3265015,
+                              34.1553105
+                        ],
+                        [
+                              -118.3261065,
+                              34.154508
+                        ],
+                        [
+                              -118.326073,
+                              34.1544835
+                        ],
+                        [
+                              -118.3260295,
+                              34.1544915
+                        ],
+                        [
+                              -118.324137,
+                              34.1557595
+                        ]
+                  ]
+            ]
+      ]
+},
+    lat: 34.156873,
+    lng: -118.325024,
+
+    // Property details
+    year_built: 1938,
+    owner: 'DISNEY,WALT PRODUCTIONS INC',
+    last_sale_price: null,
+    sale_date: null,
+    county: 'los-angeles',
+    qoz_status: 'No',
+    improvement_value: 504816553,
+    land_value: 11877070,
+    assessed_value: 516693623,
+
+    // Extended details
+    use_code: '6530',
+    use_description: 'Recreational - Athletic & Amusement Facilities',
+    zoning: 'PD',
+    zoning_description: 'Planned Development',
+    num_stories: 1,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 42.98908,
+    lot_size_sqft: 1872643,
+
+    // Financial & tax data
+    tax_year: '2026',
+    parcel_value_type: 'GROSS ASSESSED',
+    sale_price: null,
+
+    // Location data
+    census_tract: '06037311700',
+    census_block: '060373117006011',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 11:50:56 -0400',
+
+    // Owner mailing
+    owner_mailing_address: 'PO BOX 313',
+    owner_mail_city: 'GLENDALE',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '91209-0313',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "38c37221-6732-4bb1-95d7-26b4c2414599",
+      "apn": "2443-022-009",
+      "address": {
+            "line1": "500 S BUENA VISTA ST",
+            "line2": "",
+            "city": "BURBANK",
+            "state": "CA",
+            "zip": "91521"
+      },
+      "geometry": {
+            "type": "MultiPolygon",
+            "coordinates": [
+                  [
+                        [
+                              [
+                                    -118.325808,
+                                    34.1542865
+                              ],
+                              [
+                                    -118.3257245,
+                                    34.1542015
+                              ],
+                              [
+                                    -118.3240015,
+                                    34.1546055
+                              ],
+                              [
+                                    -118.323978,
+                                    34.154611
+                              ],
+                              [
+                                    -118.3237965,
+                                    34.1546325
+                              ],
+                              [
+                                    -118.3221145,
+                                    34.155733
+                              ],
+                              [
+                                    -118.3222965,
+                                    34.1561125
+                              ],
+                              [
+                                    -118.3223295,
+                                    34.1561085
+                              ],
+                              [
+                                    -118.322442,
+                                    34.1560935
+                              ],
+                              [
+                                    -118.3224995,
+                                    34.156086
+                              ],
+                              [
+                                    -118.3226685,
+                                    34.156058
+                              ],
+                              [
+                                    -118.3228355,
+                                    34.1560215
+                              ],
+                              [
+                                    -118.323001,
+                                    34.155977
+                              ],
+                              [
+                                    -118.323164,
+                                    34.1559245
+                              ],
+                              [
+                                    -118.323324,
+                                    34.155864
+                              ],
+                              [
+                                    -118.323481,
+                                    34.1557955
+                              ],
+                              [
+                                    -118.3236345,
+                                    34.1557195
+                              ],
+                              [
+                                    -118.323784,
+                                    34.1556365
+                              ],
+                              [
+                                    -118.3239295,
+                                    34.1555455
+                              ],
+                              [
+                                    -118.325808,
+                                    34.1542865
+                              ]
+                        ]
+                  ],
+                  [
+                        [
+                              [
+                                    -118.324137,
+                                    34.1557595
+                              ],
+                              [
+                                    -118.324023,
+                                    34.155833
+                              ],
+                              [
+                                    -118.3239055,
+                                    34.155902
+                              ],
+                              [
+                                    -118.3238425,
+                                    34.1559365
+                              ],
+                              [
+                                    -118.323672,
+                                    34.156022
+                              ],
+                              [
+                                    -118.323498,
+                                    34.1560995
+                              ],
+                              [
+                                    -118.3233205,
+                                    34.156168
+                              ],
+                              [
+                                    -118.3231395,
+                                    34.1562275
+                              ],
+                              [
+                                    -118.322956,
+                                    34.1562785
+                              ],
+                              [
+                                    -118.32277,
+                                    34.15632
+                              ],
+                              [
+                                    -118.3225825,
+                                    34.1563525
+                              ],
+                              [
+                                    -118.322548,
+                                    34.156373
+                              ],
+                              [
+                                    -118.3225455,
+                                    34.1564085
+                              ],
+                              [
+                                    -118.3239875,
+                                    34.159412
+                              ],
+                              [
+                                    -118.324014,
+                                    34.1594345
+                              ],
+                              [
+                                    -118.324052,
+                                    34.159435
+                              ],
+                              [
+                                    -118.326605,
+                                    34.158583
+                              ],
+                              [
+                                    -118.3278535,
+                                    34.158166
+                              ],
+                              [
+                                    -118.3278805,
+                                    34.158144
+                              ],
+                              [
+                                    -118.327881,
+                                    34.1581125
+                              ],
+                              [
+                                    -118.3268145,
+                                    34.155946
+                              ],
+                              [
+                                    -118.3267685,
+                                    34.155962
+                              ],
+                              [
+                                    -118.3265555,
+                                    34.1555295
+                              ],
+                              [
+                                    -118.326471,
+                                    34.155321
+                              ],
+                              [
+                                    -118.3265015,
+                                    34.1553105
+                              ],
+                              [
+                                    -118.3261065,
+                                    34.154508
+                              ],
+                              [
+                                    -118.326073,
+                                    34.1544835
+                              ],
+                              [
+                                    -118.3260295,
+                                    34.1544915
+                              ],
+                              [
+                                    -118.324137,
+                                    34.1557595
+                              ]
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 34.156873,
+            "lng": -118.325024
+      },
+      "properties": {
+            "owner": "DISNEY,WALT PRODUCTIONS INC",
+            "lot_size_sqft": 1872643,
+            "lot_acres": 42.98908,
+            "year_built": 1938,
+            "zoning": "PD",
+            "zoning_description": "Planned Development",
+            "property_type": "",
+            "assessed_value": 516693623,
+            "improvement_value": 504816553,
+            "land_value": 11877070,
+            "sale_date": "",
+            "county": "los-angeles",
+            "qoz_status": "No",
+            "use_code": "6530",
+            "use_description": "Recreational - Athletic & Amusement Facilities",
+            "subdivision": "",
+            "num_stories": 1,
+            "tax_year": "2026",
+            "parcel_value_type": "GROSS ASSESSED",
+            "census_tract": "06037311700",
+            "census_block": "060373117006011",
+            "qoz_tract": "",
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
+            "owner_mailing_address": "PO BOX 313",
+            "owner_mail_city": "GLENDALE",
+            "owner_mail_state": "CA",
+            "owner_mail_zip": "91209-0313",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 242995,
+            "geoid": "06037",
+            "parcelnumb": "2443-022-009",
+            "parcelnumb_no_formatting": "2443022009",
+            "usecode": "6530",
+            "usedesc": "Recreational - Athletic & Amusement Facilities",
+            "yearbuilt": 1938,
+            "numstories": 1,
+            "numunits": 0,
+            "parvaltype": "GROSS ASSESSED",
+            "improvval": 504816553,
+            "landval": 11877070,
+            "parval": 516693623,
+            "taxyear": "2026",
+            "mailadd": "PO BOX 313",
+            "mail_addno": "313",
+            "mail_addstr": "PO BOX",
+            "mail_city": "GLENDALE",
+            "mail_state2": "CA",
+            "mail_zip": "91209-0313",
+            "original_mailing_address": "{\"mailadd\":\"00000 PO BOX 313\",\"mail_addno\":\"00000\",\"mail_addstr\":\"PO BOX 313\",\"mail_city\":\"GLENDALE\",\"mail_state2\":\"CA\",\"mail_zip\":\"912090000\"}",
+            "address": "500 S BUENA VISTA ST",
+            "saddno": "500",
+            "saddpref": "S",
+            "saddstr": "BUENA VISTA",
+            "saddsttyp": "ST",
+            "scity": "BURBANK",
+            "original_address": "{\"address\":\"00500 S BUENA VISTA ST\",\"saddno\":\"00500\",\"saddpref\":\"S\",\"saddstr\":\"BUENA VISTA ST\",\"scity\":\"BURBANK\",\"szip\":\"915210000\"}",
+            "city": "san-fernando-valley",
+            "state2": "CA",
+            "szip": "91521-0001",
+            "szip5": "91521",
+            "address_source": "county;cass",
+            "legaldesc": "M R 43-47-59 LAND DESC IN DOC 1866538, 990930 POR OF BLK 66",
+            "lat": "34.156873",
+            "lon": "-118.325024",
+            "qoz": "No",
+            "census_blockgroup": "060373117006",
+            "census_zcta": "91505",
+            "ll_last_refresh": "2026-06-24",
+            "recrdareano": 12800,
+            "ll_gisacre": 42.98908,
+            "ll_gissqft": 1872643,
+            "plss_township": "001N",
+            "plss_section": "Section 00",
+            "plss_range": "014W",
+            "path": "/us/ca/los-angeles/san-fernando-valley/242995",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "38c37221-6732-4bb1-95d7-26b4c2414599",
+            "ll_updated_at": "2026-07-25 11:50:56 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Disney Headquarters",
+            "description": "The Walt Disney Company's corporate headquarters in Burbank",
+            "type": "entertainment",
+            "active": false
+      }
+}
+  },
+  {
+    // Curated metadata
+    curatedMetadata: {
+      name: 'Willis Tower',
+      description: 'Chicago\'s iconic skyscraper, formerly known as Sears Tower',
+      type: 'office',
+      active: false
+    },
+
+    // Basic identifiers
+    regrid_id: '6a1a8957-a752-4bb6-b4bf-aa583eaf56c4',
+    apn: '17162160090000',
+    address: '233 S WACKER DR',
+    city: 'CHICAGO',
+    state: 'IL',
+    zip_code: '60606',
+
+    // Geometry and location
+    geometry: {
+      "type": "Polygon",
+      "coordinates": [
+            [
+                  [
+                        -87.6357285,
+                        41.8781815
+                  ],
+                  [
+                        -87.6353585,
+                        41.878186
+                  ],
+                  [
+                        -87.6353705,
+                        41.878641
+                  ],
+                  [
+                        -87.635387,
+                        41.8792745
+                  ],
+                  [
+                        -87.635755,
+                        41.87927
+                  ],
+                  [
+                        -87.635939,
+                        41.879268
+                  ],
+                  [
+                        -87.636578,
+                        41.87926
+                  ],
+                  [
+                        -87.636567,
+                        41.878806
+                  ],
+                  [
+                        -87.6365625,
+                        41.878626
+                  ],
+                  [
+                        -87.636561,
+                        41.8785695
+                  ],
+                  [
+                        -87.6365595,
+                        41.8785125
+                  ],
+                  [
+                        -87.6365585,
+                        41.8784555
+                  ],
+                  [
+                        -87.636557,
+                        41.878399
+                  ],
+                  [
+                        -87.636554,
+                        41.878285
+                  ],
+                  [
+                        -87.6365525,
+                        41.878228
+                  ],
+                  [
+                        -87.6365515,
+                        41.8781715
+                  ],
+                  [
+                        -87.6361355,
+                        41.8781765
+                  ],
+                  [
+                        -87.636099,
+                        41.878177
+                  ],
+                  [
+                        -87.6359135,
+                        41.8781795
+                  ],
+                  [
+                        -87.6357285,
+                        41.8781815
+                  ]
+            ]
+      ]
+},
+    lat: 41.878723,
+    lng: -87.635969,
+
+    // Property details
+    year_built: 1970,
+    owner: 'PROPERTY TAX',
+    last_sale_price: 275611000,
+    sale_date: '2015-06-11',
+    county: 'cook',
+    qoz_status: 'No',
+    improvement_value: 293313850,
+    land_value: 13448400,
+    assessed_value: 306762250,
+
+    // Extended details
+    use_code: '591',
+    use_description: 'Commercial/Industrial',
+    zoning: 'DC-16',
+    zoning_description: 'Downtown Core District',
+    num_stories: 99,
+    num_units: null,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 2.95457,
+    lot_size_sqft: 128704,
+
+    // Financial & tax data
+    tax_year: '2025',
+    parcel_value_type: 'ASSESSED',
+    sale_price: null,
+
+    // Location data
+    census_tract: '17031839100',
+    census_block: '170318391002008',
+    qoz_tract: null,
+
+    // Data freshness
+    last_refresh_date: '2025-12-23',
+    regrid_updated_at: '2026-07-25 12:23:11 -0400',
+
+    // Owner mailing
+    owner_mailing_address: 'PO BOX A3879',
+    owner_mail_city: 'CHICAGO',
+    owner_mail_state: 'IL',
+    owner_mail_zip: '60690-3879',
+
+    // User fields
+    is_sample: false,
+
+    // Store full property data
+    property_data: {
+      "id": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
+      "apn": "17162160090000",
+      "address": {
+            "line1": "233 S WACKER DR",
+            "line2": "",
+            "city": "CHICAGO",
+            "state": "IL",
+            "zip": "60606"
+      },
+      "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                  [
+                        [
+                              -87.6357285,
+                              41.8781815
+                        ],
+                        [
+                              -87.6353585,
+                              41.878186
+                        ],
+                        [
+                              -87.6353705,
+                              41.878641
+                        ],
+                        [
+                              -87.635387,
+                              41.8792745
+                        ],
+                        [
+                              -87.635755,
+                              41.87927
+                        ],
+                        [
+                              -87.635939,
+                              41.879268
+                        ],
+                        [
+                              -87.636578,
+                              41.87926
+                        ],
+                        [
+                              -87.636567,
+                              41.878806
+                        ],
+                        [
+                              -87.6365625,
+                              41.878626
+                        ],
+                        [
+                              -87.636561,
+                              41.8785695
+                        ],
+                        [
+                              -87.6365595,
+                              41.8785125
+                        ],
+                        [
+                              -87.6365585,
+                              41.8784555
+                        ],
+                        [
+                              -87.636557,
+                              41.878399
+                        ],
+                        [
+                              -87.636554,
+                              41.878285
+                        ],
+                        [
+                              -87.6365525,
+                              41.878228
+                        ],
+                        [
+                              -87.6365515,
+                              41.8781715
+                        ],
+                        [
+                              -87.6361355,
+                              41.8781765
+                        ],
+                        [
+                              -87.636099,
+                              41.878177
+                        ],
+                        [
+                              -87.6359135,
+                              41.8781795
+                        ],
+                        [
+                              -87.6357285,
+                              41.8781815
+                        ]
+                  ]
+            ]
+      },
+      "centroid": {
+            "lat": 41.878723,
+            "lng": -87.635969
+      },
+      "properties": {
+            "owner": "PROPERTY TAX",
+            "lot_size_sqft": 128704,
+            "lot_acres": 2.95457,
+            "year_built": 1970,
+            "zoning": "DC-16",
+            "zoning_description": "Downtown Core District",
+            "property_type": "",
+            "assessed_value": 306762250,
+            "improvement_value": 293313850,
+            "land_value": 13448400,
+            "last_sale_price": 275611000,
+            "sale_date": "2015-06-11",
+            "county": "cook",
+            "qoz_status": "No",
+            "use_code": "591",
+            "use_description": "Commercial/Industrial",
+            "subdivision": "",
+            "num_stories": 99,
+            "tax_year": "2025",
+            "parcel_value_type": "ASSESSED",
+            "census_tract": "17031839100",
+            "census_block": "170318391002008",
+            "qoz_tract": "",
+            "last_refresh_date": "2025-12-23",
+            "regrid_updated_at": "2026-07-25 12:23:11 -0400",
+            "owner_mailing_address": "PO BOX A3879",
+            "owner_mail_city": "CHICAGO",
+            "owner_mail_state": "IL",
+            "owner_mail_zip": "60690-3879",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 1357189,
+            "geoid": "17031",
+            "parcelnumb": "17162160090000",
+            "parcelnumb_no_formatting": "17162160090000",
+            "alt_parcelnumb1": "1716216009",
+            "alt_parcelnumb2": "17-16-216-009-0000",
+            "usecode": "591",
+            "usedesc": "Commercial/Industrial",
+            "yearbuilt": 1970,
+            "numstories": 99,
+            "parvaltype": "ASSESSED",
+            "improvval": 293313850,
+            "landval": 13448400,
+            "parval": 306762250,
+            "saleprice": 275611000,
+            "saledate": "2015-06-11",
+            "taxyear": "2025",
+            "last_ownership_transfer_date": "2015-06-11",
+            "previous_owner": "UNKNOWN",
+            "mailadd": "PO BOX A3879",
+            "mail_addno": "A3879",
+            "mail_addstr": "PO BOX",
+            "mail_city": "CHICAGO",
+            "mail_state2": "IL",
+            "mail_zip": "60690-3879",
+            "original_mailing_address": "{\"mailadd\":\"P O BOX A-3879\",\"mail_address2\":\" CHICAGO\",\"mail_city\":\" CHICAGO\",\"mail_state2\":\"IL\",\"mail_zip\":\"60690\"}",
+            "address": "233 S WACKER DR",
+            "saddno": "233",
+            "saddpref": "S",
+            "saddstr": "WACKER",
+            "saddsttyp": "DR",
+            "scity": "CHICAGO",
+            "original_address": "{\"address\":\"233 S WACKER DR\",\"sunit\":\"\",\"scity\":\"CHICAGO\",\"szip\":\"60606\"}",
+            "city": "chicago",
+            "state2": "IL",
+            "szip": "60606-7147",
+            "szip5": "60606",
+            "address_source": "county;cass",
+            "neighborhood_code": "76010",
+            "lat": "41.878723",
+            "lon": "-87.635969",
+            "qoz": "No",
+            "census_blockgroup": "170318391002",
+            "census_zcta": "60606",
+            "ll_last_refresh": "2025-12-23",
+            "sourceurl": "https://www.cookcountyassessor.com/pin/17162160090000",
+            "sqft": 128079,
+            "ll_gisacre": 2.95457,
+            "ll_gissqft": 128704,
+            "plss_township": "039N",
+            "plss_section": "Section 16",
+            "plss_range": "014E",
+            "path": "/us/il/cook/chicago/1357189",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
+            "ll_updated_at": "2026-07-25 12:23:11 -0400"
+      },
+      "demographics": null,
+      "curatedMetadata": {
+            "name": "Willis Tower",
+            "description": "Chicago's iconic skyscraper, formerly known as Sears Tower",
+            "type": "office",
+            "active": false
       }
 }
   }
 ]
+
+// Active lineup shown in the demo modal and sample portfolio
+export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = CURATED_DEMO_PROPERTY_POOL.filter(
+  property => property.curatedMetadata.active
+)
 
 // Helper functions
 export function getCuratedDemoProperty(apn: string): CuratedDemoProperty | undefined {
