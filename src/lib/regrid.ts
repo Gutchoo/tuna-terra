@@ -292,18 +292,21 @@ export class RegridService {
       return features.slice(0, limit).map((feature: {
         id?: string | number
         properties?: {
+          ll_uuid?: string
           fields?: {
             parcelnumb?: string
             address?: string
             scity?: string
             state2?: string
             szip5?: string
+            ll_uuid?: string
           }
         }
       }) => {
         const fields = feature.properties?.fields || {}
         return {
-          id: String(feature.id || ''),
+          // ll_uuid is Regrid's stable parcel ID; feature.id is not guaranteed stable
+          id: String(feature.properties?.ll_uuid || fields.ll_uuid || feature.id || ''),
           apn: fields.parcelnumb || '',
           address: fields.address || '',
           city: fields.scity || '',
@@ -349,7 +352,7 @@ export class RegridService {
   // Normalize property data from different Regrid response formats
   static async normalizeProperty(rawProperty: {
     id?: string | number
-    properties?: { fields?: Record<string, unknown> }
+    properties?: { fields?: Record<string, unknown>; ll_uuid?: string }
     fields?: Record<string, unknown>
     geometry?: unknown
   }): Promise<RegridProperty> {
@@ -384,7 +387,9 @@ export class RegridService {
     }
 
     return {
-      id: String(rawProperty.id || (fields as Record<string, unknown>).id || ''),
+      // Prefer ll_uuid: Regrid documents it as the only stable parcel identifier
+      // (the integer feature.id can change between data refreshes)
+      id: String(rawProperty.properties?.ll_uuid || (fields as Record<string, unknown>).ll_uuid || rawProperty.id || (fields as Record<string, unknown>).id || ''),
       apn: String((fields as Record<string, unknown>).parcelnumb || (fields as Record<string, unknown>).apn || ''),
       address: {
         line1: String((fields as Record<string, unknown>).address || ''),

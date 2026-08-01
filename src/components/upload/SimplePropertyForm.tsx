@@ -46,6 +46,18 @@ interface PlaceDetailsResponse {
   }
 }
 
+interface DisambiguationProperty {
+  id: string
+  apn: string
+  address: string
+  city: string
+  state: string
+  zip: string
+  assessed_value?: number
+  owner?: string
+  _fullData: unknown
+}
+
 const propertySchema = z.object({
   inputMode: z.enum(['address', 'apn']),
   address: z.string().optional(),
@@ -99,6 +111,7 @@ export function SimplePropertyForm({
 }: SimplePropertyFormProps) {
   const [inputMode, setInputMode] = useState<'address' | 'apn'>('address');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [multipleResults, setMultipleResults] = useState<DisambiguationProperty[] | null>(null);
 
   const {
     register,
@@ -242,7 +255,7 @@ export function SimplePropertyForm({
       } = {
         portfolio_id: portfolioId,
         address,
-        use_pro_lookup: false, // No external API lookup
+        use_pro_lookup: true, // Enrich with Regrid parcel data (counts against lookup limit)
       };
 
       // Add APN if in APN mode
@@ -260,13 +273,39 @@ export function SimplePropertyForm({
       if (data.lng !== undefined) propertyData.lng = data.lng;
       if (data.county) propertyData.county = data.county;
 
-      await createProperty.mutateAsync(propertyData);
+      const result = await createProperty.mutateAsync(propertyData);
+
+      // Multiple APN matches: show disambiguation list instead of finishing
+      if (result && 'multipleResults' in result && result.multipleResults) {
+        setMultipleResults(result.properties as DisambiguationProperty[]);
+        return;
+      }
 
       toast.success('Property added successfully');
       reset();
       if (onSuccess) onSuccess();
     } catch (error: unknown) {
       console.error('Error creating property:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add property');
+    }
+  };
+
+  const handleDisambiguationSelect = async (property: DisambiguationProperty) => {
+    try {
+      await createProperty.mutateAsync({
+        portfolio_id: portfolioId,
+        address: property.address,
+        apn: property.apn,
+        use_pro_lookup: false, // Data already fetched; don't consume another lookup
+        selectedPropertyData: property._fullData,
+      });
+
+      toast.success('Property added successfully');
+      setMultipleResults(null);
+      reset();
+      if (onSuccess) onSuccess();
+    } catch (error: unknown) {
+      console.error('Error creating property from selection:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to add property');
     }
   };
@@ -282,6 +321,51 @@ export function SimplePropertyForm({
       setShowSuggestions(false);
     }
   };
+
+  // Disambiguation view: multiple parcels matched the APN
+  if (multipleResults) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-sm font-medium">Multiple properties found</p>
+          <p className="text-sm text-muted-foreground">
+            Select the property you want to add:
+          </p>
+        </div>
+        <div className="space-y-2 max-h-72 overflow-auto">
+          {multipleResults.map((property) => (
+            <button
+              key={property.id}
+              type="button"
+              disabled={createProperty.isPending}
+              onClick={() => handleDisambiguationSelect(property)}
+              className="w-full rounded-md border p-3 text-left text-sm hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+            >
+              <div className="font-medium">
+                {property.address}, {property.city}, {property.state} {property.zip}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {property.owner && <span>Owner: {property.owner}</span>}
+                {property.assessed_value != null && (
+                  <span>{property.owner ? ' · ' : ''}Assessed: ${property.assessed_value.toLocaleString()}</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setMultipleResults(null)}
+            disabled={createProperty.isPending}
+          >
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
