@@ -1,5 +1,5 @@
 // Auto-generated curated demo properties from Regrid API
-// Generated on: 2025-09-23T04:26:54.226Z
+// Generated on: 2026-08-01T09:54:43.497Z
 
 import type { Property } from '@/lib/supabase'
 
@@ -21,7 +21,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '401173',
+    regrid_id: '64330692-0619-4943-b8d5-1fb0a699bf7a',
     apn: '1008350041',
     address: '338 5 AVENUE',
     city: 'NEW YORK',
@@ -76,7 +76,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_status: 'No',
     improvement_value: null,
     land_value: 220000000,
-    assessed_value: 1074685000,
+    assessed_value: 1283202000,
 
     // Extended details
     use_code: '05',
@@ -91,7 +91,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     lot_size_sqft: 97024,
 
     // Financial & tax data
-    tax_year: '2025',
+    tax_year: '2027',
     parcel_value_type: 'MARKET',
     sale_price: null,
 
@@ -101,8 +101,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2025-04-29',
-    regrid_updated_at: '2025-09-15 15:15:28 -0400',
+    last_refresh_date: '2026-04-14',
+    regrid_updated_at: '2026-07-25 13:03:01 -0400',
 
     // Owner mailing
     owner_mailing_address: '111 WEST 33RD STREET 12T',
@@ -115,7 +115,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "401173",
+      "id": "64330692-0619-4943-b8d5-1fb0a699bf7a",
       "apn": "1008350041",
       "address": {
             "line1": "338 5 AVENUE",
@@ -171,7 +171,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "zoning": "C6-4.5",
             "zoning_description": "General Central Commercial",
             "property_type": "",
-            "assessed_value": 1074685000,
+            "assessed_value": 1283202000,
             "land_value": 220000000,
             "last_sale_price": 49739616,
             "sale_date": "2019-04-03",
@@ -182,13 +182,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "subdivision": "",
             "num_stories": 102,
             "num_units": 513,
-            "tax_year": "2025",
+            "tax_year": "2027",
             "parcel_value_type": "MARKET",
             "census_tract": "36061007600",
             "census_block": "360610076001001",
             "qoz_tract": "",
-            "last_refresh_date": "2025-04-29",
-            "regrid_updated_at": "2025-09-15 15:15:28 -0400",
+            "last_refresh_date": "2026-04-14",
+            "regrid_updated_at": "2026-07-25 13:03:01 -0400",
             "owner_mailing_address": "111 WEST 33RD STREET 12T",
             "owner_mail_city": "NEW YORK",
             "owner_mail_state": "NY",
@@ -201,14 +201,16 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "usecode": "05",
             "structno": 1,
             "yearbuilt": 1931,
+            "year_built_effective_date": 2011,
             "numstories": 102,
             "numunits": 513,
             "parvaltype": "MARKET",
             "landval": 220000000,
-            "parval": 1074685000,
+            "parval": 1283202000,
             "saleprice": 49739616,
             "saledate": "2019-04-03",
-            "taxyear": "2025",
+            "taxyear": "2027",
+            "last_ownership_transfer_date": "2019-04-03",
             "owntype": "P",
             "mailadd": "111 WEST 33RD STREET 12T",
             "careof": "ESRT EMPIRE STATE BUILDING LL",
@@ -234,14 +236,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "qoz": "No",
             "census_blockgroup": "360610076001",
             "census_zcta": "10001",
-            "ll_last_refresh": "2025-04-29",
+            "ll_last_refresh": "2026-04-14",
             "sqft": 91351,
             "ll_gisacre": 2.22732,
             "ll_gissqft": 97024,
             "path": "/us/ny/new-york/manhattan/401173",
-            "ll_stable_id": "geometry",
+            "ll_stable_id": "parcelnumb",
             "ll_uuid": "64330692-0619-4943-b8d5-1fb0a699bf7a",
-            "ll_updated_at": "2025-09-15 15:15:28 -0400"
+            "ll_updated_at": "2026-07-25 13:03:01 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -260,7 +262,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '136644',
+    regrid_id: '18a4b8df-4593-4cce-b59b-0897d3865466',
     apn: '3720009',
     address: '415 MISSION ST',
     city: 'SAN FRANCISCO',
@@ -301,17 +303,17 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Property details
     year_built: 2018,
     owner: 'TRANSBAY TOWER LLC',
-    last_sale_price: 191816197,
-    sale_date: '2013-03-26',
+    last_sale_price: null,
+    sale_date: null,
     county: 'san-francisco',
     qoz_status: 'No',
-    improvement_value: 1680242604,
-    land_value: 231576507,
-    assessed_value: 1913672794,
+    improvement_value: 1713847455,
+    land_value: 236208037,
+    assessed_value: 1950055492,
 
     // Extended details
     use_code: null,
-    use_description: null,
+    use_description: 'Commercial',
     zoning: 'C-3-O(SD -1000-S-2',
     zoning_description: 'Commercial Downtown Office Special Development',
     num_stories: 63,
@@ -322,7 +324,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     lot_size_sqft: 50233,
 
     // Financial & tax data
-    tax_year: '2024',
+    tax_year: '2025',
     parcel_value_type: 'ASSESSED',
     sale_price: null,
 
@@ -332,11 +334,11 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2024-09-24',
-    regrid_updated_at: '2025-09-15 14:23:07 -0400',
+    last_refresh_date: '2026-04-28',
+    regrid_updated_at: '2026-07-25 11:52:13 -0400',
 
     // Owner mailing
-    owner_mailing_address: '4 EMBARCADERO LBBY LVL 1',
+    owner_mailing_address: '4 EMBARCADERO CTR LBBY',
     owner_mail_city: 'SAN FRANCISCO',
     owner_mail_state: 'CA',
     owner_mail_zip: '94111',
@@ -346,7 +348,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "136644",
+      "id": "18a4b8df-4593-4cce-b59b-0897d3865466",
       "apn": "3720009",
       "address": {
             "line1": "415 MISSION ST",
@@ -394,25 +396,24 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "zoning": "C-3-O(SD -1000-S-2",
             "zoning_description": "Commercial Downtown Office Special Development",
             "property_type": "",
-            "assessed_value": 1913672794,
-            "improvement_value": 1680242604,
-            "land_value": 231576507,
-            "last_sale_price": 191816197,
-            "sale_date": "2013-03-26",
+            "assessed_value": 1950055492,
+            "improvement_value": 1713847455,
+            "land_value": 236208037,
+            "sale_date": "",
             "county": "san-francisco",
             "qoz_status": "No",
             "use_code": "",
-            "use_description": "",
+            "use_description": "Commercial",
             "subdivision": "",
             "num_stories": 63,
-            "tax_year": "2024",
+            "tax_year": "2025",
             "parcel_value_type": "ASSESSED",
             "census_tract": "06075061501",
             "census_block": "060750615011004",
             "qoz_tract": "",
-            "last_refresh_date": "2024-09-24",
-            "regrid_updated_at": "2025-09-15 14:23:07 -0400",
-            "owner_mailing_address": "4 EMBARCADERO LBBY LVL 1",
+            "last_refresh_date": "2026-04-28",
+            "regrid_updated_at": "2026-07-25 11:52:13 -0400",
+            "owner_mailing_address": "4 EMBARCADERO CTR LBBY",
             "owner_mail_city": "SAN FRANCISCO",
             "owner_mail_state": "CA",
             "owner_mail_zip": "94111",
@@ -421,38 +422,35 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "geoid": "06075",
             "parcelnumb": "3720009",
             "parcelnumb_no_formatting": "3720009",
+            "account_number": "3720-009",
             "alt_parcelnumb1": "3720009",
+            "usedesc": "Commercial",
             "yearbuilt": 2018,
             "numstories": 63,
-            "numunits": 0,
-            "numrooms": 0,
             "parvaltype": "ASSESSED",
-            "improvval": 1680242604,
-            "landval": 231576507,
-            "parval": 1913672794,
-            "saleprice": 191816197,
-            "saledate": "2013-03-26",
-            "taxyear": "2024",
-            "unmodified_owner": "TRANSBAY TOWER LLC",
-            "mailadd": "4 EMBARCADERO LBBY LVL 1",
-            "careof": "MICHAEL YI",
+            "improvval": 1713847455,
+            "landval": 236208037,
+            "parval": 1950055492,
+            "taxyear": "2025",
+            "last_ownership_transfer_date": "2013-03-26",
+            "owner2": "MICHAEL YI",
+            "mailadd": "4 EMBARCADERO CTR LBBY",
             "mail_city": "SAN FRANCISCO",
             "mail_state2": "CA",
             "mail_zip": "94111",
-            "original_mailing_address": "{\"mailadd\":\"4 EMBARCADERO LBBY LVL 1\",\"mail_city\":\"SAN FRANCISCO\",\"mail_state2\":\"CA\",\"mail_zip\":\"94111\"}",
+            "original_mailing_address": "{\"mailadd\":\"4 EMBARCADERO CTR LBBY\",\"mail_city\":\"SAN FRANCISCO\",\"mail_state2\":\"CA\",\"mail_zip\":\"94111\"}",
             "address": "415 MISSION ST",
             "saddno": "415",
             "saddstr": "MISSION",
             "saddsttyp": "ST",
             "scity": "SAN FRANCISCO",
-            "original_address": "{\"address\":\" 0415 MISSION ST\",\"saddno\":\"101\",\"saddstr\":\"01ST\",\"saddsttyp\":\"ST\",\"sunit\":\" \",\"scity\":\"SAN FRANCISCO\"}",
+            "original_address": "{\"address\":\"415 MISSION ST\",\"saddno\":\"415\",\"saddstr\":\"MISSION\",\"saddsttyp\":\"ST\",\"scity\":\"SAN FRANCISCO\"}",
             "city": "downtown-northeast-neighborhoods-treasure-island",
             "state2": "CA",
             "szip": "94105-2533",
             "szip5": "94105",
             "address_source": "county;cass",
-            "book": "J626",
-            "page": "918",
+            "book": "25",
             "block": "3720",
             "lot": "9",
             "neighborhood_code": "09B",
@@ -461,15 +459,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "qoz": "No",
             "census_blockgroup": "060750615011",
             "census_zcta": "94105",
-            "ll_last_refresh": "2024-09-24",
-            "recrdareano": 1420430,
+            "ll_last_refresh": "2026-04-28",
+            "sqft": 1420430,
             "ll_gisacre": 1.15316,
             "ll_gissqft": 50233,
-            "reviseddate": "2021-06-04",
             "path": "/us/ca/san-francisco/downtown-northeast-neighborhoods-treasure-island/136644",
             "ll_stable_id": "parcelnumb",
             "ll_uuid": "18a4b8df-4593-4cce-b59b-0897d3865466",
-            "ll_updated_at": "2025-09-15 14:23:07 -0400"
+            "ll_updated_at": "2026-07-25 11:52:13 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -488,7 +485,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '242995',
+    regrid_id: '38c37221-6732-4bb1-95d7-26b4c2414599',
     apn: '2443-022-009',
     address: '500 S BUENA VISTA ST',
     city: 'BURBANK',
@@ -502,416 +499,168 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             [
                   [
                         [
-                              -118.3258005,
-                              34.154253
+                              -118.325808,
+                              34.1542865
                         ],
                         [
-                              -118.3257225,
-                              34.1541685
+                              -118.3257245,
+                              34.1542015
                         ],
                         [
-                              -118.323989,
-                              34.154568
+                              -118.3240015,
+                              34.1546055
                         ],
                         [
-                              -118.3237875,
-                              34.1545945
-                        ],
-                        [
-                              -118.3233175,
-                              34.1549085
-                        ],
-                        [
-                              -118.3222065,
-                              34.1556635
-                        ],
-                        [
-                              -118.3221955,
-                              34.155671
-                        ],
-                        [
-                              -118.322145,
-                              34.155705
-                        ],
-                        [
-                              -118.322101,
-                              34.155735
-                        ],
-                        [
-                              -118.3223105,
-                              34.156112
-                        ],
-                        [
-                              -118.322314,
-                              34.156112
-                        ],
-                        [
-                              -118.3223865,
-                              34.1561015
-                        ],
-                        [
-                              -118.3225255,
-                              34.1560815
-                        ],
-                        [
-                              -118.322755,
-                              34.1560365
-                        ],
-                        [
-                              -118.3230635,
-                              34.155949
-                        ],
-                        [
-                              -118.3231625,
-                              34.155905
-                        ],
-                        [
-                              -118.323316,
-                              34.155836
-                        ],
-                        [
-                              -118.3233905,
-                              34.155803
-                        ],
-                        [
-                              -118.3234615,
-                              34.1557705
-                        ],
-                        [
-                              -118.3235985,
-                              34.1557005
-                        ],
-                        [
-                              -118.323732,
-                              34.1556255
+                              -118.323978,
+                              34.154611
                         ],
                         [
                               -118.3237965,
-                              34.155585
+                              34.1546325
                         ],
                         [
-                              -118.3238605,
-                              34.1555445
+                              -118.3221145,
+                              34.155733
                         ],
                         [
-                              -118.3258005,
-                              34.154253
+                              -118.3222965,
+                              34.1561125
+                        ],
+                        [
+                              -118.3223295,
+                              34.1561085
+                        ],
+                        [
+                              -118.322442,
+                              34.1560935
+                        ],
+                        [
+                              -118.3224995,
+                              34.156086
+                        ],
+                        [
+                              -118.3226685,
+                              34.156058
+                        ],
+                        [
+                              -118.3228355,
+                              34.1560215
+                        ],
+                        [
+                              -118.323001,
+                              34.155977
+                        ],
+                        [
+                              -118.323164,
+                              34.1559245
+                        ],
+                        [
+                              -118.323324,
+                              34.155864
+                        ],
+                        [
+                              -118.323481,
+                              34.1557955
+                        ],
+                        [
+                              -118.3236345,
+                              34.1557195
+                        ],
+                        [
+                              -118.323784,
+                              34.1556365
+                        ],
+                        [
+                              -118.3239295,
+                              34.1555455
+                        ],
+                        [
+                              -118.325808,
+                              34.1542865
                         ]
                   ]
             ],
             [
                   [
                         [
-                              -118.324084,
-                              34.1558505
+                              -118.324137,
+                              34.1557595
                         ],
                         [
-                              -118.323984,
-                              34.1559085
+                              -118.324023,
+                              34.155833
                         ],
                         [
-                              -118.323933,
-                              34.155936
+                              -118.3239055,
+                              34.155902
                         ],
                         [
-                              -118.323856,
-                              34.1559755
+                              -118.3238425,
+                              34.1559365
                         ],
                         [
-                              -118.323778,
-                              34.156014
+                              -118.323672,
+                              34.156022
                         ],
                         [
-                              -118.3237235,
-                              34.156039
+                              -118.323498,
+                              34.1560995
                         ],
                         [
-                              -118.3236705,
-                              34.156063
+                              -118.3233205,
+                              34.156168
                         ],
                         [
-                              -118.3236165,
-                              34.1560855
+                              -118.3231395,
+                              34.1562275
                         ],
                         [
-                              -118.3235345,
-                              34.156119
-                        ],
-                        [
-                              -118.323451,
-                              34.15615
-                        ],
-                        [
-                              -118.323397,
-                              34.15617
-                        ],
-                        [
-                              -118.323312,
-                              34.156198
-                        ],
-                        [
-                              -118.323227,
-                              34.156225
-                        ],
-                        [
-                              -118.3231405,
-                              34.156249
-                        ],
-                        [
-                              -118.3230535,
-                              34.156272
-                        ],
-                        [
-                              -118.3229655,
-                              34.1562925
-                        ],
-                        [
-                              -118.3228765,
-                              34.1563115
-                        ],
-                        [
-                              -118.322718,
-                              34.15634
-                        ],
-                        [
-                              -118.322558,
-                              34.156363
-                        ],
-                        [
-                              -118.3225415,
-                              34.156379
-                        ],
-                        [
-                              -118.3225385,
-                              34.1563995
+                              -118.322956,
+                              34.1562785
                         ],
                         [
                               -118.32277,
-                              34.1568745
+                              34.15632
                         ],
                         [
-                              -118.3232665,
-                              34.157893
+                              -118.3225825,
+                              34.1563525
                         ],
                         [
-                              -118.3234465,
-                              34.1582735
+                              -118.322548,
+                              34.156373
                         ],
                         [
-                              -118.3239925,
-                              34.1594065
+                              -118.3225455,
+                              34.1564085
                         ],
                         [
-                              -118.323996,
-                              34.1594145
+                              -118.3239875,
+                              34.159412
                         ],
                         [
-                              -118.3240025,
-                              34.1594215
-                        ],
-                        [
-                              -118.324011,
-                              34.1594275
-                        ],
-                        [
-                              -118.3240225,
-                              34.1594315
-                        ],
-                        [
-                              -118.324031,
+                              -118.324014,
                               34.1594345
                         ],
                         [
-                              -118.3240425,
+                              -118.324052,
                               34.159435
                         ],
                         [
-                              -118.3240525,
-                              34.159435
+                              -118.326605,
+                              34.158583
                         ],
                         [
-                              -118.3240625,
-                              34.159432
-                        ],
-                        [
-                              -118.325307,
-                              34.1590205
-                        ],
-                        [
-                              -118.325657,
-                              34.1589025
-                        ],
-                        [
-                              -118.3262265,
-                              34.158712
-                        ],
-                        [
-                              -118.32689,
-                              34.158489
-                        ],
-                        [
-                              -118.3277,
-                              34.1582175
-                        ],
-                        [
-                              -118.3277945,
-                              34.1581855
-                        ],
-                        [
-                              -118.327836,
-                              34.158171
-                        ],
-                        [
-                              -118.327838,
-                              34.1581695
-                        ],
-                        [
-                              -118.32784,
-                              34.1581685
-                        ],
-                        [
-                              -118.3278425,
-                              34.158167
-                        ],
-                        [
-                              -118.327845,
+                              -118.3278535,
                               34.158166
                         ],
                         [
-                              -118.327846,
-                              34.158164
+                              -118.3278805,
+                              34.158144
                         ],
                         [
-                              -118.327847,
-                              34.158163
-                        ],
-                        [
-                              -118.3278485,
-                              34.158162
-                        ],
-                        [
-                              -118.3278495,
-                              34.158161
-                        ],
-                        [
-                              -118.327851,
-                              34.15816
-                        ],
-                        [
-                              -118.327852,
-                              34.1581585
-                        ],
-                        [
-                              -118.327853,
-                              34.1581575
-                        ],
-                        [
-                              -118.3278545,
-                              34.158156
-                        ],
-                        [
-                              -118.3278555,
-                              34.158155
-                        ],
-                        [
-                              -118.3278565,
-                              34.1581535
-                        ],
-                        [
-                              -118.3278575,
-                              34.1581525
-                        ],
-                        [
-                              -118.3278585,
-                              34.158151
-                        ],
-                        [
-                              -118.3278595,
-                              34.15815
-                        ],
-                        [
-                              -118.3278605,
-                              34.1581485
-                        ],
-                        [
-                              -118.327862,
-                              34.1581475
-                        ],
-                        [
-                              -118.3278625,
-                              34.158146
-                        ],
-                        [
-                              -118.3278635,
-                              34.1581445
-                        ],
-                        [
-                              -118.3278645,
-                              34.1581435
-                        ],
-                        [
-                              -118.3278655,
-                              34.158142
-                        ],
-                        [
-                              -118.3278665,
-                              34.1581405
-                        ],
-                        [
-                              -118.327867,
-                              34.1581395
-                        ],
-                        [
-                              -118.327868,
-                              34.158138
-                        ],
-                        [
-                              -118.327869,
-                              34.1581365
-                        ],
-                        [
-                              -118.3278695,
-                              34.158135
-                        ],
-                        [
-                              -118.3278705,
-                              34.1581335
-                        ],
-                        [
-                              -118.327871,
-                              34.158132
-                        ],
-                        [
-                              -118.327872,
-                              34.158131
-                        ],
-                        [
-                              -118.3278725,
-                              34.1581295
-                        ],
-                        [
-                              -118.327875,
-                              34.1581135
-                        ],
-                        [
-                              -118.3278735,
-                              34.1580975
-                        ],
-                        [
-                              -118.3278645,
-                              34.1580795
-                        ],
-                        [
-                              -118.3278625,
-                              34.1580745
-                        ],
-                        [
-                              -118.3277935,
-                              34.1579345
-                        ],
-                        [
-                              -118.327767,
-                              34.157881
+                              -118.327881,
+                              34.1581125
                         ],
                         [
                               -118.3268145,
@@ -934,71 +683,27 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                               34.1553105
                         ],
                         [
-                              -118.326101,
-                              34.1544965
+                              -118.3261065,
+                              34.154508
                         ],
                         [
-                              -118.3260875,
-                              34.154484
+                              -118.326073,
+                              34.1544835
                         ],
                         [
-                              -118.326069,
-                              34.154478
+                              -118.3260295,
+                              34.1544915
                         ],
                         [
-                              -118.3260545,
-                              34.154478
-                        ],
-                        [
-                              -118.326041,
-                              34.154482
-                        ],
-                        [
-                              -118.3258995,
-                              34.1545815
-                        ],
-                        [
-                              -118.32508,
-                              34.1551275
-                        ],
-                        [
-                              -118.3245445,
-                              34.1555225
-                        ],
-                        [
-                              -118.3245015,
-                              34.155558
-                        ],
-                        [
-                              -118.3244355,
-                              34.1556105
-                        ],
-                        [
-                              -118.3243685,
-                              34.155662
-                        ],
-                        [
-                              -118.3242995,
-                              34.155711
-                        ],
-                        [
-                              -118.32423,
+                              -118.324137,
                               34.1557595
-                        ],
-                        [
-                              -118.324182,
-                              34.1557905
-                        ],
-                        [
-                              -118.324084,
-                              34.1558505
                         ]
                   ]
             ]
       ]
 },
     lat: 34.156873,
-    lng: -118.325028,
+    lng: -118.325024,
 
     // Property details
     year_built: 1938,
@@ -1007,9 +712,9 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     sale_date: null,
     county: 'los-angeles',
     qoz_status: 'No',
-    improvement_value: 494918190,
-    land_value: 11644187,
-    assessed_value: 506562377,
+    improvement_value: 504816553,
+    land_value: 11877070,
+    assessed_value: 516693623,
 
     // Extended details
     use_code: '6530',
@@ -1020,11 +725,11 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     num_units: null,
     num_rooms: null,
     subdivision: null,
-    lot_size_acres: 42.78993,
-    lot_size_sqft: 1863968,
+    lot_size_acres: 42.98908,
+    lot_size_sqft: 1872643,
 
     // Financial & tax data
-    tax_year: '2025',
+    tax_year: '2026',
     parcel_value_type: 'GROSS ASSESSED',
     sale_price: null,
 
@@ -1034,8 +739,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2025-06-10',
-    regrid_updated_at: '2025-09-15 14:21:32 -0400',
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 11:50:56 -0400',
 
     // Owner mailing
     owner_mailing_address: 'PO BOX 313',
@@ -1048,7 +753,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "242995",
+      "id": "38c37221-6732-4bb1-95d7-26b4c2414599",
       "apn": "2443-022-009",
       "address": {
             "line1": "500 S BUENA VISTA ST",
@@ -1063,416 +768,168 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                   [
                         [
                               [
-                                    -118.3258005,
-                                    34.154253
+                                    -118.325808,
+                                    34.1542865
                               ],
                               [
-                                    -118.3257225,
-                                    34.1541685
+                                    -118.3257245,
+                                    34.1542015
                               ],
                               [
-                                    -118.323989,
-                                    34.154568
+                                    -118.3240015,
+                                    34.1546055
                               ],
                               [
-                                    -118.3237875,
-                                    34.1545945
-                              ],
-                              [
-                                    -118.3233175,
-                                    34.1549085
-                              ],
-                              [
-                                    -118.3222065,
-                                    34.1556635
-                              ],
-                              [
-                                    -118.3221955,
-                                    34.155671
-                              ],
-                              [
-                                    -118.322145,
-                                    34.155705
-                              ],
-                              [
-                                    -118.322101,
-                                    34.155735
-                              ],
-                              [
-                                    -118.3223105,
-                                    34.156112
-                              ],
-                              [
-                                    -118.322314,
-                                    34.156112
-                              ],
-                              [
-                                    -118.3223865,
-                                    34.1561015
-                              ],
-                              [
-                                    -118.3225255,
-                                    34.1560815
-                              ],
-                              [
-                                    -118.322755,
-                                    34.1560365
-                              ],
-                              [
-                                    -118.3230635,
-                                    34.155949
-                              ],
-                              [
-                                    -118.3231625,
-                                    34.155905
-                              ],
-                              [
-                                    -118.323316,
-                                    34.155836
-                              ],
-                              [
-                                    -118.3233905,
-                                    34.155803
-                              ],
-                              [
-                                    -118.3234615,
-                                    34.1557705
-                              ],
-                              [
-                                    -118.3235985,
-                                    34.1557005
-                              ],
-                              [
-                                    -118.323732,
-                                    34.1556255
+                                    -118.323978,
+                                    34.154611
                               ],
                               [
                                     -118.3237965,
-                                    34.155585
+                                    34.1546325
                               ],
                               [
-                                    -118.3238605,
-                                    34.1555445
+                                    -118.3221145,
+                                    34.155733
                               ],
                               [
-                                    -118.3258005,
-                                    34.154253
+                                    -118.3222965,
+                                    34.1561125
+                              ],
+                              [
+                                    -118.3223295,
+                                    34.1561085
+                              ],
+                              [
+                                    -118.322442,
+                                    34.1560935
+                              ],
+                              [
+                                    -118.3224995,
+                                    34.156086
+                              ],
+                              [
+                                    -118.3226685,
+                                    34.156058
+                              ],
+                              [
+                                    -118.3228355,
+                                    34.1560215
+                              ],
+                              [
+                                    -118.323001,
+                                    34.155977
+                              ],
+                              [
+                                    -118.323164,
+                                    34.1559245
+                              ],
+                              [
+                                    -118.323324,
+                                    34.155864
+                              ],
+                              [
+                                    -118.323481,
+                                    34.1557955
+                              ],
+                              [
+                                    -118.3236345,
+                                    34.1557195
+                              ],
+                              [
+                                    -118.323784,
+                                    34.1556365
+                              ],
+                              [
+                                    -118.3239295,
+                                    34.1555455
+                              ],
+                              [
+                                    -118.325808,
+                                    34.1542865
                               ]
                         ]
                   ],
                   [
                         [
                               [
-                                    -118.324084,
-                                    34.1558505
+                                    -118.324137,
+                                    34.1557595
                               ],
                               [
-                                    -118.323984,
-                                    34.1559085
+                                    -118.324023,
+                                    34.155833
                               ],
                               [
-                                    -118.323933,
-                                    34.155936
+                                    -118.3239055,
+                                    34.155902
                               ],
                               [
-                                    -118.323856,
-                                    34.1559755
+                                    -118.3238425,
+                                    34.1559365
                               ],
                               [
-                                    -118.323778,
-                                    34.156014
+                                    -118.323672,
+                                    34.156022
                               ],
                               [
-                                    -118.3237235,
-                                    34.156039
+                                    -118.323498,
+                                    34.1560995
                               ],
                               [
-                                    -118.3236705,
-                                    34.156063
+                                    -118.3233205,
+                                    34.156168
                               ],
                               [
-                                    -118.3236165,
-                                    34.1560855
+                                    -118.3231395,
+                                    34.1562275
                               ],
                               [
-                                    -118.3235345,
-                                    34.156119
-                              ],
-                              [
-                                    -118.323451,
-                                    34.15615
-                              ],
-                              [
-                                    -118.323397,
-                                    34.15617
-                              ],
-                              [
-                                    -118.323312,
-                                    34.156198
-                              ],
-                              [
-                                    -118.323227,
-                                    34.156225
-                              ],
-                              [
-                                    -118.3231405,
-                                    34.156249
-                              ],
-                              [
-                                    -118.3230535,
-                                    34.156272
-                              ],
-                              [
-                                    -118.3229655,
-                                    34.1562925
-                              ],
-                              [
-                                    -118.3228765,
-                                    34.1563115
-                              ],
-                              [
-                                    -118.322718,
-                                    34.15634
-                              ],
-                              [
-                                    -118.322558,
-                                    34.156363
-                              ],
-                              [
-                                    -118.3225415,
-                                    34.156379
-                              ],
-                              [
-                                    -118.3225385,
-                                    34.1563995
+                                    -118.322956,
+                                    34.1562785
                               ],
                               [
                                     -118.32277,
-                                    34.1568745
+                                    34.15632
                               ],
                               [
-                                    -118.3232665,
-                                    34.157893
+                                    -118.3225825,
+                                    34.1563525
                               ],
                               [
-                                    -118.3234465,
-                                    34.1582735
+                                    -118.322548,
+                                    34.156373
                               ],
                               [
-                                    -118.3239925,
-                                    34.1594065
+                                    -118.3225455,
+                                    34.1564085
                               ],
                               [
-                                    -118.323996,
-                                    34.1594145
+                                    -118.3239875,
+                                    34.159412
                               ],
                               [
-                                    -118.3240025,
-                                    34.1594215
-                              ],
-                              [
-                                    -118.324011,
-                                    34.1594275
-                              ],
-                              [
-                                    -118.3240225,
-                                    34.1594315
-                              ],
-                              [
-                                    -118.324031,
+                                    -118.324014,
                                     34.1594345
                               ],
                               [
-                                    -118.3240425,
+                                    -118.324052,
                                     34.159435
                               ],
                               [
-                                    -118.3240525,
-                                    34.159435
+                                    -118.326605,
+                                    34.158583
                               ],
                               [
-                                    -118.3240625,
-                                    34.159432
-                              ],
-                              [
-                                    -118.325307,
-                                    34.1590205
-                              ],
-                              [
-                                    -118.325657,
-                                    34.1589025
-                              ],
-                              [
-                                    -118.3262265,
-                                    34.158712
-                              ],
-                              [
-                                    -118.32689,
-                                    34.158489
-                              ],
-                              [
-                                    -118.3277,
-                                    34.1582175
-                              ],
-                              [
-                                    -118.3277945,
-                                    34.1581855
-                              ],
-                              [
-                                    -118.327836,
-                                    34.158171
-                              ],
-                              [
-                                    -118.327838,
-                                    34.1581695
-                              ],
-                              [
-                                    -118.32784,
-                                    34.1581685
-                              ],
-                              [
-                                    -118.3278425,
-                                    34.158167
-                              ],
-                              [
-                                    -118.327845,
+                                    -118.3278535,
                                     34.158166
                               ],
                               [
-                                    -118.327846,
-                                    34.158164
+                                    -118.3278805,
+                                    34.158144
                               ],
                               [
-                                    -118.327847,
-                                    34.158163
-                              ],
-                              [
-                                    -118.3278485,
-                                    34.158162
-                              ],
-                              [
-                                    -118.3278495,
-                                    34.158161
-                              ],
-                              [
-                                    -118.327851,
-                                    34.15816
-                              ],
-                              [
-                                    -118.327852,
-                                    34.1581585
-                              ],
-                              [
-                                    -118.327853,
-                                    34.1581575
-                              ],
-                              [
-                                    -118.3278545,
-                                    34.158156
-                              ],
-                              [
-                                    -118.3278555,
-                                    34.158155
-                              ],
-                              [
-                                    -118.3278565,
-                                    34.1581535
-                              ],
-                              [
-                                    -118.3278575,
-                                    34.1581525
-                              ],
-                              [
-                                    -118.3278585,
-                                    34.158151
-                              ],
-                              [
-                                    -118.3278595,
-                                    34.15815
-                              ],
-                              [
-                                    -118.3278605,
-                                    34.1581485
-                              ],
-                              [
-                                    -118.327862,
-                                    34.1581475
-                              ],
-                              [
-                                    -118.3278625,
-                                    34.158146
-                              ],
-                              [
-                                    -118.3278635,
-                                    34.1581445
-                              ],
-                              [
-                                    -118.3278645,
-                                    34.1581435
-                              ],
-                              [
-                                    -118.3278655,
-                                    34.158142
-                              ],
-                              [
-                                    -118.3278665,
-                                    34.1581405
-                              ],
-                              [
-                                    -118.327867,
-                                    34.1581395
-                              ],
-                              [
-                                    -118.327868,
-                                    34.158138
-                              ],
-                              [
-                                    -118.327869,
-                                    34.1581365
-                              ],
-                              [
-                                    -118.3278695,
-                                    34.158135
-                              ],
-                              [
-                                    -118.3278705,
-                                    34.1581335
-                              ],
-                              [
-                                    -118.327871,
-                                    34.158132
-                              ],
-                              [
-                                    -118.327872,
-                                    34.158131
-                              ],
-                              [
-                                    -118.3278725,
-                                    34.1581295
-                              ],
-                              [
-                                    -118.327875,
-                                    34.1581135
-                              ],
-                              [
-                                    -118.3278735,
-                                    34.1580975
-                              ],
-                              [
-                                    -118.3278645,
-                                    34.1580795
-                              ],
-                              [
-                                    -118.3278625,
-                                    34.1580745
-                              ],
-                              [
-                                    -118.3277935,
-                                    34.1579345
-                              ],
-                              [
-                                    -118.327767,
-                                    34.157881
+                                    -118.327881,
+                                    34.1581125
                               ],
                               [
                                     -118.3268145,
@@ -1495,64 +952,20 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                                     34.1553105
                               ],
                               [
-                                    -118.326101,
-                                    34.1544965
+                                    -118.3261065,
+                                    34.154508
                               ],
                               [
-                                    -118.3260875,
-                                    34.154484
+                                    -118.326073,
+                                    34.1544835
                               ],
                               [
-                                    -118.326069,
-                                    34.154478
+                                    -118.3260295,
+                                    34.1544915
                               ],
                               [
-                                    -118.3260545,
-                                    34.154478
-                              ],
-                              [
-                                    -118.326041,
-                                    34.154482
-                              ],
-                              [
-                                    -118.3258995,
-                                    34.1545815
-                              ],
-                              [
-                                    -118.32508,
-                                    34.1551275
-                              ],
-                              [
-                                    -118.3245445,
-                                    34.1555225
-                              ],
-                              [
-                                    -118.3245015,
-                                    34.155558
-                              ],
-                              [
-                                    -118.3244355,
-                                    34.1556105
-                              ],
-                              [
-                                    -118.3243685,
-                                    34.155662
-                              ],
-                              [
-                                    -118.3242995,
-                                    34.155711
-                              ],
-                              [
-                                    -118.32423,
+                                    -118.324137,
                                     34.1557595
-                              ],
-                              [
-                                    -118.324182,
-                                    34.1557905
-                              ],
-                              [
-                                    -118.324084,
-                                    34.1558505
                               ]
                         ]
                   ]
@@ -1560,19 +973,19 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       },
       "centroid": {
             "lat": 34.156873,
-            "lng": -118.325028
+            "lng": -118.325024
       },
       "properties": {
             "owner": "DISNEY,WALT PRODUCTIONS INC",
-            "lot_size_sqft": 1863968,
-            "lot_acres": 42.78993,
+            "lot_size_sqft": 1872643,
+            "lot_acres": 42.98908,
             "year_built": 1938,
             "zoning": "PD",
             "zoning_description": "Planned Development",
             "property_type": "",
-            "assessed_value": 506562377,
-            "improvement_value": 494918190,
-            "land_value": 11644187,
+            "assessed_value": 516693623,
+            "improvement_value": 504816553,
+            "land_value": 11877070,
             "sale_date": "",
             "county": "los-angeles",
             "qoz_status": "No",
@@ -1580,13 +993,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "use_description": "Recreational - Athletic & Amusement Facilities",
             "subdivision": "",
             "num_stories": 1,
-            "tax_year": "2025",
+            "tax_year": "2026",
             "parcel_value_type": "GROSS ASSESSED",
             "census_tract": "06037311700",
             "census_block": "060373117006011",
             "qoz_tract": "",
-            "last_refresh_date": "2025-06-10",
-            "regrid_updated_at": "2025-09-15 14:21:32 -0400",
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
             "owner_mailing_address": "PO BOX 313",
             "owner_mail_city": "GLENDALE",
             "owner_mail_state": "CA",
@@ -1602,12 +1015,11 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "numstories": 1,
             "numunits": 0,
             "parvaltype": "GROSS ASSESSED",
-            "improvval": 494918190,
-            "landval": 11644187,
-            "parval": 506562377,
-            "taxyear": "2025",
+            "improvval": 504816553,
+            "landval": 11877070,
+            "parval": 516693623,
+            "taxyear": "2026",
             "mailadd": "PO BOX 313",
-            "mail_address2": "0",
             "mail_addno": "313",
             "mail_addstr": "PO BOX",
             "mail_city": "GLENDALE",
@@ -1628,21 +1040,21 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "address_source": "county;cass",
             "legaldesc": "M R 43-47-59 LAND DESC IN DOC 1866538, 990930 POR OF BLK 66",
             "lat": "34.156873",
-            "lon": "-118.325028",
+            "lon": "-118.325024",
             "qoz": "No",
             "census_blockgroup": "060373117006",
             "census_zcta": "91505",
-            "ll_last_refresh": "2025-06-10",
+            "ll_last_refresh": "2026-06-24",
             "recrdareano": 12800,
-            "ll_gisacre": 42.78993,
-            "ll_gissqft": 1863968,
+            "ll_gisacre": 42.98908,
+            "ll_gissqft": 1872643,
             "plss_township": "001N",
             "plss_section": "Section 00",
             "plss_range": "014W",
             "path": "/us/ca/los-angeles/san-fernando-valley/242995",
             "ll_stable_id": "parcelnumb",
             "ll_uuid": "38c37221-6732-4bb1-95d7-26b4c2414599",
-            "ll_updated_at": "2025-09-15 14:21:32 -0400"
+            "ll_updated_at": "2026-07-25 11:50:56 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -1661,9 +1073,9 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '8392',
+    regrid_id: '0654fd82-1e13-49ba-a58d-afefc919cbe3',
     apn: '31606062',
-    address: '10600 N TANTAU AV',
+    address: '10600 S TANTAU AVE',
     city: 'CUPERTINO',
     state: 'CA',
     zip_code: '95014',
@@ -1674,322 +1086,322 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "coordinates": [
             [
                   [
-                        -122.0046855,
-                        37.3336935
+                        -122.0046985,
+                        37.3336985
                   ],
                   [
-                        -122.004687,
-                        37.333872
+                        -122.0047,
+                        37.333877
                   ],
                   [
-                        -122.0046885,
-                        37.3340695
+                        -122.0047015,
+                        37.3340745
                   ],
                   [
-                        -122.005293,
-                        37.3340685
+                        -122.005306,
+                        37.3340735
                   ],
                   [
-                        -122.0053175,
-                        37.3339345
+                        -122.0053305,
+                        37.3339395
                   ],
                   [
-                        -122.0053345,
-                        37.333868
+                        -122.0053475,
+                        37.333873
                   ],
                   [
-                        -122.005355,
-                        37.3338025
+                        -122.005368,
+                        37.3338075
                   ],
                   [
-                        -122.0053785,
-                        37.3337375
+                        -122.0053915,
+                        37.3337425
                   ],
                   [
-                        -122.005405,
-                        37.333673
+                        -122.005418,
+                        37.333678
                   ],
                   [
-                        -122.0054345,
-                        37.3336095
+                        -122.0054475,
+                        37.3336145
                   ],
                   [
-                        -122.005467,
-                        37.333547
+                        -122.00548,
+                        37.333552
                   ],
                   [
-                        -122.0055025,
-                        37.3334855
+                        -122.005516,
+                        37.3334905
                   ],
                   [
-                        -122.005561,
-                        37.333381
-                  ],
-                  [
-                        -122.0055865,
-                        37.3333275
-                  ],
-                  [
-                        -122.0056095,
-                        37.3332735
-                  ],
-                  [
-                        -122.0056305,
-                        37.3332185
-                  ],
-                  [
-                        -122.005649,
-                        37.3331635
-                  ],
-                  [
-                        -122.0056645,
-                        37.3331075
-                  ],
-                  [
-                        -122.0056905,
-                        37.332986
-                  ],
-                  [
-                        -122.005699,
-                        37.3329245
-                  ],
-                  [
-                        -122.0057045,
-                        37.332863
-                  ],
-                  [
-                        -122.0057075,
-                        37.332801
-                  ],
-                  [
-                        -122.0057075,
-                        37.332781
-                  ],
-                  [
-                        -122.0057125,
-                        37.3325175
-                  ],
-                  [
-                        -122.0057125,
-                        37.332508
-                  ],
-                  [
-                        -122.005712,
-                        37.332503
-                  ],
-                  [
-                        -122.0057115,
-                        37.3324985
-                  ],
-                  [
-                        -122.0057105,
-                        37.3324935
-                  ],
-                  [
-                        -122.0057095,
-                        37.3324885
-                  ],
-                  [
-                        -122.005708,
-                        37.332484
-                  ],
-                  [
-                        -122.0057065,
-                        37.3324795
-                  ],
-                  [
-                        -122.005705,
-                        37.3324745
-                  ],
-                  [
-                        -122.005703,
-                        37.33247
-                  ],
-                  [
-                        -122.005701,
-                        37.3324655
-                  ],
-                  [
-                        -122.0056985,
-                        37.332461
-                  ],
-                  [
-                        -122.005696,
-                        37.3324565
-                  ],
-                  [
-                        -122.0056935,
-                        37.332452
-                  ],
-                  [
-                        -122.0056905,
-                        37.332448
-                  ],
-                  [
-                        -122.0056875,
-                        37.332444
-                  ],
-                  [
-                        -122.005684,
-                        37.3324395
-                  ],
-                  [
-                        -122.0056805,
-                        37.3324355
-                  ],
-                  [
-                        -122.005677,
-                        37.332432
-                  ],
-                  [
-                        -122.005673,
-                        37.332428
-                  ],
-                  [
-                        -122.005669,
-                        37.3324245
-                  ],
-                  [
-                        -122.005665,
-                        37.332421
-                  ],
-                  [
-                        -122.005661,
-                        37.3324175
-                  ],
-                  [
-                        -122.0056565,
-                        37.332414
-                  ],
-                  [
-                        -122.005652,
-                        37.332411
-                  ],
-                  [
-                        -122.005647,
-                        37.3324075
-                  ],
-                  [
-                        -122.0056425,
-                        37.332405
-                  ],
-                  [
-                        -122.0056375,
-                        37.332402
-                  ],
-                  [
-                        -122.0056325,
-                        37.3323995
-                  ],
-                  [
-                        -122.005627,
-                        37.332397
-                  ],
-                  [
-                        -122.005622,
-                        37.3323945
-                  ],
-                  [
-                        -122.0056165,
-                        37.3323925
-                  ],
-                  [
-                        -122.005611,
-                        37.33239
-                  ],
-                  [
-                        -122.0056055,
-                        37.3323885
+                        -122.005574,
+                        37.333386
                   ],
                   [
                         -122.0055995,
-                        37.3323865
+                        37.3333325
                   ],
                   [
-                        -122.005594,
+                        -122.005623,
+                        37.3332785
+                  ],
+                  [
+                        -122.0056435,
+                        37.3332235
+                  ],
+                  [
+                        -122.005662,
+                        37.3331685
+                  ],
+                  [
+                        -122.005678,
+                        37.3331125
+                  ],
+                  [
+                        -122.0057035,
+                        37.332991
+                  ],
+                  [
+                        -122.005712,
+                        37.3329295
+                  ],
+                  [
+                        -122.0057175,
+                        37.332868
+                  ],
+                  [
+                        -122.0057205,
+                        37.332806
+                  ],
+                  [
+                        -122.005721,
+                        37.332786
+                  ],
+                  [
+                        -122.0057255,
+                        37.3325225
+                  ],
+                  [
+                        -122.0057255,
+                        37.332513
+                  ],
+                  [
+                        -122.005725,
+                        37.332508
+                  ],
+                  [
+                        -122.0057245,
+                        37.332503
+                  ],
+                  [
+                        -122.0057235,
+                        37.3324985
+                  ],
+                  [
+                        -122.0057225,
+                        37.3324935
+                  ],
+                  [
+                        -122.005721,
+                        37.332489
+                  ],
+                  [
+                        -122.0057195,
+                        37.332484
+                  ],
+                  [
+                        -122.005718,
+                        37.3324795
+                  ],
+                  [
+                        -122.005716,
+                        37.332475
+                  ],
+                  [
+                        -122.005714,
+                        37.3324705
+                  ],
+                  [
+                        -122.0057115,
+                        37.332466
+                  ],
+                  [
+                        -122.005709,
+                        37.3324615
+                  ],
+                  [
+                        -122.0057065,
+                        37.332457
+                  ],
+                  [
+                        -122.0057035,
+                        37.332453
+                  ],
+                  [
+                        -122.0057005,
+                        37.3324485
+                  ],
+                  [
+                        -122.005697,
+                        37.3324445
+                  ],
+                  [
+                        -122.0056935,
+                        37.3324405
+                  ],
+                  [
+                        -122.00569,
+                        37.332437
+                  ],
+                  [
+                        -122.0056865,
+                        37.332433
+                  ],
+                  [
+                        -122.0056825,
+                        37.3324295
+                  ],
+                  [
+                        -122.005678,
+                        37.3324255
+                  ],
+                  [
+                        -122.005674,
+                        37.3324225
+                  ],
+                  [
+                        -122.0056695,
+                        37.332419
+                  ],
+                  [
+                        -122.005665,
+                        37.3324155
+                  ],
+                  [
+                        -122.0056605,
+                        37.3324125
+                  ],
+                  [
+                        -122.0056555,
+                        37.3324095
+                  ],
+                  [
+                        -122.0056505,
+                        37.332407
+                  ],
+                  [
+                        -122.0056455,
+                        37.3324045
+                  ],
+                  [
+                        -122.00564,
+                        37.332402
+                  ],
+                  [
+                        -122.005635,
+                        37.3323995
+                  ],
+                  [
+                        -122.0056295,
+                        37.332397
+                  ],
+                  [
+                        -122.005624,
+                        37.332395
+                  ],
+                  [
+                        -122.0056185,
+                        37.332393
+                  ],
+                  [
+                        -122.005613,
+                        37.3323915
+                  ],
+                  [
+                        -122.005607,
+                        37.33239
+                  ],
+                  [
+                        -122.005601,
+                        37.3323885
+                  ],
+                  [
+                        -122.0055955,
+                        37.332387
+                  ],
+                  [
+                        -122.0055895,
+                        37.332386
+                  ],
+                  [
+                        -122.0055835,
                         37.332385
                   ],
                   [
-                        -122.005588,
+                        -122.0055775,
+                        37.3323845
+                  ],
+                  [
+                        -122.0055715,
+                        37.332384
+                  ],
+                  [
+                        -122.0055655,
                         37.3323835
                   ],
                   [
-                        -122.005582,
-                        37.3323825
+                        -122.0055595,
+                        37.332383
                   ],
                   [
-                        -122.0055765,
-                        37.332381
+                        -122.0055535,
+                        37.332383
                   ],
                   [
-                        -122.0055705,
-                        37.3323805
+                        -122.0046865,
+                        37.3323745
                   ],
                   [
-                        -122.0055645,
-                        37.3323795
+                        -122.004689,
+                        37.3326325
                   ],
                   [
-                        -122.0055585,
-                        37.332379
+                        -122.0046905,
+                        37.332788
                   ],
                   [
-                        -122.0055525,
-                        37.3323785
+                        -122.0046905,
+                        37.332811
                   ],
                   [
-                        -122.005546,
-                        37.3323785
+                        -122.004692,
+                        37.3329895
                   ],
                   [
-                        -122.00554,
-                        37.332378
+                        -122.004693,
+                        37.3331145
                   ],
                   [
-                        -122.0046735,
-                        37.3323695
+                        -122.0046935,
+                        37.3331685
                   ],
                   [
-                        -122.004676,
-                        37.3326275
+                        -122.0046955,
+                        37.333347
                   ],
                   [
-                        -122.004677,
-                        37.332783
+                        -122.004697,
+                        37.3335255
                   ],
                   [
-                        -122.0046775,
-                        37.3328065
-                  ],
-                  [
-                        -122.004679,
-                        37.332985
-                  ],
-                  [
-                        -122.00468,
-                        37.3331095
-                  ],
-                  [
-                        -122.0046805,
-                        37.3331635
-                  ],
-                  [
-                        -122.004682,
-                        37.333342
-                  ],
-                  [
-                        -122.0046835,
-                        37.3335205
-                  ],
-                  [
-                        -122.0046855,
-                        37.3336935
+                        -122.0046985,
+                        37.3336985
                   ]
             ]
       ]
 },
-    lat: 37.333143,
-    lng: -122.005134,
+    lat: 37.333148,
+    lng: -122.005147,
 
     // Property details
     year_built: 2017,
@@ -1998,21 +1410,21 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     sale_date: '2013-10-15',
     county: 'santa-clara',
     qoz_status: 'No',
-    improvement_value: 15880527,
-    land_value: 18748497,
-    assessed_value: 34629024,
+    improvement_value: 16198137,
+    land_value: 19123466,
+    assessed_value: 35321603,
 
     // Extended details
-    use_code: '58',
-    use_description: 'Retail Uses',
+    use_code: null,
+    use_description: null,
     zoning: 'P(MP',
     zoning_description: 'Planned Development Industrial Park',
     num_stories: 2,
     num_units: 1,
     num_rooms: null,
     subdivision: null,
-    lot_size_acres: 3.62907,
-    lot_size_sqft: 158086,
+    lot_size_acres: 3.62906,
+    lot_size_sqft: 158085,
 
     // Financial & tax data
     tax_year: null,
@@ -2025,8 +1437,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2024-12-17',
-    regrid_updated_at: '2025-09-15 14:26:02 -0400',
+    last_refresh_date: '2026-05-27',
+    regrid_updated_at: '2026-07-25 11:54:06 -0400',
 
     // Owner mailing
     owner_mailing_address: '1 INFINITE LOOP',
@@ -2039,10 +1451,10 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "8392",
+      "id": "0654fd82-1e13-49ba-a58d-afefc919cbe3",
       "apn": "31606062",
       "address": {
-            "line1": "10600 N TANTAU AV",
+            "line1": "10600 S TANTAU AVE",
             "line2": "",
             "city": "CUPERTINO",
             "state": "CA",
@@ -2053,340 +1465,340 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "coordinates": [
                   [
                         [
-                              -122.0046855,
-                              37.3336935
+                              -122.0046985,
+                              37.3336985
                         ],
                         [
-                              -122.004687,
-                              37.333872
+                              -122.0047,
+                              37.333877
                         ],
                         [
-                              -122.0046885,
-                              37.3340695
+                              -122.0047015,
+                              37.3340745
                         ],
                         [
-                              -122.005293,
-                              37.3340685
+                              -122.005306,
+                              37.3340735
                         ],
                         [
-                              -122.0053175,
-                              37.3339345
+                              -122.0053305,
+                              37.3339395
                         ],
                         [
-                              -122.0053345,
-                              37.333868
+                              -122.0053475,
+                              37.333873
                         ],
                         [
-                              -122.005355,
-                              37.3338025
+                              -122.005368,
+                              37.3338075
                         ],
                         [
-                              -122.0053785,
-                              37.3337375
+                              -122.0053915,
+                              37.3337425
                         ],
                         [
-                              -122.005405,
-                              37.333673
+                              -122.005418,
+                              37.333678
                         ],
                         [
-                              -122.0054345,
-                              37.3336095
+                              -122.0054475,
+                              37.3336145
                         ],
                         [
-                              -122.005467,
-                              37.333547
+                              -122.00548,
+                              37.333552
                         ],
                         [
-                              -122.0055025,
-                              37.3334855
+                              -122.005516,
+                              37.3334905
                         ],
                         [
-                              -122.005561,
-                              37.333381
-                        ],
-                        [
-                              -122.0055865,
-                              37.3333275
-                        ],
-                        [
-                              -122.0056095,
-                              37.3332735
-                        ],
-                        [
-                              -122.0056305,
-                              37.3332185
-                        ],
-                        [
-                              -122.005649,
-                              37.3331635
-                        ],
-                        [
-                              -122.0056645,
-                              37.3331075
-                        ],
-                        [
-                              -122.0056905,
-                              37.332986
-                        ],
-                        [
-                              -122.005699,
-                              37.3329245
-                        ],
-                        [
-                              -122.0057045,
-                              37.332863
-                        ],
-                        [
-                              -122.0057075,
-                              37.332801
-                        ],
-                        [
-                              -122.0057075,
-                              37.332781
-                        ],
-                        [
-                              -122.0057125,
-                              37.3325175
-                        ],
-                        [
-                              -122.0057125,
-                              37.332508
-                        ],
-                        [
-                              -122.005712,
-                              37.332503
-                        ],
-                        [
-                              -122.0057115,
-                              37.3324985
-                        ],
-                        [
-                              -122.0057105,
-                              37.3324935
-                        ],
-                        [
-                              -122.0057095,
-                              37.3324885
-                        ],
-                        [
-                              -122.005708,
-                              37.332484
-                        ],
-                        [
-                              -122.0057065,
-                              37.3324795
-                        ],
-                        [
-                              -122.005705,
-                              37.3324745
-                        ],
-                        [
-                              -122.005703,
-                              37.33247
-                        ],
-                        [
-                              -122.005701,
-                              37.3324655
-                        ],
-                        [
-                              -122.0056985,
-                              37.332461
-                        ],
-                        [
-                              -122.005696,
-                              37.3324565
-                        ],
-                        [
-                              -122.0056935,
-                              37.332452
-                        ],
-                        [
-                              -122.0056905,
-                              37.332448
-                        ],
-                        [
-                              -122.0056875,
-                              37.332444
-                        ],
-                        [
-                              -122.005684,
-                              37.3324395
-                        ],
-                        [
-                              -122.0056805,
-                              37.3324355
-                        ],
-                        [
-                              -122.005677,
-                              37.332432
-                        ],
-                        [
-                              -122.005673,
-                              37.332428
-                        ],
-                        [
-                              -122.005669,
-                              37.3324245
-                        ],
-                        [
-                              -122.005665,
-                              37.332421
-                        ],
-                        [
-                              -122.005661,
-                              37.3324175
-                        ],
-                        [
-                              -122.0056565,
-                              37.332414
-                        ],
-                        [
-                              -122.005652,
-                              37.332411
-                        ],
-                        [
-                              -122.005647,
-                              37.3324075
-                        ],
-                        [
-                              -122.0056425,
-                              37.332405
-                        ],
-                        [
-                              -122.0056375,
-                              37.332402
-                        ],
-                        [
-                              -122.0056325,
-                              37.3323995
-                        ],
-                        [
-                              -122.005627,
-                              37.332397
-                        ],
-                        [
-                              -122.005622,
-                              37.3323945
-                        ],
-                        [
-                              -122.0056165,
-                              37.3323925
-                        ],
-                        [
-                              -122.005611,
-                              37.33239
-                        ],
-                        [
-                              -122.0056055,
-                              37.3323885
+                              -122.005574,
+                              37.333386
                         ],
                         [
                               -122.0055995,
-                              37.3323865
+                              37.3333325
                         ],
                         [
-                              -122.005594,
+                              -122.005623,
+                              37.3332785
+                        ],
+                        [
+                              -122.0056435,
+                              37.3332235
+                        ],
+                        [
+                              -122.005662,
+                              37.3331685
+                        ],
+                        [
+                              -122.005678,
+                              37.3331125
+                        ],
+                        [
+                              -122.0057035,
+                              37.332991
+                        ],
+                        [
+                              -122.005712,
+                              37.3329295
+                        ],
+                        [
+                              -122.0057175,
+                              37.332868
+                        ],
+                        [
+                              -122.0057205,
+                              37.332806
+                        ],
+                        [
+                              -122.005721,
+                              37.332786
+                        ],
+                        [
+                              -122.0057255,
+                              37.3325225
+                        ],
+                        [
+                              -122.0057255,
+                              37.332513
+                        ],
+                        [
+                              -122.005725,
+                              37.332508
+                        ],
+                        [
+                              -122.0057245,
+                              37.332503
+                        ],
+                        [
+                              -122.0057235,
+                              37.3324985
+                        ],
+                        [
+                              -122.0057225,
+                              37.3324935
+                        ],
+                        [
+                              -122.005721,
+                              37.332489
+                        ],
+                        [
+                              -122.0057195,
+                              37.332484
+                        ],
+                        [
+                              -122.005718,
+                              37.3324795
+                        ],
+                        [
+                              -122.005716,
+                              37.332475
+                        ],
+                        [
+                              -122.005714,
+                              37.3324705
+                        ],
+                        [
+                              -122.0057115,
+                              37.332466
+                        ],
+                        [
+                              -122.005709,
+                              37.3324615
+                        ],
+                        [
+                              -122.0057065,
+                              37.332457
+                        ],
+                        [
+                              -122.0057035,
+                              37.332453
+                        ],
+                        [
+                              -122.0057005,
+                              37.3324485
+                        ],
+                        [
+                              -122.005697,
+                              37.3324445
+                        ],
+                        [
+                              -122.0056935,
+                              37.3324405
+                        ],
+                        [
+                              -122.00569,
+                              37.332437
+                        ],
+                        [
+                              -122.0056865,
+                              37.332433
+                        ],
+                        [
+                              -122.0056825,
+                              37.3324295
+                        ],
+                        [
+                              -122.005678,
+                              37.3324255
+                        ],
+                        [
+                              -122.005674,
+                              37.3324225
+                        ],
+                        [
+                              -122.0056695,
+                              37.332419
+                        ],
+                        [
+                              -122.005665,
+                              37.3324155
+                        ],
+                        [
+                              -122.0056605,
+                              37.3324125
+                        ],
+                        [
+                              -122.0056555,
+                              37.3324095
+                        ],
+                        [
+                              -122.0056505,
+                              37.332407
+                        ],
+                        [
+                              -122.0056455,
+                              37.3324045
+                        ],
+                        [
+                              -122.00564,
+                              37.332402
+                        ],
+                        [
+                              -122.005635,
+                              37.3323995
+                        ],
+                        [
+                              -122.0056295,
+                              37.332397
+                        ],
+                        [
+                              -122.005624,
+                              37.332395
+                        ],
+                        [
+                              -122.0056185,
+                              37.332393
+                        ],
+                        [
+                              -122.005613,
+                              37.3323915
+                        ],
+                        [
+                              -122.005607,
+                              37.33239
+                        ],
+                        [
+                              -122.005601,
+                              37.3323885
+                        ],
+                        [
+                              -122.0055955,
+                              37.332387
+                        ],
+                        [
+                              -122.0055895,
+                              37.332386
+                        ],
+                        [
+                              -122.0055835,
                               37.332385
                         ],
                         [
-                              -122.005588,
+                              -122.0055775,
+                              37.3323845
+                        ],
+                        [
+                              -122.0055715,
+                              37.332384
+                        ],
+                        [
+                              -122.0055655,
                               37.3323835
                         ],
                         [
-                              -122.005582,
-                              37.3323825
+                              -122.0055595,
+                              37.332383
                         ],
                         [
-                              -122.0055765,
-                              37.332381
+                              -122.0055535,
+                              37.332383
                         ],
                         [
-                              -122.0055705,
-                              37.3323805
+                              -122.0046865,
+                              37.3323745
                         ],
                         [
-                              -122.0055645,
-                              37.3323795
+                              -122.004689,
+                              37.3326325
                         ],
                         [
-                              -122.0055585,
-                              37.332379
+                              -122.0046905,
+                              37.332788
                         ],
                         [
-                              -122.0055525,
-                              37.3323785
+                              -122.0046905,
+                              37.332811
                         ],
                         [
-                              -122.005546,
-                              37.3323785
+                              -122.004692,
+                              37.3329895
                         ],
                         [
-                              -122.00554,
-                              37.332378
+                              -122.004693,
+                              37.3331145
                         ],
                         [
-                              -122.0046735,
-                              37.3323695
+                              -122.0046935,
+                              37.3331685
                         ],
                         [
-                              -122.004676,
-                              37.3326275
+                              -122.0046955,
+                              37.333347
                         ],
                         [
-                              -122.004677,
-                              37.332783
+                              -122.004697,
+                              37.3335255
                         ],
                         [
-                              -122.0046775,
-                              37.3328065
-                        ],
-                        [
-                              -122.004679,
-                              37.332985
-                        ],
-                        [
-                              -122.00468,
-                              37.3331095
-                        ],
-                        [
-                              -122.0046805,
-                              37.3331635
-                        ],
-                        [
-                              -122.004682,
-                              37.333342
-                        ],
-                        [
-                              -122.0046835,
-                              37.3335205
-                        ],
-                        [
-                              -122.0046855,
-                              37.3336935
+                              -122.0046985,
+                              37.3336985
                         ]
                   ]
             ]
       },
       "centroid": {
-            "lat": 37.333143,
-            "lng": -122.005134
+            "lat": 37.333148,
+            "lng": -122.005147
       },
       "properties": {
             "owner": "CAMPUS HOLDINGS INC",
-            "lot_size_sqft": 158086,
-            "lot_acres": 3.62907,
+            "lot_size_sqft": 158085,
+            "lot_acres": 3.62906,
             "year_built": 2017,
             "zoning": "P(MP",
             "zoning_description": "Planned Development Industrial Park",
             "property_type": "",
-            "assessed_value": 34629024,
-            "improvement_value": 15880527,
-            "land_value": 18748497,
+            "assessed_value": 35321603,
+            "improvement_value": 16198137,
+            "land_value": 19123466,
             "sale_date": "2013-10-15",
             "county": "santa-clara",
             "qoz_status": "No",
-            "use_code": "58",
-            "use_description": "Retail Uses",
+            "use_code": "",
+            "use_description": "",
             "subdivision": "",
             "num_stories": 2,
             "num_units": 1,
@@ -2395,8 +1807,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "census_tract": "06085508102",
             "census_block": "060855081021020",
             "qoz_tract": "",
-            "last_refresh_date": "2024-12-17",
-            "regrid_updated_at": "2025-09-15 14:26:02 -0400",
+            "last_refresh_date": "2026-05-27",
+            "regrid_updated_at": "2026-07-25 11:54:06 -0400",
             "owner_mailing_address": "1 INFINITE LOOP",
             "owner_mail_city": "CUPERTINO",
             "owner_mail_state": "CA",
@@ -2406,52 +1818,51 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "geoid": "06085",
             "parcelnumb": "31606062",
             "parcelnumb_no_formatting": "31606062",
-            "usecode": "58",
-            "usedesc": "Retail Uses",
             "yearbuilt": 2017,
             "numstories": 2,
             "numunits": 1,
             "parvaltype": "ASSESSED",
-            "improvval": 15880527,
-            "landval": 18748497,
-            "parval": 34629024,
+            "improvval": 16198137,
+            "landval": 19123466,
+            "parval": 35321603,
             "saledate": "2013-10-15",
-            "unmodified_owner": "CAMPUS HOLDINGS INC",
             "mailadd": "1 INFINITE LOOP",
             "careof": "APPLE INC., MS:104-2TX, TAX DEPT",
             "mail_city": "CUPERTINO",
             "mail_state2": "CA",
             "mail_zip": "95032",
             "original_mailing_address": "{\"mailadd\":\"1 INFINITE LOOP\",\"mail_city\":\"CUPERTINO\",\"mail_state2\":\"CA\",\"mail_zip\":\"95032\"}",
-            "address": "10600 N TANTAU AV",
+            "address": "10600 S TANTAU AVE",
             "saddno": "10600",
-            "saddpref": "N",
+            "saddpref": "S",
             "saddstr": "TANTAU",
-            "saddsttyp": "AV",
+            "saddsttyp": "AVE",
             "scity": "CUPERTINO",
-            "original_address": "{\"address\":\"10600 N TANTAU AV\",\"saddno\":\"10600\",\"saddpref\":\"N\",\"saddstr\":\"TANTAU\",\"saddsttyp\":\"AV\",\"scity\":\"CUPERTINO\",\"szip\":\"95014\"}",
+            "original_address": "{\"address\":\"10600 TANTAU AV CUPERTINO\",\"saddno\":\"10600\",\"saddpref\":\"N\",\"saddstr\":\"TANTAU\",\"saddsttyp\":\"AV\",\"scity\":\"CUPERTINO\",\"szip\":\"95014\"}",
             "city": "san-jose",
             "state2": "CA",
-            "szip": "95014",
+            "szip": "95014-4612",
             "szip5": "95014",
-            "address_source": "county",
-            "lat": "37.333143",
-            "lon": "-122.005134",
+            "address_source": "county;cass",
+            "lat": "37.333148",
+            "lon": "-122.005147",
             "qoz": "No",
             "census_blockgroup": "060855081021",
             "census_zcta": "95014",
-            "ll_last_refresh": "2024-12-17",
+            "ll_last_refresh": "2026-05-27",
+            "area_building": 12500,
+            "area_building_definition": "TOTAL AREA",
             "gisacre": 3.58,
             "sqft": 155945,
-            "ll_gisacre": 3.62907,
-            "ll_gissqft": 158086,
+            "ll_gisacre": 3.62906,
+            "ll_gissqft": 158085,
             "plss_township": "007S",
             "plss_section": "Section 00",
             "plss_range": "001W",
             "path": "/us/ca/santa-clara/san-jose/8392",
             "ll_stable_id": "parcelnumb",
             "ll_uuid": "0654fd82-1e13-49ba-a58d-afefc919cbe3",
-            "ll_updated_at": "2025-09-15 14:26:02 -0400"
+            "ll_updated_at": "2026-07-25 11:54:06 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -2470,7 +1881,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '1357189',
+    regrid_id: '6a1a8957-a752-4bb6-b4bf-aa583eaf56c4',
     apn: '17162160090000',
     address: '233 S WACKER DR',
     city: 'CHICAGO',
@@ -2575,13 +1986,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     sale_date: '2015-06-11',
     county: 'cook',
     qoz_status: 'No',
-    improvement_value: 237590366,
-    land_value: 15209500,
-    assessed_value: 252799866,
+    improvement_value: 293313850,
+    land_value: 13448400,
+    assessed_value: 306762250,
 
     // Extended details
     use_code: '591',
-    use_description: null,
+    use_description: 'Commercial/Industrial',
     zoning: 'DC-16',
     zoning_description: 'Downtown Core District',
     num_stories: 99,
@@ -2592,7 +2003,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     lot_size_sqft: 128704,
 
     // Financial & tax data
-    tax_year: '2023',
+    tax_year: '2025',
     parcel_value_type: 'ASSESSED',
     sale_price: null,
 
@@ -2602,8 +2013,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2024-07-30',
-    regrid_updated_at: '2025-09-15 14:49:33 -0400',
+    last_refresh_date: '2025-12-23',
+    regrid_updated_at: '2026-07-25 12:23:11 -0400',
 
     // Owner mailing
     owner_mailing_address: 'PO BOX A3879',
@@ -2616,7 +2027,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "1357189",
+      "id": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
       "apn": "17162160090000",
       "address": {
             "line1": "233 S WACKER DR",
@@ -2724,24 +2135,24 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "zoning": "DC-16",
             "zoning_description": "Downtown Core District",
             "property_type": "",
-            "assessed_value": 252799866,
-            "improvement_value": 237590366,
-            "land_value": 15209500,
+            "assessed_value": 306762250,
+            "improvement_value": 293313850,
+            "land_value": 13448400,
             "last_sale_price": 275611000,
             "sale_date": "2015-06-11",
             "county": "cook",
             "qoz_status": "No",
             "use_code": "591",
-            "use_description": "",
+            "use_description": "Commercial/Industrial",
             "subdivision": "",
             "num_stories": 99,
-            "tax_year": "2023",
+            "tax_year": "2025",
             "parcel_value_type": "ASSESSED",
             "census_tract": "17031839100",
             "census_block": "170318391002008",
             "qoz_tract": "",
-            "last_refresh_date": "2024-07-30",
-            "regrid_updated_at": "2025-09-15 14:49:33 -0400",
+            "last_refresh_date": "2025-12-23",
+            "regrid_updated_at": "2026-07-25 12:23:11 -0400",
             "owner_mailing_address": "PO BOX A3879",
             "owner_mail_city": "CHICAGO",
             "owner_mail_state": "IL",
@@ -2754,16 +2165,17 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "alt_parcelnumb1": "1716216009",
             "alt_parcelnumb2": "17-16-216-009-0000",
             "usecode": "591",
+            "usedesc": "Commercial/Industrial",
             "yearbuilt": 1970,
             "numstories": 99,
             "parvaltype": "ASSESSED",
-            "improvval": 237590366,
-            "landval": 15209500,
-            "parval": 252799866,
+            "improvval": 293313850,
+            "landval": 13448400,
+            "parval": 306762250,
             "saleprice": 275611000,
             "saledate": "2015-06-11",
-            "taxyear": "2023",
-            "unmodified_owner": "PROPERTY TAX",
+            "taxyear": "2025",
+            "last_ownership_transfer_date": "2015-06-11",
             "previous_owner": "UNKNOWN",
             "mailadd": "PO BOX A3879",
             "mail_addno": "A3879",
@@ -2771,14 +2183,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "mail_city": "CHICAGO",
             "mail_state2": "IL",
             "mail_zip": "60690-3879",
-            "original_mailing_address": "{\"mailadd\":\"P O BOX A-3879\",\"mail_city\":\"CHICAGO\",\"mail_state2\":\"IL\",\"mail_zip\":\"60690\"}",
+            "original_mailing_address": "{\"mailadd\":\"P O BOX A-3879\",\"mail_address2\":\" CHICAGO\",\"mail_city\":\" CHICAGO\",\"mail_state2\":\"IL\",\"mail_zip\":\"60690\"}",
             "address": "233 S WACKER DR",
             "saddno": "233",
             "saddpref": "S",
             "saddstr": "WACKER",
             "saddsttyp": "DR",
             "scity": "CHICAGO",
-            "original_address": "{\"address\":\"233 S WACKER DR\",\"saddno\":\"233\",\"saddpref\":\"S\",\"saddstr\":\"WACKER\",\"saddsttyp\":\"DR\",\"scity\":\"CHICAGO\",\"szip\":\"60606\"}",
+            "original_address": "{\"address\":\"233 S WACKER DR\",\"sunit\":\"\",\"scity\":\"CHICAGO\",\"szip\":\"60606\"}",
             "city": "chicago",
             "state2": "IL",
             "szip": "60606-7147",
@@ -2790,19 +2202,18 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "qoz": "No",
             "census_blockgroup": "170318391002",
             "census_zcta": "60606",
-            "ll_last_refresh": "2024-07-30",
-            "recrdareano": 0,
+            "ll_last_refresh": "2025-12-23",
+            "sourceurl": "https://www.cookcountyassessor.com/pin/17162160090000",
             "sqft": 128079,
             "ll_gisacre": 2.95457,
             "ll_gissqft": 128704,
             "plss_township": "039N",
             "plss_section": "Section 16",
             "plss_range": "014E",
-            "reviseddate": "2023-02-28",
             "path": "/us/il/cook/chicago/1357189",
             "ll_stable_id": "parcelnumb",
             "ll_uuid": "6a1a8957-a752-4bb6-b4bf-aa583eaf56c4",
-            "ll_updated_at": "2025-09-15 14:49:33 -0400"
+            "ll_updated_at": "2026-07-25 12:23:11 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -2821,12 +2232,12 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '398700',
+    regrid_id: '28fcd81d-e5a3-4d03-87af-6192f80a9108',
     apn: '292257',
-    address: '13101 Tesla RD',
-    city: 'AUSTIN',
+    address: '9101 BRADFORD ST',
+    city: 'DENTON',
     state: 'TX',
-    zip_code: '78617',
+    zip_code: '76207',
 
     // Geometry and location
     geometry: {
@@ -2834,1264 +2245,283 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "coordinates": [
             [
                   [
-                        -97.6017235,
-                        30.252255
+                        -97.2470965,
+                        33.1405555
                   ],
                   [
-                        -97.6018025,
-                        30.2521035
+                        -97.247093,
+                        33.140562
                   ],
                   [
-                        -97.6020065,
-                        30.252183
+                        -97.246979,
+                        33.1407665
                   ],
                   [
-                        -97.60212,
-                        30.2522275
+                        -97.247288,
+                        33.140859
                   ],
                   [
-                        -97.6020405,
-                        30.2523805
+                        -97.247299,
+                        33.1408615
                   ],
                   [
-                        -97.6031535,
-                        30.2528795
+                        -97.2473105,
+                        33.1408625
                   ],
                   [
-                        -97.6034515,
-                        30.2530135
+                        -97.2473215,
+                        33.1408615
                   ],
                   [
-                        -97.604741,
-                        30.250966
+                        -97.2473325,
+                        33.140859
                   ],
                   [
-                        -97.6048115,
-                        30.2506735
+                        -97.2473425,
+                        33.140855
                   ],
                   [
-                        -97.604618,
-                        30.250576
+                        -97.247352,
+                        33.1408495
                   ],
                   [
-                        -97.604464,
-                        30.250498
+                        -97.24736,
+                        33.140843
                   ],
                   [
-                        -97.604693,
-                        30.250123
+                        -97.2473665,
+                        33.140835
                   ],
                   [
-                        -97.605103,
-                        30.249453
+                        -97.247371,
+                        33.1408265
                   ],
                   [
-                        -97.604757,
-                        30.2492785
+                        -97.247436,
+                        33.1406895
                   ],
                   [
-                        -97.6058015,
-                        30.247977
-                  ],
-                  [
-                        -97.6060515,
-                        30.248103
-                  ],
-                  [
-                        -97.606896,
-                        30.246887
-                  ],
-                  [
-                        -97.6102435,
-                        30.2425635
-                  ],
-                  [
-                        -97.6128035,
-                        30.238539
-                  ],
-                  [
-                        -97.613725,
-                        30.237091
-                  ],
-                  [
-                        -97.6144055,
-                        30.236021
-                  ],
-                  [
-                        -97.6147955,
-                        30.2351785
-                  ],
-                  [
-                        -97.615701,
-                        30.2332235
-                  ],
-                  [
-                        -97.616783,
-                        30.2308875
-                  ],
-                  [
-                        -97.618606,
-                        30.228304
-                  ],
-                  [
-                        -97.6176815,
-                        30.2278255
-                  ],
-                  [
-                        -97.6174685,
-                        30.2278745
-                  ],
-                  [
-                        -97.6165245,
-                        30.2293645
-                  ],
-                  [
-                        -97.6165105,
-                        30.229358
-                  ],
-                  [
-                        -97.6155665,
-                        30.2308465
-                  ],
-                  [
-                        -97.6155115,
-                        30.23082
-                  ],
-                  [
-                        -97.6154925,
-                        30.2308115
-                  ],
-                  [
-                        -97.616422,
-                        30.2293185
-                  ],
-                  [
-                        -97.616436,
-                        30.2293245
-                  ],
-                  [
-                        -97.617356,
-                        30.22782
-                  ],
-                  [
-                        -97.617492,
-                        30.227686
-                  ],
-                  [
-                        -97.617538,
-                        30.227616
-                  ],
-                  [
-                        -97.6176945,
-                        30.2276965
-                  ],
-                  [
-                        -97.618673,
-                        30.228201
-                  ],
-                  [
-                        -97.6188085,
-                        30.2280035
-                  ],
-                  [
-                        -97.6191245,
-                        30.228167
-                  ],
-                  [
-                        -97.61982,
-                        30.227177
-                  ],
-                  [
-                        -97.619968,
-                        30.2269605
-                  ],
-                  [
-                        -97.6201095,
-                        30.2267405
-                  ],
-                  [
-                        -97.620296,
-                        30.2264275
-                  ],
-                  [
-                        -97.6204695,
-                        30.2262755
-                  ],
-                  [
-                        -97.620524,
-                        30.226224
-                  ],
-                  [
-                        -97.620573,
-                        30.2261695
-                  ],
-                  [
-                        -97.6206175,
-                        30.2261115
-                  ],
-                  [
-                        -97.6206565,
-                        30.226051
-                  ],
-                  [
-                        -97.62069,
-                        30.225988
-                  ],
-                  [
-                        -97.620776,
-                        30.2257995
-                  ],
-                  [
-                        -97.6208565,
-                        30.225609
-                  ],
-                  [
-                        -97.6209315,
-                        30.2254165
-                  ],
-                  [
-                        -97.6210005,
-                        30.225223
-                  ],
-                  [
-                        -97.621063,
-                        30.2250275
-                  ],
-                  [
-                        -97.62112,
-                        30.2248305
-                  ],
-                  [
-                        -97.62114,
-                        30.224747
-                  ],
-                  [
-                        -97.621154,
-                        30.2246625
-                  ],
-                  [
-                        -97.621162,
-                        30.224577
-                  ],
-                  [
-                        -97.6211645,
-                        30.2244915
-                  ],
-                  [
-                        -97.6211625,
-                        30.2240495
-                  ],
-                  [
-                        -97.6212555,
-                        30.223901
-                  ],
-                  [
-                        -97.621661,
-                        30.2219535
-                  ],
-                  [
-                        -97.621657,
-                        30.221141
-                  ],
-                  [
-                        -97.621647,
-                        30.2185475
-                  ],
-                  [
-                        -97.6216135,
-                        30.2124155
-                  ],
-                  [
-                        -97.6214355,
-                        30.211215
-                  ],
-                  [
-                        -97.6213925,
-                        30.210922
-                  ],
-                  [
-                        -97.620971,
-                        30.21101
-                  ],
-                  [
-                        -97.6206535,
-                        30.211083
-                  ],
-                  [
-                        -97.6201165,
-                        30.2112355
-                  ],
-                  [
-                        -97.618869,
-                        30.2116685
-                  ],
-                  [
-                        -97.618425,
-                        30.211924
-                  ],
-                  [
-                        -97.6178815,
-                        30.212202
-                  ],
-                  [
-                        -97.616493,
-                        30.213254
-                  ],
-                  [
-                        -97.61598,
-                        30.21361
-                  ],
-                  [
-                        -97.6147255,
-                        30.214071
-                  ],
-                  [
-                        -97.6142585,
-                        30.214194
-                  ],
-                  [
-                        -97.6139425,
-                        30.2142555
-                  ],
-                  [
-                        -97.6129875,
-                        30.2149245
-                  ],
-                  [
-                        -97.6130665,
-                        30.214426
-                  ],
-                  [
-                        -97.6131,
-                        30.21432
-                  ],
-                  [
-                        -97.6123325,
-                        30.2134745
-                  ],
-                  [
-                        -97.612325,
-                        30.213373
-                  ],
-                  [
-                        -97.6122525,
-                        30.213005
-                  ],
-                  [
-                        -97.6118005,
-                        30.2128795
-                  ],
-                  [
-                        -97.61128,
-                        30.2128395
-                  ],
-                  [
-                        -97.6104155,
-                        30.213066
-                  ],
-                  [
-                        -97.609435,
-                        30.2134845
-                  ],
-                  [
-                        -97.608792,
-                        30.213784
-                  ],
-                  [
-                        -97.60845,
-                        30.214217
-                  ],
-                  [
-                        -97.6081095,
-                        30.2148865
-                  ],
-                  [
-                        -97.607828,
-                        30.21535
-                  ],
-                  [
-                        -97.607769,
-                        30.215492
-                  ],
-                  [
-                        -97.607284,
-                        30.2160125
-                  ],
-                  [
-                        -97.6071735,
-                        30.2161935
-                  ],
-                  [
-                        -97.6072195,
-                        30.2164235
-                  ],
-                  [
-                        -97.607159,
-                        30.2166975
-                  ],
-                  [
-                        -97.6068835,
-                        30.217104
-                  ],
-                  [
-                        -97.6065055,
-                        30.217417
-                  ],
-                  [
-                        -97.6065635,
-                        30.2172345
-                  ],
-                  [
-                        -97.606674,
-                        30.2170535
-                  ],
-                  [
-                        -97.6067305,
-                        30.2169175
-                  ],
-                  [
-                        -97.6067345,
-                        30.21678
-                  ],
-                  [
-                        -97.606575,
-                        30.2168225
-                  ],
-                  [
-                        -97.6064115,
-                        30.2170025
-                  ],
-                  [
-                        -97.6061905,
-                        30.2173645
-                  ],
-                  [
-                        -97.606185,
-                        30.2175475
-                  ],
-                  [
-                        -97.6060745,
-                        30.2177285
-                  ],
-                  [
-                        -97.6058595,
-                        30.2178615
-                  ],
-                  [
-                        -97.6055865,
-                        30.2181765
-                  ],
-                  [
-                        -97.605526,
-                        30.21845
-                  ],
-                  [
-                        -97.605521,
-                        30.2186335
-                  ],
-                  [
-                        -97.605243,
-                        30.219132
-                  ],
-                  [
-                        -97.605238,
-                        30.219315
-                  ],
-                  [
-                        -97.6051285,
-                        30.21945
-                  ],
-                  [
-                        -97.6052275,
-                        30.2196815
-                  ],
-                  [
-                        -97.6052235,
-                        30.219819
-                  ],
-                  [
-                        -97.6051645,
-                        30.220047
-                  ],
-                  [
-                        -97.605265,
-                        30.2202325
-                  ],
-                  [
-                        -97.6053675,
-                        30.220326
-                  ],
-                  [
-                        -97.60536,
-                        30.220601
-                  ],
-                  [
-                        -97.605356,
-                        30.2207385
-                  ],
-                  [
-                        -97.605255,
-                        30.2211945
-                  ],
-                  [
-                        -97.6051445,
-                        30.2213755
-                  ],
-                  [
-                        -97.6051365,
-                        30.2216505
-                  ],
-                  [
-                        -97.6049695,
-                        30.221968
-                  ],
-                  [
-                        -97.6049075,
-                        30.2222875
-                  ],
-                  [
-                        -97.604681,
-                        30.2228325
-                  ],
-                  [
-                        -97.604447,
-                        30.2232415
-                  ],
-                  [
-                        -97.6042815,
-                        30.2236515
-                  ],
-                  [
-                        -97.604212,
-                        30.2239285
-                  ],
-                  [
-                        -97.6041405,
-                        30.224499
-                  ],
-                  [
-                        -97.604127,
-                        30.224635
-                  ],
-                  [
-                        -97.604191,
-                        30.2251415
-                  ],
-                  [
-                        -97.604029,
-                        30.225956
-                  ],
-                  [
-                        -97.603535,
-                        30.2268465
-                  ],
-                  [
-                        -97.602871,
-                        30.227241
-                  ],
-                  [
-                        -97.6015795,
-                        30.2275835
-                  ],
-                  [
-                        -97.601269,
-                        30.2276335
-                  ],
-                  [
-                        -97.600852,
-                        30.227596
-                  ],
-                  [
-                        -97.600585,
-                        30.2276205
-                  ],
-                  [
-                        -97.5997295,
-                        30.2277525
+                        -97.2470965,
+                        33.1405555
                   ]
             ]
       ]
 },
-    lat: 30.223605,
-    lng: -97.6120065,
+    lat: 33.14072,
+    lng: -97.247209,
 
     // Property details
-    year_built: 2020,
-    owner: 'COLORADO RIVER PROJECT LLC',
+    year_built: 2008,
+    owner: 'WILLIAMS, TIM & CONVERSE, SUSAN',
     last_sale_price: null,
-    sale_date: '',
-    county: 'travis',
+    sale_date: '2023-07-05',
+    county: 'denton',
     qoz_status: 'No',
-    improvement_value: null,
+    improvement_value: 284218,
     land_value: null,
-    assessed_value: 3323759771,
+    assessed_value: 451318,
 
     // Extended details
-    use_code: '',
-    use_description: '',
-    zoning: '',
-    zoning_description: '',
-    num_stories: null,
+    use_code: 'A1',
+    use_description: null,
+    zoning: 'PD',
+    zoning_description: 'Planned Development',
+    num_stories: 1,
     num_units: null,
     num_rooms: null,
-    subdivision: '',
-    lot_size_acres: null,
-    lot_size_sqft: null,
+    subdivision: 'ROBSON RANCH 9 PH 1',
+    lot_size_acres: 0.21051,
+    lot_size_sqft: 9170,
 
     // Financial & tax data
-    tax_year: '',
-    parcel_value_type: '',
+    tax_year: '2026',
+    parcel_value_type: 'CERTIFIED MARKET',
     sale_price: null,
 
     // Location data
-    census_tract: '',
-    census_block: '',
-    qoz_tract: '',
+    census_tract: '48121020310',
+    census_block: '481210203101010',
+    qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '',
-    regrid_updated_at: '',
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 13:22:24 -0400',
 
     // Owner mailing
-    owner_mailing_address: '',
-    owner_mail_city: '',
-    owner_mail_state: '',
-    owner_mail_zip: '',
+    owner_mailing_address: '9101 BRADFORD ST',
+    owner_mail_city: 'DENTON',
+    owner_mail_state: 'TX',
+    owner_mail_zip: '76207-6723',
 
     // User fields
     is_sample: false,
 
     // Store full property data
     property_data: {
-      "id": "398700",
+      "id": "28fcd81d-e5a3-4d03-87af-6192f80a9108",
       "apn": "292257",
       "address": {
-            "line1": "S F M RD 973",
+            "line1": "9101 BRADFORD ST",
             "line2": "",
-            "city": "Hornsby Bend",
+            "city": "DENTON",
             "state": "TX",
-            "zip": "78617"
+            "zip": "76207"
       },
       "geometry": {
             "type": "Polygon",
             "coordinates": [
                   [
                         [
-                              -97.6017235,
-                              30.252255
+                              -97.2470965,
+                              33.1405555
                         ],
                         [
-                              -97.6018025,
-                              30.2521035
+                              -97.247093,
+                              33.140562
                         ],
                         [
-                              -97.6020065,
-                              30.252183
+                              -97.246979,
+                              33.1407665
                         ],
                         [
-                              -97.60212,
-                              30.2522275
+                              -97.247288,
+                              33.140859
                         ],
                         [
-                              -97.6020405,
-                              30.2523805
+                              -97.247299,
+                              33.1408615
                         ],
                         [
-                              -97.6031535,
-                              30.2528795
+                              -97.2473105,
+                              33.1408625
                         ],
                         [
-                              -97.6034515,
-                              30.2530135
+                              -97.2473215,
+                              33.1408615
                         ],
                         [
-                              -97.604741,
-                              30.250966
+                              -97.2473325,
+                              33.140859
                         ],
                         [
-                              -97.6048115,
-                              30.2506735
+                              -97.2473425,
+                              33.140855
                         ],
                         [
-                              -97.604618,
-                              30.250576
+                              -97.247352,
+                              33.1408495
                         ],
                         [
-                              -97.604464,
-                              30.250498
+                              -97.24736,
+                              33.140843
                         ],
                         [
-                              -97.604693,
-                              30.250123
+                              -97.2473665,
+                              33.140835
                         ],
                         [
-                              -97.605103,
-                              30.249453
+                              -97.247371,
+                              33.1408265
                         ],
                         [
-                              -97.604757,
-                              30.2492785
+                              -97.247436,
+                              33.1406895
                         ],
                         [
-                              -97.6058015,
-                              30.247977
-                        ],
-                        [
-                              -97.6060515,
-                              30.248103
-                        ],
-                        [
-                              -97.606896,
-                              30.246887
-                        ],
-                        [
-                              -97.6102435,
-                              30.2425635
-                        ],
-                        [
-                              -97.6128035,
-                              30.238539
-                        ],
-                        [
-                              -97.613725,
-                              30.237091
-                        ],
-                        [
-                              -97.6144055,
-                              30.236021
-                        ],
-                        [
-                              -97.6147955,
-                              30.2351785
-                        ],
-                        [
-                              -97.615701,
-                              30.2332235
-                        ],
-                        [
-                              -97.616783,
-                              30.2308875
-                        ],
-                        [
-                              -97.618606,
-                              30.228304
-                        ],
-                        [
-                              -97.6176815,
-                              30.2278255
-                        ],
-                        [
-                              -97.6174685,
-                              30.2278745
-                        ],
-                        [
-                              -97.6165245,
-                              30.2293645
-                        ],
-                        [
-                              -97.6165105,
-                              30.229358
-                        ],
-                        [
-                              -97.6155665,
-                              30.2308465
-                        ],
-                        [
-                              -97.6155115,
-                              30.23082
-                        ],
-                        [
-                              -97.6154925,
-                              30.2308115
-                        ],
-                        [
-                              -97.616422,
-                              30.2293185
-                        ],
-                        [
-                              -97.616436,
-                              30.2293245
-                        ],
-                        [
-                              -97.617356,
-                              30.22782
-                        ],
-                        [
-                              -97.617492,
-                              30.227686
-                        ],
-                        [
-                              -97.617538,
-                              30.227616
-                        ],
-                        [
-                              -97.6176945,
-                              30.2276965
-                        ],
-                        [
-                              -97.618673,
-                              30.228201
-                        ],
-                        [
-                              -97.6188085,
-                              30.2280035
-                        ],
-                        [
-                              -97.6191245,
-                              30.228167
-                        ],
-                        [
-                              -97.61982,
-                              30.227177
-                        ],
-                        [
-                              -97.619968,
-                              30.2269605
-                        ],
-                        [
-                              -97.6201095,
-                              30.2267405
-                        ],
-                        [
-                              -97.620296,
-                              30.2264275
-                        ],
-                        [
-                              -97.6204695,
-                              30.2262755
-                        ],
-                        [
-                              -97.620524,
-                              30.226224
-                        ],
-                        [
-                              -97.620573,
-                              30.2261695
-                        ],
-                        [
-                              -97.6206175,
-                              30.2261115
-                        ],
-                        [
-                              -97.6206565,
-                              30.226051
-                        ],
-                        [
-                              -97.62069,
-                              30.225988
-                        ],
-                        [
-                              -97.620776,
-                              30.2257995
-                        ],
-                        [
-                              -97.6208565,
-                              30.225609
-                        ],
-                        [
-                              -97.6209315,
-                              30.2254165
-                        ],
-                        [
-                              -97.6210005,
-                              30.225223
-                        ],
-                        [
-                              -97.621063,
-                              30.2250275
-                        ],
-                        [
-                              -97.62112,
-                              30.2248305
-                        ],
-                        [
-                              -97.62114,
-                              30.224747
-                        ],
-                        [
-                              -97.621154,
-                              30.2246625
-                        ],
-                        [
-                              -97.621162,
-                              30.224577
-                        ],
-                        [
-                              -97.6211645,
-                              30.2244915
-                        ],
-                        [
-                              -97.6211625,
-                              30.2240495
-                        ],
-                        [
-                              -97.6212555,
-                              30.223901
-                        ],
-                        [
-                              -97.621661,
-                              30.2219535
-                        ],
-                        [
-                              -97.621657,
-                              30.221141
-                        ],
-                        [
-                              -97.621647,
-                              30.2185475
-                        ],
-                        [
-                              -97.6216135,
-                              30.2124155
-                        ],
-                        [
-                              -97.6214355,
-                              30.211215
-                        ],
-                        [
-                              -97.6213925,
-                              30.210922
-                        ],
-                        [
-                              -97.620971,
-                              30.21101
-                        ],
-                        [
-                              -97.6206535,
-                              30.211083
-                        ],
-                        [
-                              -97.6201165,
-                              30.2112355
-                        ],
-                        [
-                              -97.618869,
-                              30.2116685
-                        ],
-                        [
-                              -97.618425,
-                              30.211924
-                        ],
-                        [
-                              -97.6178815,
-                              30.212202
-                        ],
-                        [
-                              -97.616493,
-                              30.213254
-                        ],
-                        [
-                              -97.61598,
-                              30.21361
-                        ],
-                        [
-                              -97.6147255,
-                              30.214071
-                        ],
-                        [
-                              -97.6142585,
-                              30.214194
-                        ],
-                        [
-                              -97.6139425,
-                              30.2142555
-                        ],
-                        [
-                              -97.6129875,
-                              30.2149245
-                        ],
-                        [
-                              -97.6130665,
-                              30.214426
-                        ],
-                        [
-                              -97.6131,
-                              30.21432
-                        ],
-                        [
-                              -97.6123325,
-                              30.2134745
-                        ],
-                        [
-                              -97.612325,
-                              30.213373
-                        ],
-                        [
-                              -97.6122525,
-                              30.213005
-                        ],
-                        [
-                              -97.6118005,
-                              30.2128795
-                        ],
-                        [
-                              -97.61128,
-                              30.2128395
-                        ],
-                        [
-                              -97.6104155,
-                              30.213066
-                        ],
-                        [
-                              -97.609435,
-                              30.2134845
-                        ],
-                        [
-                              -97.608792,
-                              30.213784
-                        ],
-                        [
-                              -97.60845,
-                              30.214217
-                        ],
-                        [
-                              -97.6081095,
-                              30.2148865
-                        ],
-                        [
-                              -97.607828,
-                              30.21535
-                        ],
-                        [
-                              -97.607769,
-                              30.215492
-                        ],
-                        [
-                              -97.607284,
-                              30.2160125
-                        ],
-                        [
-                              -97.6071735,
-                              30.2161935
-                        ],
-                        [
-                              -97.6072195,
-                              30.2164235
-                        ],
-                        [
-                              -97.607159,
-                              30.2166975
-                        ],
-                        [
-                              -97.6068835,
-                              30.217104
-                        ],
-                        [
-                              -97.6065055,
-                              30.217417
-                        ],
-                        [
-                              -97.6065635,
-                              30.2172345
-                        ],
-                        [
-                              -97.606674,
-                              30.2170535
-                        ],
-                        [
-                              -97.6067305,
-                              30.2169175
-                        ],
-                        [
-                              -97.6067345,
-                              30.21678
-                        ],
-                        [
-                              -97.606575,
-                              30.2168225
-                        ],
-                        [
-                              -97.6064115,
-                              30.2170025
-                        ],
-                        [
-                              -97.6061905,
-                              30.2173645
-                        ],
-                        [
-                              -97.606185,
-                              30.2175475
-                        ],
-                        [
-                              -97.6060745,
-                              30.2177285
-                        ],
-                        [
-                              -97.6058595,
-                              30.2178615
-                        ],
-                        [
-                              -97.6055865,
-                              30.2181765
-                        ],
-                        [
-                              -97.605526,
-                              30.21845
-                        ],
-                        [
-                              -97.605521,
-                              30.2186335
-                        ],
-                        [
-                              -97.605243,
-                              30.219132
-                        ],
-                        [
-                              -97.605238,
-                              30.219315
-                        ],
-                        [
-                              -97.6051285,
-                              30.21945
-                        ],
-                        [
-                              -97.6052275,
-                              30.2196815
-                        ],
-                        [
-                              -97.6052235,
-                              30.219819
-                        ],
-                        [
-                              -97.6051645,
-                              30.220047
-                        ],
-                        [
-                              -97.605265,
-                              30.2202325
-                        ],
-                        [
-                              -97.6053675,
-                              30.220326
-                        ],
-                        [
-                              -97.60536,
-                              30.220601
-                        ],
-                        [
-                              -97.605356,
-                              30.2207385
-                        ],
-                        [
-                              -97.605255,
-                              30.2211945
-                        ],
-                        [
-                              -97.6051445,
-                              30.2213755
-                        ],
-                        [
-                              -97.6051365,
-                              30.2216505
-                        ],
-                        [
-                              -97.6049695,
-                              30.221968
-                        ],
-                        [
-                              -97.6049075,
-                              30.2222875
-                        ],
-                        [
-                              -97.604681,
-                              30.2228325
-                        ],
-                        [
-                              -97.604447,
-                              30.2232415
-                        ],
-                        [
-                              -97.6042815,
-                              30.2236515
-                        ],
-                        [
-                              -97.604212,
-                              30.2239285
-                        ],
-                        [
-                              -97.6041405,
-                              30.224499
-                        ],
-                        [
-                              -97.604127,
-                              30.224635
-                        ],
-                        [
-                              -97.604191,
-                              30.2251415
-                        ],
-                        [
-                              -97.604029,
-                              30.225956
-                        ],
-                        [
-                              -97.603535,
-                              30.2268465
-                        ],
-                        [
-                              -97.602871,
-                              30.227241
-                        ],
-                        [
-                              -97.6015795,
-                              30.2275835
-                        ],
-                        [
-                              -97.601269,
-                              30.2276335
-                        ],
-                        [
-                              -97.600852,
-                              30.227596
-                        ],
-                        [
-                              -97.600585,
-                              30.2276205
-                        ],
-                        [
-                              -97.5997295,
-                              30.2277525
+                              -97.2470965,
+                              33.1405555
                         ]
                   ]
             ]
       },
       "centroid": {
-            "lat": 30.223605,
-            "lng": -97.6120065
+            "lat": 33.14072,
+            "lng": -97.247209
       },
       "properties": {
-            "owner": "COLORADO RIVER PROJECT LLC",
-            "lot_size_sqft": null,
-            "lot_acres": null,
-            "zoning": "",
-            "zoning_description": "",
+            "owner": "WILLIAMS, TIM & CONVERSE, SUSAN",
+            "lot_size_sqft": 9170,
+            "lot_acres": 0.21051,
+            "year_built": 2008,
+            "zoning": "PD",
+            "zoning_description": "Planned Development",
             "property_type": "",
-            "assessed_value": 3323759771,
-            "land_value": null,
-            "improvement_value": null,
-            "last_sale_price": null,
-            "sale_date": "",
-            "county": "travis",
+            "assessed_value": 451318,
+            "improvement_value": 284218,
+            "sale_date": "2023-07-05",
+            "county": "denton",
             "qoz_status": "No",
-            "use_code": "",
+            "use_code": "A1",
             "use_description": "",
-            "subdivision": "",
-            "num_stories": null,
-            "num_units": null,
-            "num_rooms": null,
-            "year_built": 2020,
-            "tax_year": "",
-            "parcel_value_type": "",
-            "census_tract": "",
-            "census_block": "",
+            "subdivision": "ROBSON RANCH 9 PH 1",
+            "num_stories": 1,
+            "tax_year": "2026",
+            "parcel_value_type": "CERTIFIED MARKET",
+            "census_tract": "48121020310",
+            "census_block": "481210203101010",
             "qoz_tract": "",
-            "last_refresh_date": "",
-            "regrid_updated_at": "",
-            "owner_mailing_address": "",
-            "owner_mail_city": "",
-            "owner_mail_state": "",
-            "owner_mail_zip": "",
-            "qualified_opportunity_zone": "No"
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 13:22:24 -0400",
+            "owner_mailing_address": "9101 BRADFORD ST",
+            "owner_mail_city": "DENTON",
+            "owner_mail_state": "TX",
+            "owner_mail_zip": "76207-6723",
+            "qualified_opportunity_zone": "No",
+            "ogc_fid": 174110,
+            "geoid": "48121",
+            "parcelnumb": "292257",
+            "parcelnumb_no_formatting": "292257",
+            "usecode": "A1",
+            "yearbuilt": 2008,
+            "numstories": 1,
+            "num_bath": 2,
+            "num_bedrooms": 2,
+            "parvaltype": "CERTIFIED MARKET",
+            "improvval": 284218,
+            "parval": 451318,
+            "saleprice": 0,
+            "saledate": "2023-07-05",
+            "taxyear": "2026",
+            "last_ownership_transfer_date": "2023-07-05",
+            "mailadd": "9101 BRADFORD ST",
+            "mail_addno": "9101",
+            "mail_addstr": "BRADFORD",
+            "mail_addsttyp": "ST",
+            "mail_city": "DENTON",
+            "mail_state2": "TX",
+            "mail_zip": "76207-6723",
+            "original_mailing_address": "{\"mailadd\":\"9101 BRADFORD ST\",\"mail_city\":\"DENTON\",\"mail_state2\":\"TX\",\"mail_zip\":\"76207-6723\"}",
+            "address": "9101 BRADFORD ST",
+            "saddno": "9101",
+            "saddstr": "BRADFORD",
+            "saddsttyp": "ST",
+            "scity": "DENTON",
+            "original_address": "{\"address\":\"9101 BRADFORD ST\",\"saddno\":\"9101\",\"saddstr\":\"BRADFORD\",\"saddsttyp\":\"ST\",\"scity\":\"DENTON\",\"szip\":\"76207\"}",
+            "city": "justin-roanoke",
+            "state2": "TX",
+            "szip": "76207-6723",
+            "szip5": "76207",
+            "address_source": "county;cass",
+            "legaldesc": "ROBSON RANCH 9 PH 1 BLK B LOT 14",
+            "block": "B",
+            "lot": "14",
+            "lat": "33.140720",
+            "lon": "-97.247209",
+            "qoz": "No",
+            "census_blockgroup": "481210203101",
+            "census_zcta": "76207",
+            "ll_last_refresh": "2026-06-24",
+            "recrdareano": 1884,
+            "area_building": 1884,
+            "area_building_definition": "LIVING AREA",
+            "deeded_acres": 0.2091,
+            "sqft": 9108.396,
+            "ll_gisacre": 0.21051,
+            "ll_gissqft": 9170,
+            "path": "/us/tx/denton/justin-roanoke/174110",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "28fcd81d-e5a3-4d03-87af-6192f80a9108",
+            "ll_updated_at": "2026-07-25 13:22:24 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
@@ -4104,18 +2534,18 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
   {
     // Curated metadata
     curatedMetadata: {
-      name: 'Chase Headquarters',
-      description: 'JPMorgan Chase\'s corporate headquarters building',
+      name: 'Apollo Global Management',
+      description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
       type: 'office'
     },
 
     // Basic identifiers
-    regrid_id: '408476',
-    apn: '1012830021',
-    address: '270 PARK AVE',
-    city: 'NEW YORK',
-    state: 'NY',
-    zip_code: '10017',
+    regrid_id: '034d774e-1048-4e3a-af06-217ca01ac3d1',
+    apn: '4138-011-027',
+    address: '2101 ROSECRANS AVE',
+    city: 'EL SEGUNDO',
+    state: 'CA',
+    zip_code: '90245',
 
     // Geometry and location
     geometry: {
@@ -4123,216 +2553,246 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "coordinates": [
             [
                   [
-                        -73.976785,
-                        40.7559985
+                        -118.3865965,
+                        33.9020945
                   ],
                   [
-                        -73.97649,
-                        40.755874
+                        -118.3865975,
+                        33.9033785
                   ],
                   [
-                        -73.975548,
-                        40.755478
+                        -118.387483,
+                        33.903378
                   ],
                   [
-                        -73.9751925,
-                        40.755965
+                        -118.388429,
+                        33.9033775
                   ],
                   [
-                        -73.976083,
-                        40.75634
+                        -118.388427,
+                        33.9020935
                   ],
                   [
-                        -73.976429,
-                        40.7564855
+                        -118.3883995,
+                        33.9020365
                   ],
                   [
-                        -73.976785,
-                        40.7559985
+                        -118.3883315,
+                        33.9020115
+                  ],
+                  [
+                        -118.386692,
+                        33.902012
+                  ],
+                  [
+                        -118.386624,
+                        33.9020375
+                  ],
+                  [
+                        -118.3865965,
+                        33.9020945
                   ]
             ]
       ]
 },
-    lat: 40.755982,
-    lng: -73.975989,
+    lat: 33.902696,
+    lng: -118.387512,
 
     // Property details
-    year_built: 2021,
-    owner: 'JPMORGAN CHASE BANK',
+    year_built: 1983,
+    owner: 'PLAZA CP LLC',
     last_sale_price: null,
     sale_date: null,
-    county: 'new-york',
+    county: 'los-angeles',
     qoz_status: 'No',
-    improvement_value: null,
-    land_value: 96400000,
-    assessed_value: 96400000,
+    improvement_value: 75862878,
+    land_value: 15928469,
+    assessed_value: 91791347,
 
     // Extended details
-    use_code: '05',
-    use_description: null,
-    zoning: 'C5-3',
-    zoning_description: 'Restricted Central Commercial',
-    num_stories: 70,
+    use_code: '1703',
+    use_description: 'Commercial - Office Buildings',
+    zoning: 'MU-S',
+    zoning_description: 'Urban Mixed Use South',
+    num_stories: 3,
     num_units: null,
     num_rooms: null,
     subdivision: null,
-    lot_size_acres: 1.82432,
-    lot_size_sqft: 79469,
+    lot_size_acres: 6.32711,
+    lot_size_sqft: 275615,
 
     // Financial & tax data
-    tax_year: '2025',
-    parcel_value_type: 'MARKET',
+    tax_year: '2026',
+    parcel_value_type: 'GROSS ASSESSED',
     sale_price: null,
 
     // Location data
-    census_tract: '36061009400',
-    census_block: '360610094002001',
+    census_tract: '06037980013',
+    census_block: '060379800131038',
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2025-04-29',
-    regrid_updated_at: '2025-09-15 15:15:28 -0400',
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 11:50:56 -0400',
 
     // Owner mailing
-    owner_mailing_address: '383 MADISON AVE',
-    owner_mail_city: 'NEW YORK',
-    owner_mail_state: 'NY',
-    owner_mail_zip: '10017-3217',
+    owner_mailing_address: '2041 ROSECRANS AVE # 200',
+    owner_mail_city: 'EL SEGUNDO',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '90245',
 
     // User fields
     is_sample: false,
 
     // Store full property data
     property_data: {
-      "id": "408476",
-      "apn": "1012830021",
+      "id": "034d774e-1048-4e3a-af06-217ca01ac3d1",
+      "apn": "4138-011-027",
       "address": {
-            "line1": "270 PARK AVE",
+            "line1": "2101 ROSECRANS AVE",
             "line2": "",
-            "city": "NEW YORK",
-            "state": "NY",
-            "zip": "10017"
+            "city": "EL SEGUNDO",
+            "state": "CA",
+            "zip": "90245"
       },
       "geometry": {
             "type": "Polygon",
             "coordinates": [
                   [
                         [
-                              -73.976785,
-                              40.7559985
+                              -118.3865965,
+                              33.9020945
                         ],
                         [
-                              -73.97649,
-                              40.755874
+                              -118.3865975,
+                              33.9033785
                         ],
                         [
-                              -73.975548,
-                              40.755478
+                              -118.387483,
+                              33.903378
                         ],
                         [
-                              -73.9751925,
-                              40.755965
+                              -118.388429,
+                              33.9033775
                         ],
                         [
-                              -73.976083,
-                              40.75634
+                              -118.388427,
+                              33.9020935
                         ],
                         [
-                              -73.976429,
-                              40.7564855
+                              -118.3883995,
+                              33.9020365
                         ],
                         [
-                              -73.976785,
-                              40.7559985
+                              -118.3883315,
+                              33.9020115
+                        ],
+                        [
+                              -118.386692,
+                              33.902012
+                        ],
+                        [
+                              -118.386624,
+                              33.9020375
+                        ],
+                        [
+                              -118.3865965,
+                              33.9020945
                         ]
                   ]
             ]
       },
       "centroid": {
-            "lat": 40.755982,
-            "lng": -73.975989
+            "lat": 33.902696,
+            "lng": -118.387512
       },
       "properties": {
-            "owner": "JPMORGAN CHASE BANK",
-            "lot_size_sqft": 79469,
-            "lot_acres": 1.82432,
-            "year_built": 2021,
-            "zoning": "C5-3",
-            "zoning_description": "Restricted Central Commercial",
+            "owner": "PLAZA CP LLC",
+            "lot_size_sqft": 275615,
+            "lot_acres": 6.32711,
+            "year_built": 1983,
+            "zoning": "MU-S",
+            "zoning_description": "Urban Mixed Use South",
             "property_type": "",
-            "assessed_value": 96400000,
-            "land_value": 96400000,
+            "assessed_value": 91791347,
+            "improvement_value": 75862878,
+            "land_value": 15928469,
             "sale_date": "",
-            "county": "new-york",
+            "county": "los-angeles",
             "qoz_status": "No",
-            "use_code": "05",
-            "use_description": "",
+            "use_code": "1703",
+            "use_description": "Commercial - Office Buildings",
             "subdivision": "",
-            "num_stories": 70,
-            "tax_year": "2025",
-            "parcel_value_type": "MARKET",
-            "census_tract": "36061009400",
-            "census_block": "360610094002001",
+            "num_stories": 3,
+            "tax_year": "2026",
+            "parcel_value_type": "GROSS ASSESSED",
+            "census_tract": "06037980013",
+            "census_block": "060379800131038",
             "qoz_tract": "",
-            "last_refresh_date": "2025-04-29",
-            "regrid_updated_at": "2025-09-15 15:15:28 -0400",
-            "owner_mailing_address": "383 MADISON AVE",
-            "owner_mail_city": "NEW YORK",
-            "owner_mail_state": "NY",
-            "owner_mail_zip": "10017-3217",
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 11:50:56 -0400",
+            "owner_mailing_address": "2041 ROSECRANS AVE # 200",
+            "owner_mail_city": "EL SEGUNDO",
+            "owner_mail_state": "CA",
+            "owner_mail_zip": "90245",
             "qualified_opportunity_zone": "No",
-            "ogc_fid": 408476,
-            "geoid": "36061",
-            "parcelnumb": "1012830021",
-            "parcelnumb_no_formatting": "1012830021",
-            "usecode": "05",
-            "structno": 1,
-            "yearbuilt": 2021,
-            "numstories": 70,
+            "ogc_fid": 966057,
+            "geoid": "06037",
+            "parcelnumb": "4138-011-027",
+            "parcelnumb_no_formatting": "4138011027",
+            "usecode": "1703",
+            "usedesc": "Commercial - Office Buildings",
+            "yearbuilt": 1983,
+            "numstories": 3,
             "numunits": 0,
-            "parvaltype": "MARKET",
-            "landval": 96400000,
-            "parval": 96400000,
-            "taxyear": "2025",
-            "mailadd": "383 MADISON AVE",
-            "mail_addno": "383",
-            "mail_addstr": "MADISON",
-            "mail_addsttyp": "AVE",
-            "mail_city": "NEW YORK",
-            "mail_state2": "NY",
-            "mail_zip": "10017-3217",
-            "original_mailing_address": "{\"mailadd\":\"383 MADISON AVE.\",\"mail_city\":\"NEW YORK\",\"mail_state2\":\"NY\",\"mail_zip\":\"10017-3217\"}",
-            "address": "270 PARK AVE",
-            "saddno": "270",
-            "saddstr": "PARK",
+            "parvaltype": "GROSS ASSESSED",
+            "improvval": 75862878,
+            "landval": 15928469,
+            "parval": 91791347,
+            "taxyear": "2026",
+            "last_ownership_transfer_date": "2005-03-09",
+            "owntype": "3",
+            "mailadd": "2041 ROSECRANS AVE # 200",
+            "mail_addno": "2041",
+            "mail_addstr": "ROSECRANS AVE",
+            "mail_unit": "# 200",
+            "mail_city": "EL SEGUNDO",
+            "mail_state2": "CA",
+            "mail_zip": "90245",
+            "original_mailing_address": "{\"mailadd\":\"02041 ROSECRANS AVE # 200\",\"mail_addno\":\"02041\",\"mail_addstr\":\"ROSECRANS AVE\",\"mail_unit\":\"# 200\",\"mail_city\":\"EL SEGUNDO\",\"mail_state2\":\"CA\",\"mail_zip\":\"902450000\"}",
+            "address": "2101 ROSECRANS AVE",
+            "saddno": "2101",
+            "saddstr": "ROSECRANS",
             "saddsttyp": "AVE",
-            "scity": "NEW YORK",
-            "original_address": "{\"address\":\"270 PARK AVENUE\",\"saddno\":\"270\",\"saddstr\":\"PARK AVENUE\",\"scity\":\"NEW YORK\",\"szip\":\"10017\"}",
-            "city": "manhattan",
-            "state2": "NY",
-            "szip": "10017-2014",
-            "szip5": "10017",
+            "scity": "EL SEGUNDO",
+            "original_address": "{\"address\":\"02101 ROSECRANS AVE\",\"saddno\":\"02101\",\"saddstr\":\"ROSECRANS AVE\",\"scity\":\"EL SEGUNDO\",\"szip\":\"902450000\"}",
+            "city": "south-bay-cities",
+            "state2": "CA",
+            "szip": "90245-4749",
+            "szip5": "90245",
             "address_source": "county;cass",
-            "block": "1283",
-            "lot": "21",
-            "lat": "40.755982",
-            "lon": "-73.975989",
+            "legaldesc": "TR=PARCEL MAP AS PER BK 124 P 52 OF P M LOT 4",
+            "lat": "33.902696",
+            "lon": "-118.387512",
             "qoz": "No",
-            "census_blockgroup": "360610094002",
-            "census_zcta": "10017",
-            "ll_last_refresh": "2025-04-29",
-            "sqft": 80333,
-            "ll_gisacre": 1.82432,
-            "ll_gissqft": 79469,
-            "path": "/us/ny/new-york/manhattan/408476",
-            "ll_stable_id": "geometry",
-            "ll_uuid": "04487036-ba01-43ca-bb54-118fcb05355a",
-            "ll_updated_at": "2025-09-15 15:15:28 -0400"
+            "census_blockgroup": "060379800131",
+            "census_zcta": "90245",
+            "ll_last_refresh": "2026-06-24",
+            "recrdareano": 106000,
+            "ll_gisacre": 6.32711,
+            "ll_gissqft": 275615,
+            "plss_township": "003S",
+            "plss_section": "Section 00",
+            "plss_range": "014W",
+            "path": "/us/ca/los-angeles/south-bay-cities/966057",
+            "ll_stable_id": "parcelnumb",
+            "ll_uuid": "034d774e-1048-4e3a-af06-217ca01ac3d1",
+            "ll_updated_at": "2026-07-25 11:50:56 -0400"
       },
       "demographics": null,
       "curatedMetadata": {
-            "name": "Chase Headquarters",
-            "description": "JPMorgan Chase's corporate headquarters building",
+            "name": "Apollo Global Management",
+            "description": "Apollo's El Segundo office at the Plaza at Continental Park",
             "type": "office"
       }
 }
@@ -4346,7 +2806,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     },
 
     // Basic identifiers
-    regrid_id: '133384',
+    regrid_id: '01fd2efa-9868-44d7-b48f-65e643296f8b',
     apn: '28041000100200',
     address: '3003 W CASINO RD',
     city: 'EVERETT',
@@ -4359,6 +2819,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
       "coordinates": [
             [
                   [
+                        [
+                              -122.276873,
+                              47.91843
+                        ],
+                        [
+                              -122.276871,
+                              47.921705
+                        ],
                         [
                               -122.276871,
                               47.9217325
@@ -4758,19 +3226,19 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                         [
                               -122.276873,
                               47.91843
-                        ],
-                        [
-                              -122.276871,
-                              47.921705
-                        ],
-                        [
-                              -122.276871,
-                              47.9217325
                         ]
                   ]
             ],
             [
                   [
+                        [
+                              -122.276871,
+                              47.922278
+                        ],
+                        [
+                              -122.271435,
+                              47.9223115
+                        ],
                         [
                               -122.2714355,
                               47.9223845
@@ -6042,14 +4510,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                         [
                               -122.276871,
                               47.922278
-                        ],
-                        [
-                              -122.271435,
-                              47.9223115
-                        ],
-                        [
-                              -122.2714355,
-                              47.9223845
                         ]
                   ]
             ]
@@ -6065,15 +4525,15 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     sale_date: '2002-02-26',
     county: 'snohomish',
     qoz_status: 'No',
-    improvement_value: 732624900,
+    improvement_value: 816879900,
     land_value: 178196100,
-    assessed_value: 910821000,
+    assessed_value: 995076000,
 
     // Extended details
     use_code: '344',
     use_description: 'Transportation Equipment',
     zoning: 'HI',
-    zoning_description: 'Heavy Industrial',
+    zoning_description: 'Heavy Industry',
     num_stories: null,
     num_units: null,
     num_rooms: null,
@@ -6082,7 +4542,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     lot_size_sqft: 19897094,
 
     // Financial & tax data
-    tax_year: '2025',
+    tax_year: '2026',
     parcel_value_type: 'MARKET',
     sale_price: null,
 
@@ -6092,8 +4552,8 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     qoz_tract: null,
 
     // Data freshness
-    last_refresh_date: '2025-08-19',
-    regrid_updated_at: '2025-09-15 15:46:37 -0400',
+    last_refresh_date: '2026-06-24',
+    regrid_updated_at: '2026-07-25 13:34:57 -0400',
 
     // Owner mailing
     owner_mailing_address: 'PO BOX 52427',
@@ -6106,7 +4566,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
 
     // Store full property data
     property_data: {
-      "id": "133384",
+      "id": "01fd2efa-9868-44d7-b48f-65e643296f8b",
       "apn": "28041000100200",
       "address": {
             "line1": "3003 W CASINO RD",
@@ -6120,6 +4580,14 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "coordinates": [
                   [
                         [
+                              [
+                                    -122.276873,
+                                    47.91843
+                              ],
+                              [
+                                    -122.276871,
+                                    47.921705
+                              ],
                               [
                                     -122.276871,
                                     47.9217325
@@ -6519,19 +4987,19 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                               [
                                     -122.276873,
                                     47.91843
-                              ],
-                              [
-                                    -122.276871,
-                                    47.921705
-                              ],
-                              [
-                                    -122.276871,
-                                    47.9217325
                               ]
                         ]
                   ],
                   [
                         [
+                              [
+                                    -122.276871,
+                                    47.922278
+                              ],
+                              [
+                                    -122.271435,
+                                    47.9223115
+                              ],
                               [
                                     -122.2714355,
                                     47.9223845
@@ -7803,14 +6271,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
                               [
                                     -122.276871,
                                     47.922278
-                              ],
-                              [
-                                    -122.271435,
-                                    47.9223115
-                              ],
-                              [
-                                    -122.2714355,
-                                    47.9223845
                               ]
                         ]
                   ]
@@ -7826,10 +6286,10 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "lot_acres": 456.76492,
             "year_built": 1966,
             "zoning": "HI",
-            "zoning_description": "Heavy Industrial",
+            "zoning_description": "Heavy Industry",
             "property_type": "",
-            "assessed_value": 910821000,
-            "improvement_value": 732624900,
+            "assessed_value": 995076000,
+            "improvement_value": 816879900,
             "land_value": 178196100,
             "sale_date": "2002-02-26",
             "county": "snohomish",
@@ -7837,13 +6297,13 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "use_code": "344",
             "use_description": "Transportation Equipment",
             "subdivision": "",
-            "tax_year": "2025",
+            "tax_year": "2026",
             "parcel_value_type": "MARKET",
             "census_tract": "53061041304",
             "census_block": "530610413042010",
             "qoz_tract": "",
-            "last_refresh_date": "2025-08-19",
-            "regrid_updated_at": "2025-09-15 15:46:37 -0400",
+            "last_refresh_date": "2026-06-24",
+            "regrid_updated_at": "2026-07-25 13:34:57 -0400",
             "owner_mailing_address": "PO BOX 52427",
             "owner_mail_city": "ATLANTA",
             "owner_mail_state": "GA",
@@ -7857,12 +6317,12 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "usedesc": "Transportation Equipment",
             "yearbuilt": 1966,
             "parvaltype": "MARKET",
-            "improvval": 732624900,
+            "improvval": 816879900,
             "landval": 178196100,
-            "parval": 910821000,
+            "parval": 995076000,
             "saleprice": 0,
             "saledate": "2002-02-26",
-            "taxyear": "2025",
+            "taxyear": "2026",
             "mailadd": "PO BOX 52427",
             "mail_addno": "52427",
             "mail_addstr": "PO BOX",
@@ -7887,7 +6347,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "qoz": "No",
             "census_blockgroup": "530610413042",
             "census_zcta": "98203",
-            "ll_last_refresh": "2025-08-19",
+            "ll_last_refresh": "2026-06-24",
             "gisacre": 457.06,
             "sqft": 19909656.2744,
             "ll_gisacre": 456.76492,
@@ -7898,7 +6358,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
             "path": "/us/wa/snohomish/everett/133384",
             "ll_stable_id": "parcelnumb",
             "ll_uuid": "01fd2efa-9868-44d7-b48f-65e643296f8b",
-            "ll_updated_at": "2025-09-15 15:46:37 -0400"
+            "ll_updated_at": "2026-07-25 13:34:57 -0400"
       },
       "demographics": null,
       "curatedMetadata": {

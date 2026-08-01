@@ -64,12 +64,12 @@ const CURATED_PROPERTIES: CuratedProperty[] = [
     state: 'TX'
   },
   {
-    apn: '1012830021',
-    name: 'Chase Headquarters',
-    description: 'JPMorgan Chase\'s corporate headquarters building',
+    apn: '4138011027',
+    name: 'Apollo Global Management',
+    description: 'Apollo\'s El Segundo office at the Plaza at Continental Park',
     type: 'office',
-    city: 'New York',
-    state: 'NY'
+    city: 'El Segundo',
+    state: 'CA'
   },
   {
     apn: '28041000100200',
@@ -187,7 +187,7 @@ async function createTypeScriptFile(properties: unknown[]) {
 
 import type { Property } from '@/lib/supabase'
 
-export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | 'portfolio_id' | 'created_at' | 'updated_at'> {
+export interface CuratedDemoProperty extends Omit<Property, 'id' | 'user_id' | 'portfolio_id' | 'created_at' | 'updated_at' | 'purchase_price' | 'purchase_date' | 'management_company' | 'mortgage_amount' | 'user_notes' | 'tags' | 'insurance_provider' | 'maintenance_history' | 'lender_name' | 'loan_rate' | 'loan_maturity_date'> {
   curatedMetadata: {
     name: string
     description: string
@@ -320,6 +320,7 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     // Financial & tax data
     tax_year: ${propertyData.tax_year ? `'${propertyData.tax_year}'` : 'null'},
     parcel_value_type: ${propertyData.parcel_value_type ? `'${propertyData.parcel_value_type}'` : 'null'},
+    sale_price: null,
 
     // Location data
     census_tract: ${propertyData.census_tract ? `'${propertyData.census_tract}'` : 'null'},
@@ -337,10 +338,6 @@ export const CURATED_DEMO_PROPERTIES: CuratedDemoProperty[] = [
     owner_mail_zip: ${propertyData.owner_mail_zip ? `'${propertyData.owner_mail_zip}'` : 'null'},
 
     // User fields
-    user_notes: null,
-    tags: null,
-    insurance_provider: null,
-    maintenance_history: null,
     is_sample: false,
 
     // Store full property data
