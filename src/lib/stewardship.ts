@@ -26,6 +26,8 @@ export interface LifecycleEvent {
   eventType: 'ownership' | 'valuation' | 'sale' | 'zoning' | 'attribute'
   source: 'county-refresh' | 'simulated'
   detectedAt: string
+  /** Batch this change arrived in — links the event to feed-delivery telemetry */
+  deliveryId?: string
 }
 
 /** County data older than this is considered stale */

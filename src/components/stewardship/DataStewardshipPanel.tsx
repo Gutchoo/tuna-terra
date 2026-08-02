@@ -26,6 +26,12 @@ import {
   DownloadIcon,
 } from 'lucide-react'
 import { exportDataHealthReport, exportLifecycleEvents } from '@/lib/stewardship-export'
+import {
+  buildLiveDelivery,
+  getSeededDeliveries,
+  type FeedDelivery,
+} from '@/lib/feed-deliveries'
+import { FeedDeliveriesPanel } from './FeedDeliveriesPanel'
 import type { Property } from '@/lib/supabase'
 import {
   classifyProperty,
@@ -92,6 +98,7 @@ export function DataStewardshipPanel({
   const [hasChecked, setHasChecked] = useState(false)
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null)
   const [reviewingEvent, setReviewingEvent] = useState<LifecycleEvent | null>(null)
+  const [deliveries, setDeliveries] = useState<FeedDelivery[]>(getSeededDeliveries)
 
   const classified: ClassifiedProperty[] = useMemo(
     () => properties.map(property => ({ property, health: classifyProperty(property) })),
@@ -117,6 +124,17 @@ export function DataStewardshipPanel({
     setResolvedEventIds(new Set())
     setHasChecked(true)
     setLastCheckedAt(new Date())
+
+    // Log the run as a delivery with real pipeline counts, and stamp each
+    // event with the delivery id so its lineage traces back to the batch
+    const delivery = buildLiveDelivery({
+      recordCount: properties.length,
+      eventCount: detected.length,
+      exceptionCount: lanes.exception.length,
+      source: 'County assessor (Regrid)',
+    })
+    setDeliveries(prev => [delivery, ...prev])
+    setEvents(detected.map(e => ({ ...e, deliveryId: delivery.id })))
   }
 
   // Decisions come from the review sheet: apply mutates the record, both
@@ -143,6 +161,11 @@ export function DataStewardshipPanel({
         <StatCell icon={<ClockIcon className="h-4 w-4 text-amber-600" />} label="Stale" value={lanes.stale.length} hint="Needs re-verification" />
         <StatCell icon={<AlertTriangleIcon className="h-4 w-4 text-red-600" />} label="Exceptions" value={lanes.exception.length} hint="Needs human review" />
       </div>
+
+      {/* Feed delivery telemetry (ops surface) */}
+      <FeedDeliveriesPanel deliveries={deliveries} />
+
+      <Separator />
 
       {/* Lifecycle event feed */}
       <section>
@@ -253,6 +276,9 @@ export function DataStewardshipPanel({
                         <span className="font-medium">{event.newValue}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
+                        {event.deliveryId && (
+                          <span className="font-mono">{event.deliveryId} · </span>
+                        )}
                         Source: {describeEventSource(event.source)} · detected{' '}
                         {new Date(event.detectedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                       </p>

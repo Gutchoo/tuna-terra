@@ -163,6 +163,11 @@ export function EventReviewSheet({
                 {property?.county && ` · ${property.county} county roll`}
                 {property?.apn && ` · APN ${property.apn}`}
               </p>
+              {event.deliveryId && (
+                <p className="text-xs text-muted-foreground">
+                  Delivery: <span className="font-mono">{event.deliveryId}</span> — traceable in Feed Deliveries
+                </p>
+              )}
               {RAW_FIELD_MAP[event.field] && (
                 <p className="text-xs text-muted-foreground">
                   Vendor field: <span className="font-mono">fields.{RAW_FIELD_MAP[event.field]}</span>
