@@ -11,12 +11,14 @@ import { toast } from 'sonner'
 interface DemoStewardshipSectionProps {
   properties: Property[]
   onOpenProperty?: (propertyId: string) => void
+  /** Apply an event to a static sample property (they live outside DemoContext) */
+  onApplySampleOverride?: (propertyId: string, updates: Partial<Property>) => void
 }
 
 // Money-formatted event values need to be parsed back to numbers for storage
 const NUMERIC_FIELDS = new Set(['assessed_value', 'land_value', 'improvement_value', 'last_sale_price'])
 
-export function DemoStewardshipSection({ properties, onOpenProperty }: DemoStewardshipSectionProps) {
+export function DemoStewardshipSection({ properties, onOpenProperty, onApplySampleOverride }: DemoStewardshipSectionProps) {
   const { updateDemoProperty } = useDemo()
   const [isChecking, setIsChecking] = useState(false)
 
@@ -37,10 +39,14 @@ export function DemoStewardshipSection({ properties, onOpenProperty }: DemoStewa
     const value = NUMERIC_FIELDS.has(event.field)
       ? parseFloat(event.newValue.replace(/[^0-9.]/g, ''))
       : event.newValue
+    const updates = { [event.field]: value } as Partial<Property>
 
-    // Sample properties are static fixtures; demo-added properties live in context
+    // Demo-added properties live in context; static sample fixtures are
+    // patched via the page-level override map
     if (event.propertyId.startsWith('demo-property-')) {
-      updateDemoProperty(event.propertyId, { [event.field]: value } as Partial<Property>)
+      updateDemoProperty(event.propertyId, updates)
+    } else {
+      onApplySampleOverride?.(event.propertyId, updates)
     }
     toast.success(`Updated ${event.label.toLowerCase()} for ${event.propertyAddress}`)
   }
