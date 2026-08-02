@@ -1,26 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DataStewardshipPanel } from '@/components/stewardship/DataStewardshipPanel'
+import { PropertyModal } from '@/components/properties/PropertyModal'
 import { useDemo } from '@/contexts/DemoContext'
+import { useStewardshipLog } from '@/contexts/StewardshipLogContext'
 import { simulateCountyFeedCheck } from '@/lib/demo-stewardship'
-import type { LifecycleEvent } from '@/lib/stewardship'
+import { parseEventValue, type LifecycleEvent } from '@/lib/stewardship'
 import type { Property } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 interface DemoStewardshipSectionProps {
   properties: Property[]
-  onOpenProperty?: (propertyId: string) => void
   /** Apply an event to a static sample property (they live outside DemoContext) */
   onApplySampleOverride?: (propertyId: string, updates: Partial<Property>) => void
 }
 
-// Money-formatted event values need to be parsed back to numbers for storage
-const NUMERIC_FIELDS = new Set(['assessed_value', 'land_value', 'improvement_value', 'last_sale_price'])
-
-export function DemoStewardshipSection({ properties, onOpenProperty, onApplySampleOverride }: DemoStewardshipSectionProps) {
+export function DemoStewardshipSection({ properties, onApplySampleOverride }: DemoStewardshipSectionProps) {
   const { updateDemoProperty } = useDemo()
+  const log = useStewardshipLog()
   const [isChecking, setIsChecking] = useState(false)
+  // Property modal opened in place from the stewardship screen
+  const [openPropertyId, setOpenPropertyId] = useState<string | null>(null)
+
+  const openProperty = useMemo(
+    () => (openPropertyId ? properties.find(p => p.id === openPropertyId) : undefined),
+    [openPropertyId, properties]
+  )
 
   const handleCheckFeed = async (): Promise<LifecycleEvent[]> => {
     setIsChecking(true)
@@ -35,10 +41,8 @@ export function DemoStewardshipSection({ properties, onOpenProperty, onApplySamp
   }
 
   const handleApplyEvent = (event: LifecycleEvent) => {
-    if (event.newValue == null) return
-    const value = NUMERIC_FIELDS.has(event.field)
-      ? parseFloat(event.newValue.replace(/[^0-9.]/g, ''))
-      : event.newValue
+    const value = parseEventValue(event.field, event.newValue)
+    if (value == null) return
     const updates = { [event.field]: value } as Partial<Property>
 
     // Demo-added properties live in context; static sample fixtures are
@@ -48,16 +52,29 @@ export function DemoStewardshipSection({ properties, onOpenProperty, onApplySamp
     } else {
       onApplySampleOverride?.(event.propertyId, updates)
     }
+    log?.recordAppliedEvent(event)
     toast.success(`Updated ${event.label.toLowerCase()} for ${event.propertyAddress}`)
   }
 
   return (
-    <DataStewardshipPanel
-      properties={properties}
-      onCheckFeed={handleCheckFeed}
-      onApplyEvent={handleApplyEvent}
-      onOpenProperty={onOpenProperty}
-      isCheckingFeed={isChecking}
-    />
+    <>
+      <DataStewardshipPanel
+        properties={properties}
+        onCheckFeed={handleCheckFeed}
+        onApplyEvent={handleApplyEvent}
+        onOpenProperty={setOpenPropertyId}
+        isCheckingFeed={isChecking}
+        feedDescription="Simulated county assessor feed (live accounts poll Regrid)"
+      />
+
+      {/* In-place property detail — stays on the stewardship screen */}
+      <PropertyModal
+        open={openPropertyId !== null}
+        onOpenChange={open => !open && setOpenPropertyId(null)}
+        propertyId={openPropertyId}
+        portfolioId={null}
+        property={openProperty}
+      />
+    </>
   )
 }

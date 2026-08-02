@@ -120,6 +120,26 @@ function formatMoney(v: unknown): string {
   }).format(n)
 }
 
+/** Fields whose event values are money-formatted strings that must be parsed back to numbers */
+export const NUMERIC_EVENT_FIELDS = new Set(['assessed_value', 'land_value', 'improvement_value', 'last_sale_price'])
+
+/** Convert an event's display value back to a storable field value */
+export function parseEventValue(field: string, value: string | null): string | number | null {
+  if (value == null) return null
+  if (NUMERIC_EVENT_FIELDS.has(field)) {
+    const parsed = parseFloat(value.replace(/[^0-9.]/g, ''))
+    return isNaN(parsed) ? null : parsed
+  }
+  return value
+}
+
+/** Human-readable provenance for an event source */
+export function describeEventSource(source: LifecycleEvent['source']): string {
+  return source === 'county-refresh'
+    ? 'County assessor feed (Regrid API)'
+    : 'Simulated county feed (demo)'
+}
+
 /**
  * Diff two versions of a property record and emit lifecycle events for
  * watched fields that changed. Used after a county refresh (and by the

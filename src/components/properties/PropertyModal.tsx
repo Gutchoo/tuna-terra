@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { Property } from "@/lib/supabase"
 import { PropertyOverviewSection } from "./PropertyOverviewSection"
 import { PropertyDocumentsSection } from "./PropertyDocumentsSection"
+import { PropertyChangeLog } from "./PropertyChangeLog"
 import { useCanEditPortfolio } from "@/hooks/use-portfolio-role"
 
 interface PropertyModalProps {
@@ -122,7 +123,7 @@ export function PropertyModal({
             <div className="flex-1 overflow-hidden px-7 py-6 min-h-0">
               <div className="h-full grid grid-cols-1 lg:grid-cols-[55%_45%] gap-4">
                 {/* Left Column: Property Overview (scrollable) */}
-                <div className="overflow-y-auto pr-2 min-h-0">
+                <div className="overflow-y-auto pr-2 min-h-0 space-y-3">
                   <PropertyOverviewSection
                     property={localProperty}
                     canEdit={canEdit}
@@ -134,6 +135,7 @@ export function PropertyModal({
                     onCancelEdit={handleCancelEdit}
                     isSaving={isSaving}
                   />
+                  <PropertyChangeLog propertyId={propertyId} />
                 </div>
 
                 {/* Right Column: Documents (scrollable) */}
