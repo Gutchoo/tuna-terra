@@ -1,0 +1,142 @@
+import type { Property } from '@/lib/supabase'
+import type { LifecycleEvent } from '@/lib/stewardship'
+import type { ChangeLogEntry } from '@/contexts/StewardshipLogContext'
+import { classifyProperty, describeEventSource } from '@/lib/stewardship'
+
+// ============================================================================
+// Structured exports: the deliverables a reference-data team distributes to
+// downstream consumers — a data-health report, the lifecycle event feed,
+// and the decision audit log. CSV with a metadata header block.
+// ============================================================================
+
+function escapeCSV(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  const s = String(value)
+  if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
+}
+
+function toCSV(headers: string[], rows: unknown[][], meta: Record<string, string>): string {
+  const metaBlock = Object.entries(meta)
+    .map(([k, v]) => `# ${k}: ${v}`)
+    .join('\n')
+  const headerRow = headers.map(escapeCSV).join(',')
+  const dataRows = rows.map(row => row.map(escapeCSV).join(',')).join('\n')
+  return `${metaBlock}\n${headerRow}\n${dataRows}\n`
+}
+
+function download(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+const stamp = () => new Date().toISOString()
+const dateSlug = () => new Date().toISOString().split('T')[0]
+
+/** Data-health report: one row per record with classification and reasons */
+export function exportDataHealthReport(properties: Property[]) {
+  const rows = properties.map(p => {
+    const health = classifyProperty(p)
+    return [
+      p.apn ?? '',
+      p.address,
+      p.city ?? '',
+      p.state ?? '',
+      p.county ?? '',
+      health.status.toUpperCase(),
+      health.monthsSinceVerified === null ? '' : health.monthsSinceVerified.toFixed(1),
+      health.reasons.join('; '),
+      p.owner ?? '',
+      p.assessed_value ?? '',
+      p.last_refresh_date ?? '',
+    ]
+  })
+
+  const counts = rows.reduce((acc, r) => {
+    const k = String(r[5]); acc[k] = (acc[k] || 0) + 1; return acc
+  }, {} as Record<string, number>)
+
+  download(
+    `data-health-report-${dateSlug()}.csv`,
+    toCSV(
+      ['apn', 'address', 'city', 'state', 'county', 'status', 'months_since_verified', 'review_reasons', 'owner_of_record', 'assessed_value', 'last_verified'],
+      rows,
+      {
+        report: 'Portfolio Data Health',
+        generated_at: stamp(),
+        records: String(properties.length),
+        summary: Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' '),
+        methodology: 'FRESH: county record verified <12mo. STALE: verified >12mo or undated. EXCEPTION: unresolvable identity or missing county record.',
+      }
+    )
+  )
+}
+
+/** Lifecycle event feed: every detected change with review disposition */
+export function exportLifecycleEvents(events: LifecycleEvent[], resolvedIds: Set<string>) {
+  const rows = events.map(e => [
+    e.detectedAt,
+    e.propertyAddress,
+    e.propertyId,
+    e.eventType.toUpperCase(),
+    e.label,
+    e.field,
+    e.oldValue ?? '',
+    e.newValue ?? '',
+    describeEventSource(e.source),
+    resolvedIds.has(e.id) ? 'REVIEWED' : 'PENDING',
+  ])
+
+  download(
+    `lifecycle-events-${dateSlug()}.csv`,
+    toCSV(
+      ['detected_at', 'address', 'record_id', 'event_type', 'field_label', 'field', 'prior_value', 'incoming_value', 'source', 'review_status'],
+      rows,
+      {
+        report: 'Lifecycle Event Feed',
+        generated_at: stamp(),
+        events: String(events.length),
+        pending_review: String(events.filter(e => !resolvedIds.has(e.id)).length),
+      }
+    )
+  )
+}
+
+/** Decision audit log: every steward action with rationale */
+export function exportAuditLog(entries: ChangeLogEntry[]) {
+  const rows = entries.map(e => [
+    e.appliedAt,
+    e.propertyId,
+    e.label,
+    e.field,
+    e.oldValue ?? '',
+    e.newValue ?? '',
+    e.decision.toUpperCase(),
+    e.note ?? '',
+    describeEventSource(e.source),
+    e.appliedBy,
+    e.revertedAt ?? '',
+  ])
+
+  download(
+    `stewardship-audit-log-${dateSlug()}.csv`,
+    toCSV(
+      ['decided_at', 'record_id', 'field_label', 'field', 'prior_value', 'incoming_value', 'decision', 'decision_note', 'source', 'steward', 'reverted_at'],
+      rows,
+      {
+        report: 'Stewardship Decision Audit Log',
+        generated_at: stamp(),
+        decisions: String(entries.length),
+        applied: String(entries.filter(e => e.decision === 'applied').length),
+        dismissed: String(entries.filter(e => e.decision === 'dismissed').length),
+      }
+    )
+  )
+}

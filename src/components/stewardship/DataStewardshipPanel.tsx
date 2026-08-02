@@ -6,6 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   ShieldCheckIcon,
   ClockIcon,
   AlertTriangleIcon,
@@ -15,7 +23,9 @@ import {
   RefreshCwIcon,
   DatabaseIcon,
   SearchIcon,
+  DownloadIcon,
 } from 'lucide-react'
+import { exportDataHealthReport, exportLifecycleEvents } from '@/lib/stewardship-export'
 import type { Property } from '@/lib/supabase'
 import {
   classifyProperty,
@@ -39,6 +49,8 @@ interface DataStewardshipPanelProps {
   isCheckingFeed?: boolean
   /** Where the feed data comes from, shown under the feed header */
   feedDescription?: string
+  /** Export the decision audit log (provided where a log context exists) */
+  onExportAuditLog?: () => void
 }
 
 interface ClassifiedProperty {
@@ -46,12 +58,23 @@ interface ClassifiedProperty {
   health: DataHealthResult
 }
 
-const EVENT_TYPE_STYLES: Record<LifecycleEvent['eventType'], { label: string; className: string }> = {
-  ownership: { label: 'Ownership', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
-  valuation: { label: 'Valuation', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  sale: { label: 'Sale', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' },
-  zoning: { label: 'Zoning', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  attribute: { label: 'Attribute', className: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200' },
+// Neutral chip + colored signal dot (financial-terminal style, not pastel fills)
+const EVENT_TYPE_STYLES: Record<LifecycleEvent['eventType'], { label: string; dotClass: string }> = {
+  ownership: { label: 'Ownership', dotClass: 'bg-purple-500' },
+  valuation: { label: 'Valuation', dotClass: 'bg-blue-500' },
+  sale: { label: 'Sale', dotClass: 'bg-emerald-500' },
+  zoning: { label: 'Zoning', dotClass: 'bg-amber-500' },
+  attribute: { label: 'Attribute', dotClass: 'bg-slate-400' },
+}
+
+function EventTypeBadge({ eventType }: { eventType: LifecycleEvent['eventType'] }) {
+  const style = EVENT_TYPE_STYLES[eventType]
+  return (
+    <Badge variant="outline" className="text-xs font-normal gap-1.5">
+      <span className={`size-1.5 rounded-full ${style.dotClass}`} />
+      {style.label}
+    </Badge>
+  )
 }
 
 export function DataStewardshipPanel({
@@ -62,6 +85,7 @@ export function DataStewardshipPanel({
   onOpenProperty,
   isCheckingFeed = false,
   feedDescription = 'Compares each record against the latest county assessor data',
+  onExportAuditLog,
 }: DataStewardshipPanelProps) {
   const [events, setEvents] = useState<LifecycleEvent[]>([])
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
@@ -109,10 +133,10 @@ export function DataStewardshipPanel({
   return (
     <div className="space-y-8">
       {/* Health summary strip — flat stats, no nested cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border rounded-lg border bg-muted/20">
+      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border rounded-lg border bg-card">
         <div className="p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Data Coverage</p>
-          <p className="text-3xl font-semibold mt-1">{freshPct}%</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Data Coverage</p>
+          <p className="text-2xl font-semibold tabular-nums tracking-tight mt-1">{freshPct}%</p>
           <p className="text-xs text-muted-foreground mt-0.5">{lanes.fresh.length} of {classified.length} records fresh</p>
         </div>
         <StatCell icon={<ShieldCheckIcon className="h-4 w-4 text-emerald-600" />} label="Fresh" value={lanes.fresh.length} hint="Verified < 12 months" />
@@ -142,10 +166,38 @@ export function DataStewardshipPanel({
               )}
             </p>
           </div>
-          <Button size="sm" onClick={handleCheckFeed} disabled={isCheckingFeed} className="gap-2">
-            <RefreshCwIcon className={`h-4 w-4 ${isCheckingFeed ? 'animate-spin' : ''}`} />
-            {isCheckingFeed ? 'Checking feed…' : 'Check county feed'}
-          </Button>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <DownloadIcon className="h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel className="text-xs">Downstream deliverables</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => exportDataHealthReport(properties)}>
+                  Data health report (CSV)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={events.length === 0}
+                  onClick={() => exportLifecycleEvents(events, resolvedEventIds)}
+                >
+                  Lifecycle event feed (CSV)
+                </DropdownMenuItem>
+                {onExportAuditLog && (
+                  <DropdownMenuItem onClick={onExportAuditLog}>
+                    Decision audit log (CSV)
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button size="sm" onClick={handleCheckFeed} disabled={isCheckingFeed} className="gap-2">
+              <RefreshCwIcon className={`h-4 w-4 ${isCheckingFeed ? 'animate-spin' : ''}`} />
+              {isCheckingFeed ? 'Checking feed…' : 'Check county feed'}
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4">
@@ -167,7 +219,6 @@ export function DataStewardshipPanel({
           ) : (
             <div className="rounded-lg border divide-y">
               {openEvents.map(event => {
-                const style = EVENT_TYPE_STYLES[event.eventType]
                 const property = properties.find(p => p.id === event.propertyId)
                 const warnings = buildVerificationChecks(event, property, events).filter(c => c.status === 'warn').length
                 return (
@@ -179,10 +230,10 @@ export function DataStewardshipPanel({
                   >
                     <div className="min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge className={`text-xs ${style.className}`} variant="secondary">{style.label}</Badge>
+                        <EventTypeBadge eventType={event.eventType} />
                         <span className="text-sm font-medium truncate">{event.propertyAddress}</span>
                         {warnings > 0 && (
-                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 gap-1">
+                          <Badge variant="outline" className="text-xs font-normal gap-1 border-amber-600/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">
                             <AlertTriangleIcon className="h-3 w-3" />
                             {warnings}
                           </Badge>
@@ -244,7 +295,7 @@ export function DataStewardshipPanel({
             <QueueList
               items={lanes.stale}
               emptyMessage="Nothing stale — all county records verified within the last 12 months."
-              badge={<Badge className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" variant="secondary">Stale</Badge>}
+              badge={<Badge variant="outline" className="text-xs font-normal border-amber-600/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">Stale</Badge>}
               onOpenProperty={onOpenProperty}
             />
           </TabsContent>
@@ -269,9 +320,9 @@ function StatCell({ icon, label, value, hint }: { icon: React.ReactNode; label: 
     <div className="p-4">
       <div className="flex items-center gap-2">
         {icon}
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="text-3xl font-semibold mt-1">{value}</p>
+      <p className="text-2xl font-semibold tabular-nums tracking-tight mt-1">{value}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>
     </div>
   )

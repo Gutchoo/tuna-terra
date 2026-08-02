@@ -7,6 +7,7 @@ import { useDemo } from '@/contexts/DemoContext'
 import { useStewardshipLog } from '@/contexts/StewardshipLogContext'
 import { simulateCountyFeedCheck } from '@/lib/demo-stewardship'
 import { parseEventValue, type LifecycleEvent } from '@/lib/stewardship'
+import { exportAuditLog } from '@/lib/stewardship-export'
 import type { Property } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -72,6 +73,13 @@ export function DemoStewardshipSection({ properties, onApplySampleOverride }: De
         onOpenProperty={setOpenPropertyId}
         isCheckingFeed={isChecking}
         feedDescription="Simulated county assessor feed (live accounts poll Regrid)"
+        onExportAuditLog={log ? () => {
+          if (log.entries.length === 0) {
+            toast.info('No decisions recorded yet — review some lifecycle events first.')
+            return
+          }
+          exportAuditLog(log.entries)
+        } : undefined}
       />
 
       {/* In-place property detail — stays on the stewardship screen */}

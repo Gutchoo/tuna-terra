@@ -14,6 +14,11 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import {
   CheckIcon,
   XIcon,
   AlertTriangleIcon,
@@ -21,6 +26,8 @@ import {
   CheckCircle2Icon,
   DatabaseIcon,
   ExternalLinkIcon,
+  ChevronDownIcon,
+  FileJsonIcon,
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import {
@@ -40,9 +47,9 @@ interface EventReviewSheetProps {
 }
 
 const CHECK_ICONS = {
-  pass: <CheckCircle2Icon className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />,
-  warn: <AlertTriangleIcon className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />,
-  info: <InfoIcon className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />,
+  pass: <CheckCircle2Icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />,
+  warn: <AlertTriangleIcon className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />,
+  info: <InfoIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />,
 }
 
 // Review-before-decide: the steward inspects the incoming change against the
@@ -103,7 +110,7 @@ export function EventReviewSheet({
                 <p className="text-xs text-muted-foreground mb-1">Current record</p>
                 <p className="text-sm font-medium break-words">{event.oldValue ?? '—'}</p>
               </div>
-              <div className="rounded-md border border-primary/40 bg-primary/5 p-3">
+              <div className="rounded-md border border-blue-500/40 bg-blue-500/5 dark:border-blue-400/40 p-3">
                 <p className="text-xs text-muted-foreground mb-1">Incoming from feed</p>
                 <p className="text-sm font-medium break-words">{event.newValue ?? '—'}</p>
               </div>
@@ -139,11 +146,11 @@ export function EventReviewSheet({
                 Verification checks
               </p>
               {warnings > 0 ? (
-                <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                <Badge variant="secondary" className="text-xs border-amber-600/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">
                   {warnings} warning{warnings === 1 ? '' : 's'}
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                <Badge variant="secondary" className="text-xs border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                   All clear
                 </Badge>
               )}
@@ -160,6 +167,27 @@ export function EventReviewSheet({
               ))}
             </div>
           </div>
+
+          {/* Raw vendor record: the source payload behind the normalized fields */}
+          {property?.property_data != null && (
+            <Collapsible>
+              <CollapsibleTrigger className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors group">
+                <span className="flex items-center gap-1.5">
+                  <FileJsonIcon className="h-3.5 w-3.5" />
+                  Raw vendor record
+                </span>
+                <ChevronDownIcon className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <p className="text-xs text-muted-foreground mt-2 mb-1.5">
+                  Source payload the normalized fields were derived from — retained verbatim for lineage.
+                </p>
+                <pre className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed font-mono overflow-x-auto max-h-64 overflow-y-auto">
+                  {JSON.stringify(property.property_data, null, 2)}
+                </pre>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           <Separator />
 

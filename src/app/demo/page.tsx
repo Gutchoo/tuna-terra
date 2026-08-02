@@ -8,6 +8,7 @@ import { StewardshipLogProvider } from '@/contexts/StewardshipLogContext'
 import { DemoHeader } from '@/components/demo/DemoHeader'
 import { DemoPropertyViewWrapper } from '@/components/demo/DemoPropertyViewWrapper'
 import { DemoStewardshipSection } from '@/components/demo/DemoStewardshipSection'
+import { DataDictionary } from '@/components/stewardship/DataDictionary'
 import { ConversionPrompt } from '@/components/demo/ConversionPrompt'
 import { DemoDebugPanel } from '@/components/demo/DemoDebugPanel'
 import { VIRTUAL_SAMPLE_PROPERTIES } from '@/lib/sample-portfolio'
@@ -76,6 +77,7 @@ function DemoPageContent() {
                   Data Stewardship
                   <Badge variant="secondary" className="text-xs">New</Badge>
                 </TabsTrigger>
+                <TabsTrigger value="dictionary">Data Dictionary</TabsTrigger>
               </TabsList>
 
               {/* forceMount keeps both tabs alive: switching tabs must not
@@ -89,6 +91,10 @@ function DemoPageContent() {
                   properties={allProperties}
                   onApplySampleOverride={handleApplySampleOverride}
                 />
+              </TabsContent>
+
+              <TabsContent value="dictionary">
+                <DataDictionary />
               </TabsContent>
             </Tabs>
           </div>

@@ -80,7 +80,7 @@ export function CompactPropertyCard({
 
   return (
     <Card
-      className="group relative overflow-hidden rounded-lg border bg-card hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer"
+      className="group relative overflow-hidden rounded-lg border bg-card hover:bg-muted/40 hover:border-foreground/20 transition-colors cursor-pointer"
       onClick={handleCardClick}
     >
       <CardContent className="pt-2 pb-2 pr-2 pl-3 space-y-2">
@@ -108,7 +108,7 @@ export function CompactPropertyCard({
               <DropdownMenuContent align="end" onClick={handleMenuClick}>
                 <DropdownMenuItem
                   onClick={() => onDelete(property)}
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
                   disabled={isVirtualSampleProperty(property.id)}
                 >
                   <TrashIcon className="mr-2 h-4 w-4" />
@@ -157,7 +157,7 @@ export function CompactPropertyCard({
             {stats.map(stat => (
               <div key={stat.label} className="min-w-0">
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{stat.label}</p>
-                <p className="text-sm font-medium truncate" title={stat.value}>{stat.value}</p>
+                <p className="text-sm font-medium tabular-nums truncate" title={stat.value}>{stat.value}</p>
               </div>
             ))}
           </div>
