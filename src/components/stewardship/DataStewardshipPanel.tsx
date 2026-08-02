@@ -14,14 +14,17 @@ import {
   CheckIcon,
   RefreshCwIcon,
   DatabaseIcon,
+  SearchIcon,
 } from 'lucide-react'
 import type { Property } from '@/lib/supabase'
 import {
   classifyProperty,
   describeEventSource,
+  buildVerificationChecks,
   type DataHealthResult,
   type LifecycleEvent,
 } from '@/lib/stewardship'
+import { EventReviewSheet } from './EventReviewSheet'
 
 interface DataStewardshipPanelProps {
   properties: Property[]
@@ -29,6 +32,8 @@ interface DataStewardshipPanelProps {
   onCheckFeed: () => Promise<LifecycleEvent[]>
   /** Apply an acknowledged event to the record (demo: local state; live: PATCH). */
   onApplyEvent?: (event: LifecycleEvent) => Promise<void> | void
+  /** Record a decision (applied or dismissed, with the steward's note) in the audit log */
+  onRecordDecision?: (event: LifecycleEvent, decision: 'applied' | 'dismissed', note: string) => void
   /** Open a property's detail view (in place — no navigation) */
   onOpenProperty?: (propertyId: string) => void
   isCheckingFeed?: boolean
@@ -53,6 +58,7 @@ export function DataStewardshipPanel({
   properties,
   onCheckFeed,
   onApplyEvent,
+  onRecordDecision,
   onOpenProperty,
   isCheckingFeed = false,
   feedDescription = 'Compares each record against the latest county assessor data',
@@ -61,7 +67,7 @@ export function DataStewardshipPanel({
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
   const [hasChecked, setHasChecked] = useState(false)
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null)
-  const [applyingEventId, setApplyingEventId] = useState<string | null>(null)
+  const [reviewingEvent, setReviewingEvent] = useState<LifecycleEvent | null>(null)
 
   const classified: ClassifiedProperty[] = useMemo(
     () => properties.map(property => ({ property, health: classifyProperty(property) })),
@@ -89,18 +95,15 @@ export function DataStewardshipPanel({
     setLastCheckedAt(new Date())
   }
 
-  const handleApply = async (event: LifecycleEvent) => {
-    setApplyingEventId(event.id)
-    try {
+  // Decisions come from the review sheet: apply mutates the record, both
+  // paths land in the audit log with the steward's note
+  const handleDecide = async (event: LifecycleEvent, decision: 'applied' | 'dismissed', note: string) => {
+    if (decision === 'applied') {
       await onApplyEvent?.(event)
-      setResolvedEventIds(prev => new Set(prev).add(event.id))
-    } finally {
-      setApplyingEventId(null)
     }
-  }
-
-  const handleDismiss = (event: LifecycleEvent) => {
+    onRecordDecision?.(event, decision, note)
     setResolvedEventIds(prev => new Set(prev).add(event.id))
+    setReviewingEvent(null)
   }
 
   return (
@@ -165,18 +168,25 @@ export function DataStewardshipPanel({
             <div className="rounded-lg border divide-y">
               {openEvents.map(event => {
                 const style = EVENT_TYPE_STYLES[event.eventType]
+                const property = properties.find(p => p.id === event.propertyId)
+                const warnings = buildVerificationChecks(event, property, events).filter(c => c.status === 'warn').length
                 return (
-                  <div key={event.id} className="p-4 flex items-start justify-between gap-4 flex-wrap">
+                  <button
+                    key={event.id}
+                    type="button"
+                    onClick={() => setReviewingEvent(event)}
+                    className="w-full text-left p-4 flex items-start justify-between gap-4 flex-wrap hover:bg-accent/50 transition-colors cursor-pointer"
+                  >
                     <div className="min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge className={`text-xs ${style.className}`} variant="secondary">{style.label}</Badge>
-                        <button
-                          type="button"
-                          onClick={() => onOpenProperty?.(event.propertyId)}
-                          className="text-sm font-medium hover:underline truncate"
-                        >
-                          {event.propertyAddress}
-                        </button>
+                        <span className="text-sm font-medium truncate">{event.propertyAddress}</span>
+                        {warnings > 0 && (
+                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 gap-1">
+                            <AlertTriangleIcon className="h-3 w-3" />
+                            {warnings}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-sm flex-wrap">
                         <span className="text-muted-foreground">{event.label}:</span>
@@ -189,21 +199,11 @@ export function DataStewardshipPanel({
                         {new Date(event.detectedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                       </p>
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={() => handleDismiss(event)}>
-                        Dismiss
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleApply(event)}
-                        disabled={applyingEventId === event.id}
-                        className="gap-1"
-                      >
-                        <CheckIcon className="h-3 w-3" />
-                        {applyingEventId === event.id ? 'Applying…' : 'Apply update'}
-                      </Button>
-                    </div>
-                  </div>
+                    <span className="shrink-0 inline-flex items-center gap-1.5 text-sm text-primary font-medium">
+                      <SearchIcon className="h-3.5 w-3.5" />
+                      Review
+                    </span>
+                  </button>
                 )
               })}
             </div>
@@ -250,6 +250,16 @@ export function DataStewardshipPanel({
           </TabsContent>
         </Tabs>
       </section>
+
+      {/* Review-before-decide sheet */}
+      <EventReviewSheet
+        event={reviewingEvent}
+        property={reviewingEvent ? properties.find(p => p.id === reviewingEvent.propertyId) : undefined}
+        batchEvents={events}
+        onOpenChange={open => !open && setReviewingEvent(null)}
+        onDecide={handleDecide}
+        onOpenProperty={onOpenProperty}
+      />
     </div>
   )
 }

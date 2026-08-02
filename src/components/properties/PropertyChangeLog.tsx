@@ -36,7 +36,7 @@ export function PropertyChangeLog({ propertyId }: PropertyChangeLogProps) {
             <div key={entry.id} className="relative flex gap-3 pb-4 last:pb-0">
               {/* Timeline rail */}
               <div className="flex flex-col items-center">
-                <div className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${entry.revertedAt ? 'bg-muted-foreground/40' : 'bg-primary'}`} />
+                <div className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${entry.revertedAt || entry.decision === 'dismissed' ? 'bg-muted-foreground/40' : 'bg-primary'}`} />
                 {index < entries.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
               </div>
 
@@ -44,22 +44,30 @@ export function PropertyChangeLog({ propertyId }: PropertyChangeLogProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
-                      {entry.label} updated
+                      {entry.label} {entry.decision === 'dismissed' ? 'change dismissed' : 'updated'}
+                      {entry.decision === 'dismissed' && (
+                        <Badge variant="outline" className="ml-2 text-xs font-normal">Not applied</Badge>
+                      )}
                       {entry.revertedAt && (
                         <Badge variant="outline" className="ml-2 text-xs font-normal">Reverted</Badge>
                       )}
                     </p>
                     <div className="flex items-center gap-1.5 text-sm flex-wrap mt-0.5">
-                      <span className={`text-muted-foreground ${entry.revertedAt ? '' : 'line-through'}`}>
+                      <span className={`text-muted-foreground ${entry.revertedAt || entry.decision === 'dismissed' ? '' : 'line-through'}`}>
                         {entry.oldValue ?? '—'}
                       </span>
                       <ArrowRightIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <span className={entry.revertedAt ? 'line-through text-muted-foreground' : 'font-medium'}>
+                      <span className={entry.revertedAt || entry.decision === 'dismissed' ? 'text-muted-foreground' : 'font-medium'}>
                         {entry.newValue ?? '—'}
                       </span>
                     </div>
+                    {entry.note && (
+                      <p className="text-xs mt-1 rounded bg-muted/60 px-2 py-1 italic">
+                        &ldquo;{entry.note}&rdquo;
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      {describeEventSource(entry.source)} · applied by {entry.appliedBy} ·{' '}
+                      {describeEventSource(entry.source)} · {entry.decision} by {entry.appliedBy} ·{' '}
                       {new Date(entry.appliedAt).toLocaleString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -68,7 +76,7 @@ export function PropertyChangeLog({ propertyId }: PropertyChangeLogProps) {
                       })}
                     </p>
                   </div>
-                  {!entry.revertedAt && (
+                  {!entry.revertedAt && entry.decision === 'applied' && (
                     <Button
                       size="sm"
                       variant="ghost"

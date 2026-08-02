@@ -52,8 +52,14 @@ export function DemoStewardshipSection({ properties, onApplySampleOverride }: De
     } else {
       onApplySampleOverride?.(event.propertyId, updates)
     }
-    log?.recordAppliedEvent(event)
     toast.success(`Updated ${event.label.toLowerCase()} for ${event.propertyAddress}`)
+  }
+
+  const handleRecordDecision = (event: LifecycleEvent, decision: 'applied' | 'dismissed', note: string) => {
+    log?.recordDecision(event, decision, note)
+    if (decision === 'dismissed') {
+      toast.info(`Dismissed ${event.label.toLowerCase()} change for ${event.propertyAddress}`)
+    }
   }
 
   return (
@@ -62,6 +68,7 @@ export function DemoStewardshipSection({ properties, onApplySampleOverride }: De
         properties={properties}
         onCheckFeed={handleCheckFeed}
         onApplyEvent={handleApplyEvent}
+        onRecordDecision={handleRecordDecision}
         onOpenProperty={setOpenPropertyId}
         isCheckingFeed={isChecking}
         feedDescription="Simulated county assessor feed (live accounts poll Regrid)"

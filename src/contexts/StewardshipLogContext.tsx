@@ -19,6 +19,9 @@ export interface ChangeLogEntry {
   newValue: string | null
   eventType: LifecycleEvent['eventType']
   source: LifecycleEvent['source']
+  decision: 'applied' | 'dismissed'
+  /** Steward's rationale recorded with the decision */
+  note: string | null
   appliedAt: string
   appliedBy: string
   revertedAt: string | null
@@ -27,7 +30,7 @@ export interface ChangeLogEntry {
 interface StewardshipLogContextType {
   entries: ChangeLogEntry[]
   getEntriesForProperty: (propertyId: string) => ChangeLogEntry[]
-  recordAppliedEvent: (event: LifecycleEvent) => void
+  recordDecision: (event: LifecycleEvent, decision: 'applied' | 'dismissed', note?: string) => void
   revertEntry: (entryId: string) => void
 }
 
@@ -48,7 +51,7 @@ export function StewardshipLogProvider({
 }: StewardshipLogProviderProps) {
   const [entries, setEntries] = useState<ChangeLogEntry[]>([])
 
-  const recordAppliedEvent = useCallback((event: LifecycleEvent) => {
+  const recordDecision = useCallback((event: LifecycleEvent, decision: 'applied' | 'dismissed', note?: string) => {
     const entry: ChangeLogEntry = {
       id: `log-${event.id}-${Date.now()}`,
       propertyId: event.propertyId,
@@ -58,6 +61,8 @@ export function StewardshipLogProvider({
       newValue: event.newValue,
       eventType: event.eventType,
       source: event.source,
+      decision,
+      note: note?.trim() || null,
       appliedAt: new Date().toISOString(),
       appliedBy: actor,
       revertedAt: null,
@@ -70,7 +75,8 @@ export function StewardshipLogProvider({
     // component's setState inside a state updater violates React rendering
     setEntries(prev => {
       const entry = prev.find(e => e.id === entryId)
-      if (!entry || entry.revertedAt) return prev
+      // Dismissals never changed the record, so there is nothing to revert
+      if (!entry || entry.revertedAt || entry.decision !== 'applied') return prev
       // Defer the cross-store write until after this update commits
       queueMicrotask(() => applyFieldValue(entry.propertyId, entry.field, entry.oldValue))
       return prev.map(e => (e.id === entryId ? { ...e, revertedAt: new Date().toISOString() } : e))
@@ -83,8 +89,8 @@ export function StewardshipLogProvider({
   )
 
   const value = useMemo(
-    () => ({ entries, getEntriesForProperty, recordAppliedEvent, revertEntry }),
-    [entries, getEntriesForProperty, recordAppliedEvent, revertEntry]
+    () => ({ entries, getEntriesForProperty, recordDecision, revertEntry }),
+    [entries, getEntriesForProperty, recordDecision, revertEntry]
   )
 
   return <StewardshipLogContext.Provider value={value}>{children}</StewardshipLogContext.Provider>

@@ -140,6 +140,134 @@ export function describeEventSource(source: LifecycleEvent['source']): string {
     : 'Simulated county feed (demo)'
 }
 
+// ============================================================================
+// Verification checks: automated review signals a steward inspects before
+// applying or dismissing an incoming change.
+// ============================================================================
+
+export interface VerificationCheck {
+  label: string
+  status: 'pass' | 'warn' | 'info'
+  detail: string
+}
+
+function parseMoney(v: string | null): number | null {
+  if (!v) return null
+  const n = parseFloat(v.replace(/[^0-9.]/g, ''))
+  return isNaN(n) ? null : n
+}
+
+/**
+ * Build review signals for an event: parcel identity, magnitude sanity,
+ * cross-field corroboration within the same feed batch, and provenance.
+ */
+export function buildVerificationChecks(
+  event: LifecycleEvent,
+  property: Property | undefined,
+  batchEvents: LifecycleEvent[]
+): VerificationCheck[] {
+  const checks: VerificationCheck[] = []
+
+  // 1. Parcel identity — can this record be tied unambiguously to the feed?
+  if (property?.apn && property?.state) {
+    checks.push({
+      label: 'Parcel identity',
+      status: 'pass',
+      detail: `Matched on APN ${property.apn}${property.county ? `, ${property.county} county` : ''}, ${property.state}`,
+    })
+  } else {
+    checks.push({
+      label: 'Parcel identity',
+      status: 'warn',
+      detail: 'Record lacks a full APN + state identity — confirm the feed matched the right parcel',
+    })
+  }
+
+  // 2. Magnitude sanity for money fields
+  if (NUMERIC_EVENT_FIELDS.has(event.field)) {
+    const oldN = parseMoney(event.oldValue)
+    const newN = parseMoney(event.newValue)
+    if (oldN && newN) {
+      const pct = ((newN - oldN) / oldN) * 100
+      const pctLabel = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`
+      if (Math.abs(pct) <= 15) {
+        checks.push({
+          label: 'Magnitude check',
+          status: 'pass',
+          detail: `${pctLabel} — within typical annual reassessment range (±15%)`,
+        })
+      } else {
+        checks.push({
+          label: 'Magnitude check',
+          status: 'warn',
+          detail: `${pctLabel} — large move; verify against county tax roll before applying`,
+        })
+      }
+    } else if (newN && !oldN) {
+      checks.push({
+        label: 'Magnitude check',
+        status: 'info',
+        detail: 'No prior value on file — this fills a gap rather than changing a value',
+      })
+    }
+  }
+
+  // 3. Ownership plausibility — related-entity transfers are common and low-risk
+  if (event.eventType === 'ownership' && event.field === 'owner' && event.oldValue && event.newValue) {
+    const oldTokens = new Set(event.oldValue.toUpperCase().split(/[^A-Z0-9]+/).filter(t => t.length > 2))
+    const newTokens = event.newValue.toUpperCase().split(/[^A-Z0-9]+/).filter(t => t.length > 2)
+    const shared = newTokens.some(t => oldTokens.has(t))
+    checks.push({
+      label: 'Ownership continuity',
+      status: shared ? 'info' : 'warn',
+      detail: shared
+        ? 'New owner shares naming with prior owner — likely related-entity transfer'
+        : 'New owner is unrelated to prior owner — confirm a deed transfer was recorded',
+    })
+  }
+
+  // 4. Cross-field corroboration within the same batch
+  const siblings = batchEvents.filter(e => e.propertyId === event.propertyId && e.id !== event.id)
+  if (event.eventType === 'sale') {
+    const pairedField = event.field === 'last_sale_price' ? 'sale_date' : 'last_sale_price'
+    const paired = siblings.find(e => e.field === pairedField)
+    checks.push({
+      label: 'Corroboration',
+      status: paired ? 'pass' : 'warn',
+      detail: paired
+        ? `Arrived with a matching ${paired.label.toLowerCase()} change (${paired.newValue}) — consistent with a recorded transaction`
+        : 'No paired sale field in this batch — a lone sale change may be a data correction, not a transaction',
+    })
+  } else if (event.eventType === 'ownership') {
+    const paired = siblings.find(e => e.eventType === 'ownership' && e.id !== event.id)
+    if (paired) {
+      checks.push({
+        label: 'Corroboration',
+        status: 'pass',
+        detail: `Arrived with a matching ${paired.label.toLowerCase()} change — consistent with an ownership transfer`,
+      })
+    }
+  } else if (siblings.length > 0) {
+    checks.push({
+      label: 'Corroboration',
+      status: 'info',
+      detail: `${siblings.length} other change${siblings.length === 1 ? '' : 's'} for this parcel in the same batch`,
+    })
+  }
+
+  // 5. Record freshness context
+  const verified = property?.last_refresh_date || property?.regrid_updated_at
+  if (verified) {
+    checks.push({
+      label: 'Prior verification',
+      status: 'info',
+      detail: `Record last verified ${verified} — this is the first change since`,
+    })
+  }
+
+  return checks
+}
+
 /**
  * Diff two versions of a property record and emit lifecycle events for
  * watched fields that changed. Used after a county refresh (and by the
