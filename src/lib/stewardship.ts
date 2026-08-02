@@ -24,7 +24,7 @@ export interface LifecycleEvent {
   oldValue: string | null
   newValue: string | null
   eventType: 'ownership' | 'valuation' | 'sale' | 'zoning' | 'attribute'
-  source: 'county-refresh' | 'simulated'
+  source: 'county-refresh' | 'simulated' | 'document-intake'
   detectedAt: string
   /** Batch this change arrived in — links the event to feed-delivery telemetry */
   deliveryId?: string
@@ -155,9 +155,14 @@ export const RAW_FIELD_MAP: Record<string, string> = {
 
 /** Human-readable provenance for an event source */
 export function describeEventSource(source: LifecycleEvent['source']): string {
-  return source === 'county-refresh'
-    ? 'County assessor feed (Regrid API)'
-    : 'Simulated county feed (demo)'
+  switch (source) {
+    case 'county-refresh':
+      return 'County assessor feed (Regrid API)'
+    case 'document-intake':
+      return 'Document intake'
+    default:
+      return 'Simulated county feed (demo)'
+  }
 }
 
 // ============================================================================

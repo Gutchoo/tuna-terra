@@ -15,6 +15,8 @@ import { PropertyOverviewSection } from "./PropertyOverviewSection"
 import { PropertyDocumentsSection } from "./PropertyDocumentsSection"
 import { PropertyChangeLog } from "./PropertyChangeLog"
 import { PropertyPerformanceSection } from "./PropertyPerformanceSection"
+import { PropertyIntakeDocuments } from "./PropertyIntakeDocuments"
+import { getDocumentsForProperty } from "@/lib/document-intake"
 import { useCanEditPortfolio } from "@/hooks/use-portfolio-role"
 import { useStewardshipLog } from "@/contexts/StewardshipLogContext"
 
@@ -199,11 +201,15 @@ function RightColumn({
       </TabsContent>
 
       <TabsContent value="documents">
-        <PropertyDocumentsSection
-          propertyId={propertyId}
-          portfolioId={portfolioId}
-          canEdit={canEdit}
-        />
+        {getDocumentsForProperty(propertyId).length > 0 ? (
+          <PropertyIntakeDocuments propertyId={propertyId} />
+        ) : (
+          <PropertyDocumentsSection
+            propertyId={propertyId}
+            portfolioId={portfolioId}
+            canEdit={canEdit}
+          />
+        )}
       </TabsContent>
     </Tabs>
   )
