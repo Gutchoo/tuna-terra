@@ -37,10 +37,12 @@ const SCENARIOS: SimulatedChange[][] = [
       field: 'tax_year',
       label: 'Tax year',
       eventType: 'attribute',
+      // Only derive from a value actually present in the record — a simulated
+      // change must trace back to the stored/raw payload
       derive: p => {
-        const prior = p.tax_year || '2025'
-        const next = String(parseInt(prior) + 1)
-        return { oldValue: prior, newValue: next }
+        if (!p.tax_year) return null
+        const next = String(parseInt(p.tax_year) + 1)
+        return { oldValue: p.tax_year, newValue: next }
       },
     },
   ],
@@ -58,10 +60,13 @@ const SCENARIOS: SimulatedChange[][] = [
       field: 'owner_mailing_address',
       label: 'Owner mailing address',
       eventType: 'ownership',
-      derive: p => ({
-        oldValue: p.owner_mailing_address || null,
-        newValue: '712 FIFTH AVE, FLOOR 30, NEW YORK, NY 10019',
-      }),
+      derive: p => {
+        if (!p.owner_mailing_address) return null
+        return {
+          oldValue: p.owner_mailing_address,
+          newValue: '712 FIFTH AVE, FLOOR 30, NEW YORK, NY 10019',
+        }
+      },
     },
   ],
   [

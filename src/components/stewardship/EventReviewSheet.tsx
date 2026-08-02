@@ -33,6 +33,7 @@ import type { Property } from '@/lib/supabase'
 import {
   buildVerificationChecks,
   describeEventSource,
+  RAW_FIELD_MAP,
   type LifecycleEvent,
 } from '@/lib/stewardship'
 
@@ -44,6 +45,33 @@ interface EventReviewSheetProps {
   onOpenChange: (open: boolean) => void
   onDecide: (event: LifecycleEvent, decision: 'applied' | 'dismissed', note: string) => void
   onOpenProperty?: (propertyId: string) => void
+}
+
+// Pull the event's vendor field out of the raw payload so the steward can
+// see the stored source value without scanning the whole JSON blob
+function RawFieldCallout({ property, field }: { property: Property; field: string }) {
+  const vendorField = RAW_FIELD_MAP[field]
+  if (!vendorField) return null
+
+  const raw = property.property_data as Record<string, unknown> | null
+  // Payload shapes: normalized RegridProperty ({properties: {fields}}) or raw feature
+  const fields =
+    ((raw?.properties as Record<string, unknown> | undefined)?.fields as Record<string, unknown> | undefined) ??
+    (raw?.fields as Record<string, unknown> | undefined)
+  const value = fields?.[vendorField]
+
+  return (
+    <div className="rounded-md border border-blue-500/40 bg-blue-500/5 dark:border-blue-400/40 px-3 py-2 mb-1.5 text-xs">
+      <span className="font-mono text-muted-foreground">fields.{vendorField}</span>
+      {value !== undefined && value !== null && value !== '' ? (
+        <span className="font-mono font-medium"> = {JSON.stringify(value)}</span>
+      ) : (
+        <span className="text-muted-foreground italic">
+          {' '}— not present in the stored payload; the incoming value originates from the newer feed delivery
+        </span>
+      )}
+    </div>
+  )
 }
 
 const CHECK_ICONS = {
@@ -81,7 +109,8 @@ export function EventReviewSheet({
 
   return (
     <Sheet open={event !== null} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+      {/* z-60: the decision surface stays above the property modal when both are open */}
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto z-[60]">
         <SheetHeader className="pb-0">
           <SheetTitle className="flex items-center gap-2 text-base">
             Review change
@@ -134,6 +163,12 @@ export function EventReviewSheet({
                 {property?.county && ` · ${property.county} county roll`}
                 {property?.apn && ` · APN ${property.apn}`}
               </p>
+              {RAW_FIELD_MAP[event.field] && (
+                <p className="text-xs text-muted-foreground">
+                  Vendor field: <span className="font-mono">fields.{RAW_FIELD_MAP[event.field]}</span>
+                  {' '}→ normalized as <span className="font-mono">{event.field}</span>
+                </p>
+              )}
             </div>
           </div>
 
@@ -182,6 +217,7 @@ export function EventReviewSheet({
                 <p className="text-xs text-muted-foreground mt-2 mb-1.5">
                   Source payload the normalized fields were derived from — retained verbatim for lineage.
                 </p>
+                <RawFieldCallout property={property} field={event.field} />
                 <pre className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed font-mono overflow-x-auto max-h-64 overflow-y-auto">
                   {JSON.stringify(property.property_data, null, 2)}
                 </pre>

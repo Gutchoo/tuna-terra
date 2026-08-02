@@ -10,10 +10,12 @@ import {
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Property } from "@/lib/supabase"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PropertyOverviewSection } from "./PropertyOverviewSection"
 import { PropertyDocumentsSection } from "./PropertyDocumentsSection"
 import { PropertyChangeLog } from "./PropertyChangeLog"
 import { useCanEditPortfolio } from "@/hooks/use-portfolio-role"
+import { useStewardshipLog } from "@/contexts/StewardshipLogContext"
 
 interface PropertyModalProps {
   open: boolean
@@ -33,6 +35,11 @@ export function PropertyModal({
   onPropertyUpdate
 }: PropertyModalProps) {
   const { canEdit } = useCanEditPortfolio(portfolioId || property?.portfolio_id || null)
+
+  // When a stewardship log is mounted (demo / stewardship contexts), the
+  // right column defaults to the Activity view instead of Documents
+  const stewardshipLog = useStewardshipLog()
+  const defaultRightTab = stewardshipLog ? 'activity' : 'documents'
 
   // Local state for optimistic updates
   const [localProperty, setLocalProperty] = useState<Property | undefined>(property)
@@ -135,24 +142,25 @@ export function PropertyModal({
                     onCancelEdit={handleCancelEdit}
                     isSaving={isSaving}
                   />
-                  <PropertyChangeLog propertyId={propertyId} />
                 </div>
 
-                {/* Right Column: Documents (scrollable) */}
+                {/* Right Column: Activity / Documents toggle (scrollable) */}
                 <div className="overflow-y-auto border-l pl-4 pr-2 hidden lg:block min-h-0">
-                  <PropertyDocumentsSection
+                  <RightColumn
                     propertyId={propertyId}
                     portfolioId={portfolioId || localProperty.portfolio_id || ''}
                     canEdit={canEdit}
+                    defaultTab={defaultRightTab}
                   />
                 </div>
 
-                {/* Mobile: Documents section below overview */}
+                {/* Mobile: right column content below overview */}
                 <div className="lg:hidden border-t pt-4 overflow-y-auto min-h-0">
-                  <PropertyDocumentsSection
+                  <RightColumn
                     propertyId={propertyId}
                     portfolioId={portfolioId || localProperty.portfolio_id || ''}
                     canEdit={canEdit}
+                    defaultTab={defaultRightTab}
                   />
                 </div>
               </div>
@@ -163,6 +171,39 @@ export function PropertyModal({
         )}
       </DialogContent>
     </Dialog>
+  )
+}
+
+function RightColumn({
+  propertyId,
+  portfolioId,
+  canEdit,
+  defaultTab,
+}: {
+  propertyId: string
+  portfolioId: string
+  canEdit: boolean
+  defaultTab: 'activity' | 'documents'
+}) {
+  return (
+    <Tabs defaultValue={defaultTab}>
+      <TabsList className="mb-3">
+        <TabsTrigger value="activity">Activity</TabsTrigger>
+        <TabsTrigger value="documents">Documents</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="activity">
+        <PropertyChangeLog propertyId={propertyId} emptyState />
+      </TabsContent>
+
+      <TabsContent value="documents">
+        <PropertyDocumentsSection
+          propertyId={propertyId}
+          portfolioId={portfolioId}
+          canEdit={canEdit}
+        />
+      </TabsContent>
+    </Tabs>
   )
 }
 

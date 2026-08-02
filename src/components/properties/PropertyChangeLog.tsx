@@ -9,17 +9,32 @@ import { describeEventSource } from '@/lib/stewardship'
 
 interface PropertyChangeLogProps {
   propertyId: string
+  /** Render a placeholder when there are no entries (used as a dedicated Activity tab) */
+  emptyState?: boolean
 }
 
 // Audit trail of stewardship actions on this property: what changed, the
 // before/after values, where the data came from, who applied it, and revert.
 // Renders nothing when no stewardship log provider is mounted.
-export function PropertyChangeLog({ propertyId }: PropertyChangeLogProps) {
+export function PropertyChangeLog({ propertyId, emptyState = false }: PropertyChangeLogProps) {
   const log = useStewardshipLog()
-  if (!log) return null
 
-  const entries = log.getEntriesForProperty(propertyId)
-  if (entries.length === 0) return null
+  const entries = log?.getEntriesForProperty(propertyId) ?? []
+
+  if (entries.length === 0 || !log) {
+    if (!emptyState) return null
+    return (
+      <div className="rounded-lg border border-dashed p-8 text-center">
+        <HistoryIcon className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+        <p className="text-sm font-medium">No activity yet</p>
+        <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+          {log
+            ? 'Stewardship decisions on this record — applied updates, dismissals, and reverts — will appear here with their full audit trail.'
+            : 'Activity tracking is available in stewardship contexts.'}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <Card>

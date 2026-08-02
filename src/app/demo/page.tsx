@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { DemoProvider, useDemo } from '@/contexts/DemoContext'
 import { StewardshipLogProvider } from '@/contexts/StewardshipLogContext'
 import { DemoHeader } from '@/components/demo/DemoHeader'
@@ -73,10 +72,7 @@ function DemoPageContent() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-6">
                 <TabsTrigger value="properties">Properties</TabsTrigger>
-                <TabsTrigger value="stewardship" className="gap-2">
-                  Data Stewardship
-                  <Badge variant="secondary" className="text-xs">New</Badge>
-                </TabsTrigger>
+                <TabsTrigger value="stewardship">Data Stewardship</TabsTrigger>
                 <TabsTrigger value="dictionary">Data Dictionary</TabsTrigger>
               </TabsList>
 

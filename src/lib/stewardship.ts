@@ -133,6 +133,24 @@ export function parseEventValue(field: string, value: string | null): string | n
   return value
 }
 
+/** Normalized field -> vendor field name in the raw Regrid payload (properties.fields.*) */
+export const RAW_FIELD_MAP: Record<string, string> = {
+  owner: 'owner',
+  owner_mailing_address: 'mailadd',
+  assessed_value: 'parval',
+  land_value: 'landval',
+  improvement_value: 'improvval',
+  last_sale_price: 'saleprice',
+  sale_date: 'saledate',
+  zoning: 'zoning',
+  zoning_description: 'zoning_description',
+  use_description: 'usedesc',
+  year_built: 'yearbuilt',
+  num_units: 'numunits',
+  tax_year: 'taxyear',
+  apn: 'parcelnumb',
+}
+
 /** Human-readable provenance for an event source */
 export function describeEventSource(source: LifecycleEvent['source']): string {
   return source === 'county-refresh'

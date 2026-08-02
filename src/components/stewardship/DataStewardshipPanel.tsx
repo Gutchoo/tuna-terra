@@ -225,7 +225,14 @@ export function DataStewardshipPanel({
                   <button
                     key={event.id}
                     type="button"
-                    onClick={() => setReviewingEvent(event)}
+                    onClick={() => {
+                      // Open the full record behind the review sheet so the
+                      // steward has complete context while deciding. The sheet
+                      // opens a beat later so its Radix layer mounts on top of
+                      // the modal and stays interactive.
+                      onOpenProperty?.(event.propertyId)
+                      setTimeout(() => setReviewingEvent(event), 200)
+                    }}
                     className="w-full text-left p-4 flex items-start justify-between gap-4 flex-wrap hover:bg-accent/50 transition-colors cursor-pointer"
                   >
                     <div className="min-w-0 space-y-1.5">
