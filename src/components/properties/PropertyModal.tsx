@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PropertyOverviewSection } from "./PropertyOverviewSection"
 import { PropertyDocumentsSection } from "./PropertyDocumentsSection"
 import { PropertyChangeLog } from "./PropertyChangeLog"
+import { PropertyPerformanceSection } from "./PropertyPerformanceSection"
 import { useCanEditPortfolio } from "@/hooks/use-portfolio-role"
 import { useStewardshipLog } from "@/contexts/StewardshipLogContext"
 
@@ -129,7 +130,7 @@ export function PropertyModal({
             {/* Two-column layout for desktop, stacked for mobile */}
             <div className="flex-1 overflow-hidden px-7 py-6 min-h-0">
               <div className="h-full grid grid-cols-1 lg:grid-cols-[55%_45%] gap-4">
-                {/* Left Column: Property Overview (scrollable) */}
+                {/* Left Column: Overview + Performance (scrollable) */}
                 <div className="overflow-y-auto pr-2 min-h-0 space-y-3">
                   <PropertyOverviewSection
                     property={localProperty}
@@ -142,6 +143,7 @@ export function PropertyModal({
                     onCancelEdit={handleCancelEdit}
                     isSaving={isSaving}
                   />
+                  <PropertyPerformanceSection propertyId={propertyId} propertyAddress={localProperty.address} />
                 </div>
 
                 {/* Right Column: Activity / Documents toggle (scrollable) */}

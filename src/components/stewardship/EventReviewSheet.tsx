@@ -176,20 +176,25 @@ export function EventReviewSheet({
 
           {/* Verification checks */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Verification checks
               </p>
               {warnings > 0 ? (
                 <Badge variant="secondary" className="text-xs border-amber-600/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                  {warnings} warning{warnings === 1 ? '' : 's'}
+                  {warnings} of {checks.length} checks flagged
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="text-xs border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                  All clear
+                  {checks.length} checks passed
                 </Badge>
               )}
             </div>
+            <p className="text-xs text-muted-foreground mb-2.5">
+              {warnings > 0
+                ? 'Automated screens found conditions worth verifying before you apply this change.'
+                : 'Automated screens found no anomalies — the change is consistent with the record and its feed batch.'}
+            </p>
             <div className="space-y-2.5">
               {checks.map(check => (
                 <div key={check.label} className="flex gap-2">

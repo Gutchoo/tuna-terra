@@ -36,7 +36,7 @@ export const VIRTUAL_SAMPLE_PORTFOLIO: PortfolioWithMembership = {
   updated_at: '2024-01-01T00:00:00.000Z',
   membership_role: 'viewer', // Users can only view, not edit
   member_count: 1,
-  property_count: 3 + CURATED_DEMO_PROPERTIES.length, // UC Berkeley, LAX, Santa Monica Pier + curated landmarks
+  property_count: 4 + CURATED_DEMO_PROPERTIES.length, // UC Berkeley, LAX, Santa Monica Pier, Plaza Suites + curated landmarks
 }
 
 // Virtual sample property - UC Berkeley from real Regrid API data
@@ -1243,6 +1243,70 @@ export const VIRTUAL_SAMPLE_PROPERTIES: Property[] = [
     portfolio_id: 'sample-portfolio-virtual',
     created_at: '2024-01-01T00:00:00.000Z',
     updated_at: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    // Plaza Suites — operating multifamily asset with performance data
+    // (acquisition, financing, unit mix, T12) from the PM-system feed.
+    // Textbook-style acquisition sample; no county parcel match by design,
+    // so it also exercises the stewardship exception lane.
+    id: 'sample-property-plaza-suites',
+    user_id: 'virtual-sample-owner',
+    regrid_id: null,
+    apn: '412-260-018',
+    address: '1200 PLAZA DR',
+    city: 'SACRAMENTO',
+    state: 'CA',
+    zip_code: '95825',
+    geometry: null,
+    lat: 38.5926,
+    lng: -121.4098,
+    year_built: 1985,
+    owner: 'PLAZA SUITES INVESTORS LLC',
+    last_sale_price: 2_400_000,
+    sale_date: '2023-06-15',
+    county: 'sacramento',
+    qoz_status: 'No',
+    improvement_value: 1_680_000,
+    land_value: 520_000,
+    assessed_value: 2_200_000,
+    use_code: '0400',
+    use_description: 'Multifamily - Garden Apartments',
+    zoning: 'R-3',
+    zoning_description: 'Multi-Unit Dwelling',
+    num_stories: 2,
+    num_units: 20,
+    num_rooms: null,
+    subdivision: null,
+    lot_size_acres: 1.12,
+    lot_size_sqft: 48_787,
+    tax_year: '2025',
+    parcel_value_type: 'ASSESSED',
+    purchase_price: 2_400_000,
+    purchase_date: '2023-06-15',
+    sale_price: null,
+    census_tract: null,
+    census_block: null,
+    qoz_tract: null,
+    last_refresh_date: '2026-07-01',
+    regrid_updated_at: null,
+    owner_mailing_address: '980 9TH ST, SUITE 2100',
+    owner_mail_city: 'SACRAMENTO',
+    owner_mail_state: 'CA',
+    owner_mail_zip: '95814',
+    property_data: null,
+    user_notes: 'Value-add hold. Rents ~8% below market on 2BR units; reassess at lease turnover.',
+    tags: ['multifamily', 'value-add'],
+    insurance_provider: 'Farmers Commercial',
+    maintenance_history: null,
+    management_company: 'Haven Residential',
+    mortgage_amount: 1_800_000,
+    lender_name: 'Pacific Western Bank',
+    loan_rate: 6.5,
+    loan_maturity_date: '2033-07-01',
+    is_sample: true,
+    portfolio_id: 'sample-portfolio-virtual',
+    created_at: '2024-01-01T00:00:00.000Z',
+    updated_at: '2026-07-31T00:00:00.000Z'
   }
 ]
 

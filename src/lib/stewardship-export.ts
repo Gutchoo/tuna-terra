@@ -2,6 +2,7 @@ import type { Property } from '@/lib/supabase'
 import type { LifecycleEvent } from '@/lib/stewardship'
 import type { ChangeLogEntry } from '@/contexts/StewardshipLogContext'
 import { classifyProperty, describeEventSource } from '@/lib/stewardship'
+import { derivePerformanceMetrics, type PropertyPerformance } from '@/lib/sample-performance'
 
 // ============================================================================
 // Structured exports: the deliverables a reference-data team distributes to
@@ -104,6 +105,44 @@ export function exportLifecycleEvents(events: LifecycleEvent[], resolvedIds: Set
         generated_at: stamp(),
         events: String(events.length),
         pending_review: String(events.filter(e => !resolvedIds.has(e.id)).length),
+      }
+    )
+  )
+}
+
+/** Operating statement: T12 lines + derived metrics for one asset */
+export function exportPerformanceStatement(address: string, perf: PropertyPerformance) {
+  const m = derivePerformanceMetrics(perf)
+  const rows: unknown[][] = [
+    ['income', 'gross_potential_rent', perf.income.grossPotentialRent],
+    ['income', 'vacancy_credit_loss', -perf.income.vacancyLoss],
+    ['income', 'other_income', perf.income.otherIncome],
+    ['income', 'effective_gross_income', m.effectiveGrossIncome],
+    ...perf.expenses.map(e => ['expense', e.label.toLowerCase().replace(/[^a-z0-9]+/g, '_'), -e.annual]),
+    ['expense', 'total_operating_expenses', -m.totalExpenses],
+    ['result', 'net_operating_income', m.noi],
+    ['debt', 'annual_debt_service', -m.annualDebtService],
+    ['result', 'cash_flow_after_debt_service', m.cashFlow],
+    ['metric', 'cap_rate_on_cost_pct', m.capRateOnCost.toFixed(2)],
+    ['metric', 'dscr', m.dscr.toFixed(2)],
+    ['metric', 'cash_on_cash_pct', m.cashOnCashPct.toFixed(2)],
+    ['metric', 'occupancy_pct', m.occupancyPct.toFixed(1)],
+    ['metric', 'noi_per_unit', Math.round(m.noiPerUnit)],
+    ['metric', 'expense_ratio_pct', m.expenseRatioPct.toFixed(1)],
+  ]
+
+  download(
+    `operating-statement-${dateSlug()}.csv`,
+    toCSV(
+      ['section', 'line_item', 'amount'],
+      rows,
+      {
+        report: 'Trailing-12 Operating Statement',
+        property: address,
+        as_of: perf.asOf,
+        source: perf.source,
+        generated_at: stamp(),
+        note: 'Derived metrics computed from statement lines at export time.',
       }
     )
   )
