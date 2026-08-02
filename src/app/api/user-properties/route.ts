@@ -35,7 +35,8 @@ const createPropertySchema = z.object({
 })
 
 const bulkCreateSchema = z.object({
-  properties: z.array(createPropertySchema),
+  // Cap batch size: bounds DB writes and worst-case Regrid lookups per request
+  properties: z.array(createPropertySchema).max(500, 'Maximum 500 properties per upload'),
   source: z.enum(['csv', 'manual', 'api']).optional(),
 })
 

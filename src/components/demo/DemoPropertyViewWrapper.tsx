@@ -8,10 +8,13 @@ import { useState } from 'react'
 
 interface DemoPropertyViewWrapperProps {
   properties: Property[]
+  /** External focus request (e.g. stewardship "Review" jumps to a property) */
+  externalFocusRequest?: { propertyId: string; ts: number } | null
 }
 
 export function DemoPropertyViewWrapper({
   properties,
+  externalFocusRequest = null,
 }: DemoPropertyViewWrapperProps) {
   const {
     handleRefresh,
@@ -31,6 +34,12 @@ export function DemoPropertyViewWrapper({
     setFocusRequest({ propertyId, ts: Date.now() })
   }
 
+  // Prefer the newer of internal vs external focus requests
+  const activeFocusRequest =
+    externalFocusRequest && (!focusRequest || externalFocusRequest.ts > focusRequest.ts)
+      ? externalFocusRequest
+      : focusRequest
+
   return (
     <>
       <PropertyView
@@ -41,7 +50,7 @@ export function DemoPropertyViewWrapper({
         onAddProperties={handleAddProperties}
         onRefreshOverride={handleRefresh}
         onDeleteOverride={handleDelete}
-        focusRequest={focusRequest}
+        focusRequest={activeFocusRequest}
       />
 
       {/* Demo-specific modals */}

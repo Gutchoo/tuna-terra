@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
+import { applyRateLimit } from '@/lib/rateLimiter'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,8 +13,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!placeId) {
-      return NextResponse.json({ error: 'Place ID is required' }, { status: 400 })
+    // Rate limit per user (or per IP for anonymous demo traffic)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const rateLimited = await applyRateLimit(userId || `ip:${ip}`, 'places-details', {
+      windowMs: 60 * 1000,
+      maxRequests: userId ? 30 : 10,
+    })
+    if (rateLimited) return rateLimited
+
+    if (!placeId || typeof placeId !== 'string' || placeId.length > 300 || !/^[A-Za-z0-9_-]+$/.test(placeId)) {
+      return NextResponse.json({ error: 'Valid place ID is required' }, { status: 400 })
     }
 
     const apiKey = process.env.GOOGLE_PLACES_API_KEY

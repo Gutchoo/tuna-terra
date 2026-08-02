@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/lib/auth'
+import { applyRateLimit } from '@/lib/rateLimiter'
 
 interface GooglePlacesSuggestion {
   placePrediction?: {
@@ -29,8 +30,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!input || input.length < 3) {
+    // Rate limit per user (or per IP for anonymous demo traffic) so a
+    // scripted client can't burn the Google Places quota
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const rateLimited = await applyRateLimit(userId || `ip:${ip}`, 'places-autocomplete', {
+      windowMs: 60 * 1000,
+      maxRequests: userId ? 60 : 20,
+    })
+    if (rateLimited) return rateLimited
+
+    if (!input || typeof input !== 'string' || input.length < 3) {
       return NextResponse.json({ suggestions: [] })
+    }
+    if (input.length > 200) {
+      return NextResponse.json({ error: 'Input too long' }, { status: 400 })
     }
 
     const apiKey = process.env.GOOGLE_PLACES_API_KEY

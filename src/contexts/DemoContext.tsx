@@ -13,6 +13,7 @@ interface DemoContextType {
   enterDemoMode: () => void
   exitDemoMode: () => void
   addDemoProperty: (property: Property) => Property
+  updateDemoProperty: (propertyId: string, updates: Partial<Property>) => void
   removeDemoProperty: (propertyId: string) => void
   clearAllDemoProperties: () => void
   getDemoProperties: () => Property[]
@@ -170,6 +171,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     return demoProperty
   }, [])
 
+  const updateDemoProperty = useCallback((propertyId: string, updates: Partial<Property>) => {
+    setDemoState(prev => ({
+      ...prev,
+      demoProperties: prev.demoProperties.map(p =>
+        p.id === propertyId ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
+      )
+    }))
+  }, [])
+
   const removeDemoProperty = useCallback((propertyId: string) => {
     setDemoState(prev => ({
       ...prev,
@@ -197,11 +207,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     enterDemoMode,
     exitDemoMode,
     addDemoProperty,
+    updateDemoProperty,
     removeDemoProperty,
     clearAllDemoProperties,
     getDemoProperties,
     hasProperty
-  }), [demoState, enterDemoMode, exitDemoMode, addDemoProperty, removeDemoProperty, clearAllDemoProperties, getDemoProperties, hasProperty])
+  }), [demoState, enterDemoMode, exitDemoMode, addDemoProperty, updateDemoProperty, removeDemoProperty, clearAllDemoProperties, getDemoProperties, hasProperty])
 
   return (
     <DemoContext.Provider value={contextValue}>
